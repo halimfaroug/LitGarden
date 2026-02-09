@@ -1,1962 +1,1965 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>ENGL280 — Interactive Study Platform</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ENGL280: An Introduction to Literature — Interactive Study Platform</title>
 
-<style>
-  :root{
-    --bg1:#e9fff6; --bg2:#eaf7ff; --bg3:#fff7e7;
-    --panel: rgba(255,255,255,.78);
-    --panel2: rgba(255,255,255,.62);
-    --stroke: rgba(10,35,18,.16);
-    --text: rgba(7,18,11,.92);
-    --muted: rgba(7,18,11,.62);
+  <style>
+    :root{
+      /* brighter natural theme */
+      --sky1:#e6fbff;
+      --sky2:#eafcf1;
+      --sky3:#fff7e6;
 
-    --sky:#00a3ff;
-    --leaf:#22c55e;
-    --sun:#ffd166;
-    --danger:#ff4d4d;
-    --ok:#16a34a;
+      --ink:#0b1b13;
+      --muted:rgba(11,27,19,.70);
 
-    --radius: 20px;
-    --shadow: 0 18px 60px rgba(6, 28, 14, .14);
-    --shadow2: 0 10px 30px rgba(6, 28, 14, .12);
+      --glass:rgba(255,255,255,.78);
+      --glass2:rgba(255,255,255,.60);
+      --stroke:rgba(11,27,19,.14);
 
-    --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
-            Arial, "Noto Sans", "Liberation Sans", sans-serif;
+      --accent:#00a3ff;
+      --accent2:#22c55e;
+      --accent3:#ffd166;
 
-    --base: 24px;
-    --h1: 44px;
-    --h2: 30px;
-    --h3: 24px;
-    --small: 17px;
-  }
+      --danger:#ff4d4d;
+      --ok:#16a34a;
 
-  *{ box-sizing:border-box; }
-  html,body{ height:100%; }
-  body{
-    margin:0;
-    font-family:var(--font);
-    font-size:var(--base);
-    color:var(--text);
-    overflow:hidden;
-    background:
-      radial-gradient(1200px 800px at 10% 10%, rgba(0,163,255,.18), transparent 55%),
-      radial-gradient(1000px 700px at 90% 15%, rgba(34,197,94,.18), transparent 55%),
-      radial-gradient(900px 600px at 65% 90%, rgba(255,209,102,.14), transparent 55%),
-      linear-gradient(180deg, var(--bg2), var(--bg1), var(--bg3));
-  }
+      --radius:18px;
+      --shadow: 0 14px 46px rgba(11,27,19,.12);
+      --shadow2: 0 10px 26px rgba(11,27,19,.10);
 
-  /* animated background */
-  #bgCanvas{ position:fixed; inset:0; z-index:-2; }
-  .vignette{
-    position:fixed; inset:0; z-index:-1; pointer-events:none;
-    background:
-      radial-gradient(900px 700px at 50% -10%, rgba(255,255,255,.92), transparent 60%),
-      radial-gradient(900px 700px at 10% 60%, rgba(0,163,255,.12), transparent 60%),
-      radial-gradient(900px 700px at 90% 70%, rgba(34,197,94,.12), transparent 60%),
-      radial-gradient(900px 700px at 70% 95%, rgba(255,209,102,.10), transparent 60%);
-  }
+      /* big font */
+      --base: 22px;
+      --h1: 44px;
+      --h2: 32px;
+      --h3: 24px;
 
-  .app{ height:100%; display:grid; grid-template-columns: 360px 1fr; }
-  .sidebar{
-    padding:22px;
-    border-right:1px solid var(--stroke);
-    background: linear-gradient(180deg, rgba(255,255,255,.78), rgba(255,255,255,.58));
-    backdrop-filter: blur(10px);
-    overflow:auto;
-  }
-  .brand{ display:flex; align-items:center; gap:12px; margin-bottom: 14px; }
-  .logo{
-    width:54px; height:54px; border-radius:18px;
-    background: radial-gradient(circle at 30% 25%, rgba(0,163,255,.90), rgba(34,197,94,.55) 55%, rgba(255,209,102,.42));
-    box-shadow: var(--shadow2);
-    position:relative; overflow:hidden;
-  }
-  .logo::after{
-    content:""; position:absolute; inset:-45%;
-    background: conic-gradient(from 180deg, rgba(255,255,255,0), rgba(255,255,255,.55), rgba(255,255,255,0));
-    animation: spin 6s linear infinite;
-  }
-  @keyframes spin{ to{ transform:rotate(360deg);} }
+      /* offline good-looking font stack */
+      --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, "Noto Sans", sans-serif;
+    }
 
-  .brand h1{ font-size: 24px; margin:0; line-height:1.1; letter-spacing:.3px; }
-  .sub{ font-size: var(--small); color:var(--muted); margin-top:4px; }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      font-family: var(--font);
+      font-size: var(--base);
+      line-height: 1.6;
+      color: var(--ink);
+      margin: 0;
+      overflow-x: hidden;
 
-  .pillRow{ display:flex; flex-wrap:wrap; gap:10px; margin: 12px 0 16px; }
-  .pill{
-    padding: 10px 12px;
-    border-radius:999px;
-    border:1px solid var(--stroke);
-    background: var(--panel2);
-    box-shadow: 0 10px 24px rgba(6,28,14,.08);
-    font-size: 16px;
-    cursor:pointer;
-    user-select:none;
-    transition: transform .12s ease, background .2s ease, border-color .2s ease;
-  }
-  .pill:hover{ transform: translateY(-1px); }
-  .pill:active{ transform: translateY(0) scale(.99); }
+      background:
+        radial-gradient(1100px 700px at 10% 10%, rgba(0,163,255,.18), transparent 60%),
+        radial-gradient(1000px 700px at 90% 15%, rgba(34,197,94,.16), transparent 58%),
+        radial-gradient(900px 650px at 60% 95%, rgba(255,209,102,.15), transparent 60%),
+        linear-gradient(180deg, var(--sky1), var(--sky2), var(--sky3));
+    }
 
-  .searchBox{ position:sticky; top:0; padding-top: 6px; z-index:5; }
-  .search{
-    display:flex; gap:10px; align-items:center;
-    padding: 12px 12px;
-    border-radius:16px;
-    border:1px solid var(--stroke);
-    background: rgba(255,255,255,.80);
-    box-shadow: var(--shadow2);
-  }
-  .search input{
-    flex:1; border:0; outline:none; background:transparent;
-    color:var(--text); font-size: 18px;
-  }
-  .kbd{
-    font-size:12px; color:var(--muted);
-    border:1px solid var(--stroke);
-    padding: 4px 8px;
-    border-radius:10px;
-    background: rgba(255,255,255,.55);
-    white-space:nowrap;
-  }
+    /* ===== Animated nature background (offline) ===== */
+    #bgCanvas {
+      position: fixed; inset: 0;
+      z-index: -2;
+      width: 100%; height: 100%;
+    }
+    .vignette {
+      position: fixed; inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      background:
+        radial-gradient(900px 700px at 50% -10%, rgba(255,255,255,.92), transparent 62%),
+        radial-gradient(900px 700px at 10% 60%, rgba(0,163,255,.10), transparent 60%),
+        radial-gradient(900px 700px at 90% 70%, rgba(34,197,94,.10), transparent 60%);
+    }
 
-  .nav{ margin-top: 14px; display:flex; flex-direction:column; gap:10px; }
-  .nav button{
-    width:100%;
-    text-align:left;
-    padding: 15px 14px;
-    border-radius:16px;
-    border:1px solid var(--stroke);
-    background: rgba(255,255,255,.70);
-    color: var(--text);
-    font-size: 18px;
-    cursor:pointer;
-    transition: transform .12s ease, background .2s ease, border-color .2s ease;
-    display:flex; align-items:center; justify-content:space-between; gap:12px;
-    box-shadow: 0 10px 24px rgba(6,28,14,.07);
-  }
-  .nav button:hover{
-    transform: translateY(-1px);
-    background: rgba(255,255,255,.86);
-    border-color: rgba(0,163,255,.35);
-  }
-  .nav button.active{
-    border-color: rgba(34,197,94,.45);
-    background: linear-gradient(90deg, rgba(34,197,94,.18), rgba(0,163,255,.12));
-  }
-  .nav small{ color: var(--muted); font-size: 14px; }
+    header {
+      position: sticky; top: 0; z-index: 10;
+      background: linear-gradient(90deg, rgba(255,255,255,.86), rgba(255,255,255,.68));
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--stroke);
+      box-shadow: 0 8px 24px rgba(11,27,19,.08);
+    }
 
-  .progressCard{
-    margin-top: 16px;
-    padding: 14px;
-    border-radius: var(--radius);
-    border:1px solid var(--stroke);
-    background: rgba(255,255,255,.74);
-    box-shadow: var(--shadow2);
-  }
-  .progressCard h3{ margin:0 0 10px; font-size: 19px; }
-  .bar{
-    height: 12px; border-radius:999px;
-    background: rgba(0,0,0,.05);
-    overflow:hidden; border:1px solid rgba(0,0,0,.07);
-  }
-  .bar > div{
-    height:100%; width:0%;
-    background: linear-gradient(90deg, rgba(0,163,255,.92), rgba(34,197,94,.82), rgba(255,209,102,.72));
-    border-radius: 999px;
-    transition: width .35s ease;
-  }
-  .stats{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top: 10px; font-size: 15px; color: var(--muted); }
-  .stats b{ color: var(--text); font-weight: 800; }
+    .headerInner{
+      max-width: 1250px;
+      margin: 0 auto;
+      padding: 16px 18px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 14px;
+      align-items: center;
+    }
 
-  .footer{
-    margin-top: 16px;
-    padding: 12px 14px;
-    border-radius: 18px;
-    border:1px solid var(--stroke);
-    background: rgba(255,255,255,.74);
-    color: var(--muted);
-    font-size: 15px;
-    box-shadow: 0 10px 24px rgba(6,28,14,.06);
-  }
+    h1 {
+      font-size: var(--h1);
+      margin: 0;
+      letter-spacing: .2px;
+      line-height: 1.1;
+    }
 
-  .content{ padding: 26px; overflow:auto; position:relative; }
-  .topbar{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom: 18px; flex-wrap:wrap; }
-  .titleBlock h2{ margin:0; font-size: var(--h1); letter-spacing:.2px; line-height:1.05; }
-  .titleBlock p{ margin:10px 0 0; color: var(--muted); font-size: 20px; max-width: 980px; }
+    .subline{
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 18px;
+    }
 
-  .actions{ display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
-  .btn{
-    padding: 12px 14px;
-    border-radius: 16px;
-    border:1px solid var(--stroke);
-    background: rgba(255,255,255,.76);
-    color: var(--text);
-    font-size: 16px;
-    cursor:pointer;
-    transition: transform .12s ease, background .2s ease, border-color .2s ease;
-    user-select:none;
-    box-shadow: 0 10px 24px rgba(6,28,14,.07);
-  }
-  .btn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.90); }
-  .btn:active{ transform: translateY(0) scale(.99); }
-  .btn.primary{
-    border-color: rgba(0,163,255,.35);
-    background: linear-gradient(90deg, rgba(0,163,255,.18), rgba(34,197,94,.12));
-  }
-  .btn.danger{
-    border-color: rgba(255,77,77,.45);
-    background: rgba(255,77,77,.12);
-  }
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: flex-end;
+      align-items: center;
+    }
 
-  .grid{ display:grid; grid-template-columns: 1.15fr .85fr; gap: 16px; align-items:start; }
+    nav button, .btn {
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,.76);
+      color: var(--ink);
+      padding: 12px 14px;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: transform .12s ease, background .2s ease, border-color .2s ease;
+      box-shadow: var(--shadow2);
+      font-size: 16px;
+      user-select: none;
+    }
+    nav button:hover, .btn:hover {
+      transform: translateY(-1px);
+      background: rgba(255,255,255,.92);
+      border-color: rgba(0,163,255,.30);
+    }
+    nav button.active {
+      background: linear-gradient(90deg, rgba(0,163,255,.16), rgba(34,197,94,.10));
+      border-color: rgba(34,197,94,.35);
+    }
 
-  .card{
-    border: 1px solid var(--stroke);
-    background: rgba(255,255,255,.74);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    overflow:hidden;
-    transform: translateY(6px);
-    opacity: .0;
-    transition: transform .35s ease, opacity .35s ease;
-  }
-  .card.show{ transform: translateY(0); opacity: 1; }
+    main {
+      max-width: 1250px;
+      margin: 0 auto;
+      padding: 18px;
+      padding-bottom: 120px;
+    }
 
-  .cardHeader{
-    padding: 16px 18px;
-    border-bottom: 1px solid var(--stroke);
-    background: linear-gradient(180deg, rgba(255,255,255,.88), rgba(255,255,255,.66));
-    display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
-  }
-  .cardHeader h3{ margin:0; font-size: var(--h2); }
-  .cardBody{ padding: 18px; }
+    section {
+      display: none;
+      margin-top: 16px;
+    }
+    section.active { display: block; }
 
-  .chips{ display:flex; flex-wrap:wrap; gap:10px; }
-  .chip{
-    padding: 10px 12px;
-    border-radius:999px;
-    border:1px solid var(--stroke);
-    background: rgba(255,255,255,.72);
-    font-size: 16px;
-    cursor:pointer;
-    transition: transform .12s ease, background .2s ease, border-color .2s ease;
-    user-select:none;
-    box-shadow: 0 8px 18px rgba(6,28,14,.06);
-  }
-  .chip:hover{ transform: translateY(-1px); background: rgba(255,255,255,.90); border-color: rgba(0,163,255,.28); }
-  .chip.active{ border-color: rgba(34,197,94,.45); background: rgba(34,197,94,.12); }
+    .grid {
+      display: grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap: 16px;
+      align-items: start;
+    }
 
-  .note{
-    padding: 14px;
-    border-radius: 16px;
-    border:1px dashed rgba(34,197,94,.35);
-    background: rgba(34,197,94,.08);
-    color: rgba(7,18,11,.78);
-    font-size: 17px;
-    line-height: 1.55;
-    margin-top: 14px;
-  }
+    .card {
+      border: 1px solid var(--stroke);
+      background: var(--glass);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
 
-  .cardBody p{ font-size: 22px; line-height:1.6; margin: 10px 0; }
-  .cardBody li{ font-size: 21px; line-height:1.55; margin: 8px 0; }
+    .cardHeader{
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--stroke);
+      background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.66));
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .cardHeader h2, .cardHeader h3 {
+      margin: 0;
+      font-size: var(--h2);
+    }
+    .cardBody { padding: 16px; }
 
-  /* INTERACTIVITY PANELS */
-  .panelRow{ display:flex; gap:10px; flex-wrap:wrap; margin-bottom: 12px; align-items:center; justify-content:space-between; }
-  .counterPills{ display:flex; gap:8px; flex-wrap:wrap; }
-  .tag{
-    padding: 7px 10px;
-    border-radius: 999px;
-    border:1px solid var(--stroke);
-    background: rgba(255,255,255,.74);
-    color: var(--muted);
-    font-size: 14px;
-    box-shadow: 0 8px 18px rgba(6,28,14,.05);
-  }
+    h2 { font-size: var(--h2); margin: 0 0 8px; }
+    h3 { font-size: var(--h3); margin: 12px 0 8px; }
+    p { margin: 10px 0; }
 
-  /* Flashcards */
-  .flashArea{ display:grid; gap: 14px; }
-  .flashCard{
-    min-height: 310px;
-    border-radius: 22px;
-    border: 1px solid var(--stroke);
-    background:
-      radial-gradient(900px 340px at 20% 10%, rgba(0,163,255,.18), transparent 60%),
-      radial-gradient(900px 340px at 80% 20%, rgba(34,197,94,.16), transparent 55%),
-      radial-gradient(900px 340px at 60% 95%, rgba(255,209,102,.12), transparent 55%),
-      rgba(255,255,255,.78);
-    box-shadow: var(--shadow);
-    padding: 18px;
-    display:flex;
-    flex-direction:column;
-    justify-content:space-between;
-    cursor:pointer;
-    user-select:none;
-    transition: transform .18s ease, border-color .18s ease;
-    position:relative;
-    overflow:hidden;
-  }
-  .flashCard:hover{ transform: translateY(-2px); border-color: rgba(0,163,255,.35); }
-  .flashCard:active{ transform: translateY(0) scale(.995); }
+    .pillRow { display: flex; flex-wrap: wrap; gap: 10px; }
+    .pill {
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,.76);
+      font-size: 14px;
+      color: var(--muted);
+      box-shadow: 0 8px 18px rgba(11,27,19,.06);
+    }
 
-  .flashFace{
-    font-size: 40px;
-    line-height:1.12;
-    letter-spacing:.2px;
-    font-weight: 900;
-  }
-  .flashBack{
-    font-size: 24px;
-    line-height:1.6;
-    color: rgba(7,18,11,.74);
-    margin-top: 14px;
-    display:none;
-    font-weight: 550;
-  }
-  .flashCard.revealed .flashBack{ display:block; }
+    .toolbar{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content: space-between;
+      margin: 10px 0 0;
+    }
 
-  .lvlRow{ display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
-  .lvlBtn{
-    padding: 10px 12px;
-    border-radius: 14px;
-    border:1px solid var(--stroke);
-    background: rgba(255,255,255,.80);
-    color: var(--text);
-    font-size: 14px;
-    cursor:pointer;
-    box-shadow: 0 8px 18px rgba(6,28,14,.05);
-  }
-  .lvlBtn.active{ border-color: rgba(34,197,94,.50); background: rgba(34,197,94,.14); }
+    .toolbar .left, .toolbar .right{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
 
-  /* Quiz */
-  .quizBox{
-    padding: 16px;
-    border-radius: 18px;
-    border:1px solid var(--stroke);
-    background: rgba(255,255,255,.78);
-    margin-bottom: 14px;
-    box-shadow: 0 10px 24px rgba(6,28,14,.08);
-  }
-  .quizTop{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom: 10px; }
-  .quizTop h4{ margin:0; font-size: 24px; line-height:1.35; font-weight: 900; }
-  .quizMeta{
-    color: var(--muted); font-size: 14px; white-space:nowrap;
-    padding: 6px 10px; border-radius:999px; border:1px solid var(--stroke);
-    background: rgba(255,255,255,.72);
-    box-shadow: 0 8px 18px rgba(6,28,14,.05);
-  }
-  .opt{
-    display:flex; gap:10px; align-items:flex-start;
-    padding: 12px 12px;
-    border-radius: 16px;
-    border:1px solid var(--stroke);
-    background: rgba(255,255,255,.74);
-    cursor:pointer;
-    margin-top: 10px;
-    transition: transform .12s ease, background .2s ease, border-color .2s ease;
-    box-shadow: 0 8px 18px rgba(6,28,14,.05);
-  }
-  .opt:hover{ transform: translateY(-1px); background: rgba(255,255,255,.90); border-color: rgba(0,163,255,.28); }
-  .opt input{ margin-top: 4px; transform: scale(1.25); }
-  .feedback{
-    margin-top: 12px;
-    font-size: 17px;
-    line-height:1.55;
-    padding: 12px 12px;
-    border-radius: 16px;
-    border:1px solid var(--stroke);
-    background: rgba(255,255,255,.68);
-    display:none;
-  }
-  .feedback.good{ display:block; border-color: rgba(22,163,74,.35); background: rgba(22,163,74,.10); }
-  .feedback.bad{ display:block; border-color: rgba(255,77,77,.35); background: rgba(255,77,77,.10); }
+    .btn.primary{
+      border-color: rgba(0,163,255,.35);
+      background: linear-gradient(90deg, rgba(0,163,255,.18), rgba(34,197,94,.10));
+    }
+    .btn.danger{
+      border-color: rgba(255,77,77,.35);
+      background: rgba(255,77,77,.10);
+    }
 
-  /* Matching game */
-  .matchWrap{ display:grid; gap:12px; }
-  .matchGrid{ display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .dropZone{
-    border:2px dashed rgba(0,163,255,.30);
-    border-radius: 18px;
-    background: rgba(0,163,255,.06);
-    padding: 12px;
-    min-height: 120px;
-  }
-  .draggable{
-    padding: 12px 12px;
-    border-radius: 16px;
-    border:1px solid var(--stroke);
-    background: rgba(255,255,255,.82);
-    box-shadow: 0 10px 24px rgba(6,28,14,.06);
-    cursor: grab;
-    user-select:none;
-    font-size: 18px;
-  }
-  .draggable:active{ cursor:grabbing; }
-  .dropTitle{ font-weight: 900; margin: 0 0 8px; font-size: 18px; }
-  .dropHint{ color:var(--muted); font-size: 15px; }
+    .note{
+      padding: 12px 12px;
+      border-radius: 14px;
+      border: 1px dashed rgba(34,197,94,.35);
+      background: rgba(34,197,94,.08);
+      color: rgba(11,27,19,.78);
+      font-size: 17px;
+      line-height: 1.55;
+      margin: 12px 0;
+    }
 
-  /* Mind map interactive */
-  .mapCanvasWrap{
-    border:1px solid var(--stroke);
-    border-radius: 18px;
-    background: rgba(255,255,255,.78);
-    box-shadow: 0 10px 24px rgba(6,28,14,.08);
-    overflow:hidden;
-  }
-  #mapCanvas{ width:100%; height: 460px; display:block; }
-  .mapLegend{ padding: 12px 14px; border-top:1px solid var(--stroke); color:var(--muted); font-size: 15px; }
-  .mapLegend b{ color:var(--text); }
+    .split{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+    }
 
-  /* Toast */
-  .toast{
-    position:fixed;
-    right: 18px;
-    bottom: 18px;
-    max-width: 520px;
-    padding: 14px 14px;
-    border-radius: 18px;
-    border:1px solid var(--stroke);
-    background: rgba(255,255,255,.86);
-    box-shadow: var(--shadow);
-    transform: translateY(12px);
-    opacity:0;
-    pointer-events:none;
-    transition: transform .25s ease, opacity .25s ease;
-    z-index: 99;
-    font-size: 16px;
-    color: rgba(7,18,11,.78);
-  }
-  .toast.show{ transform: translateY(0); opacity: 1; }
+    /* ===== Flashcards ===== */
+    .flashWrap{
+      display:grid;
+      gap:12px;
+    }
+    .flashcard {
+      min-height: 280px;
+      border-radius: 20px;
+      border: 1px solid var(--stroke);
+      background:
+        radial-gradient(900px 320px at 20% 10%, rgba(0,163,255,.18), transparent 60%),
+        radial-gradient(900px 320px at 80% 20%, rgba(34,197,94,.16), transparent 55%),
+        radial-gradient(900px 320px at 60% 95%, rgba(255,209,102,.12), transparent 55%),
+        rgba(255,255,255,.82);
+      box-shadow: var(--shadow);
+      padding: 16px;
+      cursor: pointer;
+      user-select: none;
+      transition: transform .14s ease, border-color .18s ease;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      overflow:hidden;
+    }
+    .flashcard:hover{
+      transform: translateY(-2px);
+      border-color: rgba(0,163,255,.35);
+    }
+    .flashFront{
+      font-size: 40px;
+      font-weight: 900;
+      letter-spacing:.2px;
+      line-height: 1.15;
+    }
+    .flashBack{
+      display:none;
+      margin-top: 14px;
+      font-size: 24px;
+      color: rgba(11,27,19,.74);
+      line-height: 1.6;
+      font-weight: 550;
+    }
+    .flashcard.flipped .flashBack{ display:block; }
 
-  /* Confetti canvas */
-  #fxCanvas{ position:fixed; inset:0; pointer-events:none; z-index: 80; }
+    .statusRow{
+      display:flex;
+      gap:8px;
+      justify-content:flex-end;
+      flex-wrap:wrap;
+      margin-top: 10px;
+    }
+    .statusBtn{
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,.85);
+      cursor:pointer;
+      font-size: 14px;
+      box-shadow: 0 8px 18px rgba(11,27,19,.05);
+    }
+    .statusBtn.active{ border-color: rgba(34,197,94,.45); background: rgba(34,197,94,.14); }
 
-  @media (max-width: 980px){
-    .app{ grid-template-columns: 1fr; }
-    .sidebar{ position:sticky; top:0; border-right:0; border-bottom:1px solid var(--stroke); }
-    body{ overflow:auto; }
-    .content{ overflow:visible; }
-    .grid{ grid-template-columns: 1fr; }
-  }
-</style>
+    /* ===== Quiz ===== */
+    .quiz-question {
+      padding: 14px;
+      border-radius: 16px;
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.80);
+      box-shadow: 0 10px 24px rgba(11,27,19,.06);
+      margin-bottom: 12px;
+    }
+    .quiz-question p{ margin: 0 0 10px; font-weight: 800; }
+    .opt{
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      padding: 10px 10px;
+      border-radius: 14px;
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.72);
+      margin-top: 8px;
+      cursor:pointer;
+      transition: transform .12s ease, background .2s ease, border-color .2s ease;
+    }
+    .opt:hover{ transform: translateY(-1px); background: rgba(255,255,255,.92); border-color: rgba(0,163,255,.25); }
+    .opt input{ transform: scale(1.25); margin-top: 4px; }
+
+    .feedback {
+      margin-top: 10px;
+      font-size: 17px;
+      line-height: 1.55;
+      padding: 10px 10px;
+      border-radius: 14px;
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,.70);
+    }
+    .good { border-color: rgba(22,163,74,.35); background: rgba(22,163,74,.10); }
+    .bad  { border-color: rgba(255,77,77,.35); background: rgba(255,77,77,.10); }
+
+    /* ===== Matching (extra interactivity) ===== */
+    .matchGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+    }
+    .zone{
+      border:2px dashed rgba(0,163,255,.25);
+      background: rgba(0,163,255,.06);
+      border-radius: 16px;
+      padding: 12px;
+      min-height: 220px;
+    }
+    .draggable{
+      padding: 10px 10px;
+      border-radius: 14px;
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.86);
+      box-shadow: 0 10px 24px rgba(11,27,19,.05);
+      cursor: grab;
+      user-select:none;
+      margin-top: 10px;
+      font-size: 18px;
+    }
+    .dropDef{
+      padding: 10px 10px;
+      border-radius: 14px;
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.76);
+      margin-top: 10px;
+      min-height: 74px;
+    }
+
+    /* ===== Mind map ===== */
+    .mindmap {
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.80);
+      border-radius: 16px;
+      padding: 12px;
+      box-shadow: 0 10px 24px rgba(11,27,19,.06);
+    }
+    .node {
+      padding: 10px 12px;
+      border-radius: 14px;
+      border:1px solid var(--stroke);
+      background: linear-gradient(90deg, rgba(34,197,94,.12), rgba(0,163,255,.10));
+      cursor: pointer;
+      font-weight: 900;
+      display:inline-block;
+      margin: 6px 0;
+      transition: transform .12s ease;
+    }
+    .node:hover{ transform: translateY(-1px); }
+    .child {
+      display: none;
+      margin: 8px 0 0 10px;
+      padding-left: 12px;
+      border-left: 2px solid rgba(34,197,94,.25);
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 18px;
+    }
+    .expanded .child { display: block; }
+
+    footer {
+      position: fixed;
+      left: 0; right: 0; bottom: 0;
+      background: linear-gradient(90deg, rgba(255,255,255,.86), rgba(255,255,255,.68));
+      backdrop-filter: blur(10px);
+      border-top: 1px solid var(--stroke);
+      box-shadow: 0 -8px 24px rgba(11,27,19,.08);
+      padding: 10px 14px;
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      z-index: 10;
+    }
+    footer p { margin: 0; color: var(--muted); font-size: 15px; }
+    .footerRight { display:flex; gap: 10px; flex-wrap: wrap; align-items:center; }
+
+    .meter{
+      display:flex; gap:8px; flex-wrap: wrap; align-items:center;
+      font-size: 14px;
+      color: var(--muted);
+    }
+    .bar{
+      width: 220px; height: 12px;
+      border-radius: 999px;
+      background: rgba(11,27,19,.08);
+      overflow:hidden;
+      border: 1px solid rgba(11,27,19,.10);
+    }
+    .bar > div{
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, rgba(0,163,255,.90), rgba(34,197,94,.80), rgba(255,209,102,.70));
+      border-radius: 999px;
+      transition: width .35s ease;
+    }
+
+    @media (max-width: 980px){
+      .grid{ grid-template-columns: 1fr; }
+      .split{ grid-template-columns: 1fr; }
+      nav{ justify-content:flex-start; }
+      .bar{ width: 180px; }
+    }
+  </style>
 </head>
+
 <body>
+  <canvas id="bgCanvas" aria-hidden="true"></canvas>
+  <div class="vignette" aria-hidden="true"></div>
 
-<canvas id="bgCanvas" aria-hidden="true"></canvas>
-<canvas id="fxCanvas" aria-hidden="true"></canvas>
-<div class="vignette" aria-hidden="true"></div>
-
-<div class="toast" id="toast"></div>
-
-<div class="app">
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
-    <div class="brand">
-      <div class="logo" aria-hidden="true"></div>
+  <header>
+    <div class="headerInner">
       <div>
-        <h1>ENGL280</h1>
-        <div class="sub">High-interaction mode: cards + quizzes + matching + map</div>
+        <h1>ENGL280: An Introduction to Literature</h1>
+        <div class="subline">Interactive platform: lessons + 50 flashcards + 50 quizzes + 25 mind maps + matching + progress + offline music</div>
       </div>
+      <nav id="navBar"></nav>
     </div>
+  </header>
 
-    <div class="pillRow">
-      <div class="pill" id="focusBtn" title="Hide sidebar for focus">Focus</div>
-      <div class="pill" id="musicBtn" title="Start/Stop background music">Music</div>
-      <div class="pill" id="resetBtn" title="Reset progress">Reset</div>
-    </div>
+  <main>
+    <!-- HOME -->
+    <section id="home" class="active">
+      <div class="grid">
+        <div class="card">
+          <div class="cardHeader">
+            <h2>Welcome, Halim</h2>
+            <div class="pillRow">
+              <span class="pill">Big Font</span>
+              <span class="pill">Natural Bright Theme</span>
+              <span class="pill">Offline Music</span>
+              <span class="pill">Real Interaction</span>
+            </div>
+          </div>
+          <div class="cardBody">
+            <div class="note">
+              This is NOT an empty shell. It includes full module content, and working interactivity:
+              <b>Flashcards</b> (flip + status), <b>Quizzes</b> (feedback + scoring), <b>Matching game</b>, and <b>Mind maps</b> (expand/collapse + module links).
+            </div>
 
-    <div class="searchBox">
-      <div class="search">
-        <span aria-hidden="true">🔎</span>
-        <input id="searchInput" type="text" placeholder="Search terms, topics, quizzes…" />
-        <span class="kbd">Ctrl /</span>
-      </div>
-    </div>
+            <p><b>How to use (fast):</b></p>
+            <ul>
+              <li>Open any module → click <b>Flashcards</b> (flip cards, mark Review/Known/Mastered).</li>
+              <li>Then click <b>Quiz</b> (submit answers; score updates).</li>
+              <li>Then try <b>Matching</b> (drag term to definition).</li>
+              <li>Use <b>Mind Map</b> for quick recall and navigation.</li>
+            </ul>
 
-    <div class="nav" id="nav"></div>
-
-    <div class="progressCard">
-      <h3>Progress & XP</h3>
-      <div class="bar"><div id="progressFill"></div></div>
-      <div class="stats">
-        <div><b id="statXP">0</b> XP</div>
-        <div><b id="statLevel">1</b> Level</div>
-        <div><b id="statCards">0</b> / 50 mastered</div>
-        <div><b id="statQuizzes">0</b> / 50 correct</div>
-        <div><b id="statMaps">0</b> / 25 explored</div>
-        <div><b id="statStreak">0</b> day streak</div>
-      </div>
-    </div>
-
-    <div class="footer">
-      Developer: <b>Halim Faroug A. Elhag, Lecturer, UHB / UofK</b><br/>
-      Controls: <b>← / →</b> card nav, <b>Space</b> flip, <b>1-3</b> set card status, <b>Ctrl /</b> search.
-    </div>
-  </aside>
-
-  <!-- MAIN -->
-  <main class="content">
-    <div class="topbar">
-      <div class="titleBlock">
-        <h2 id="pageTitle">Home</h2>
-        <p id="pageSubtitle">Now it *forces interaction*: swipe-like card controls, timed quizzes, drag-drop matching, clickable mind-map.</p>
-      </div>
-
-      <div class="actions">
-        <button class="btn" id="bookmarkBtn">Bookmark</button>
-        <button class="btn primary" id="quickPracticeBtn">Quick Practice</button>
-        <button class="btn primary" id="startMusicTopBtn">Start Music</button>
-      </div>
-    </div>
-
-    <div class="grid">
-      <section class="card show" id="learnCard">
-        <div class="cardHeader">
-          <h3 id="leftTitle">Learn</h3>
-          <div class="chips" id="modeChips">
-            <div class="chip active" data-mode="learn">Lesson</div>
-            <div class="chip" data-mode="flashcards">Flashcards</div>
-            <div class="chip" data-mode="quiz">Quiz</div>
-            <div class="chip" data-mode="match">Matching</div>
-            <div class="chip" data-mode="mindmap">Mind Map</div>
+            <p id="clockLine" class="note" style="border-style: solid; border-color: rgba(0,163,255,.25); background: rgba(0,163,255,.06);"></p>
           </div>
         </div>
-        <div class="cardBody" id="learnBody"></div>
-      </section>
 
-      <aside class="card show" id="toolsCard">
-        <div class="cardHeader">
-          <h3>Actions</h3>
-          <button class="btn" id="nextBtn">Next</button>
+        <div class="card">
+          <div class="cardHeader">
+            <h3>Quick Controls</h3>
+          </div>
+          <div class="cardBody">
+            <div class="toolbar">
+              <div class="left">
+                <button class="btn primary" onclick="showSection('module1')">Start Module 1</button>
+                <button class="btn" onclick="showSection('review')">Go to Review</button>
+              </div>
+              <div class="right">
+                <button class="btn" id="musicBtn">Start Music</button>
+                <button class="btn danger" onclick="resetProgress()">Reset Progress</button>
+              </div>
+            </div>
+
+            <div class="note">
+              <b>Autoplay is blocked by browsers.</b> Click <b>Start Music</b> once to enable the calm nature soundtrack.
+            </div>
+
+            <div class="pillRow">
+              <span class="pill" id="statPill">Score: 0</span>
+              <span class="pill" id="fcPill">Mastered: 0 / 50</span>
+              <span class="pill" id="qPill">Correct: 0 / 50</span>
+            </div>
+          </div>
         </div>
-        <div class="cardBody" id="toolsBody"></div>
-      </aside>
-    </div>
+      </div>
+    </section>
+
+    <!-- MODULES -->
+    <section id="module1">
+      <div class="grid">
+        <div class="card">
+          <div class="cardHeader">
+            <h2>Module 1: Introduction to Literature & Its Genres</h2>
+            <div class="pillRow">
+              <span class="pill">Genres</span><span class="pill">Purpose</span><span class="pill">Classification</span>
+            </div>
+          </div>
+          <div class="cardBody">
+            <h3>Learn</h3>
+            <p>An exploration of definition, function, and classification: What is literature? What does it do? How is it classified? Why study it?</p>
+            <p><b>Core genres:</b> Poetry, Drama, Fiction (plus nonfiction forms studied in literature classes).</p>
+            <p><b>Why study literature:</b> critical reading, argumentation, empathy, cultural literacy, language sensitivity.</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="cardHeader">
+            <h3>Practice</h3>
+          </div>
+          <div class="cardBody">
+            <div class="toolbar">
+              <div class="left">
+                <button class="btn primary" onclick="showFlashcards(1)">Flashcards</button>
+                <button class="btn primary" onclick="showQuiz(1)">Quiz</button>
+                <button class="btn" onclick="showMatching(1)">Matching</button>
+                <button class="btn" onclick="showMindMap(1)">Mind Map</button>
+              </div>
+              <div class="right">
+                <button class="btn" onclick="showSection('module2')">Next →</button>
+              </div>
+            </div>
+            <div id="m1Practice"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="module2">
+      <div class="grid">
+        <div class="card">
+          <div class="cardHeader">
+            <h2>Module 2: Basic Literary Terms</h2>
+            <div class="pillRow">
+              <span class="pill">Literal vs Non-literal</span><span class="pill">Comparison</span><span class="pill">Imagery</span>
+            </div>
+          </div>
+          <div class="cardBody">
+            <h3>Learn</h3>
+            <p><b>Figure of Speech</b>: A word/phrase used in a non-literal sense for rhetorical or vivid effect.</p>
+            <p><b>Simile</b>: compares using <i>like/as</i>. <b>Metaphor</b>: direct comparison without like/as.</p>
+            <p><b>Analogy</b>: comparison to explain an unfamiliar concept.</p>
+            <p><b>Imagery</b>: sensory description. <b>Personification</b>: human traits given to non-human things. <b>Onomatopoeia</b>: sound-imitating words.</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="cardHeader"><h3>Practice</h3></div>
+          <div class="cardBody">
+            <div class="toolbar">
+              <div class="left">
+                <button class="btn primary" onclick="showFlashcards(2)">Flashcards</button>
+                <button class="btn primary" onclick="showQuiz(2)">Quiz</button>
+                <button class="btn" onclick="showMatching(2)">Matching</button>
+                <button class="btn" onclick="showMindMap(2)">Mind Map</button>
+              </div>
+              <div class="right">
+                <button class="btn" onclick="showSection('module3')">Next →</button>
+              </div>
+            </div>
+            <div id="m2Practice"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="module3">
+      <div class="grid">
+        <div class="card">
+          <div class="cardHeader">
+            <h2>Module 3: Figures of Speech & Sound Devices</h2>
+            <div class="pillRow">
+              <span class="pill">Meaning</span><span class="pill">Music</span><span class="pill">Rhetoric</span>
+            </div>
+          </div>
+          <div class="cardBody">
+            <h3>Learn</h3>
+            <p>Writing becomes art through: <b>figures</b> (meaning-making) and <b>sound devices</b> (music/texture).</p>
+            <p><b>Sound devices:</b> alliteration, assonance, consonance, onomatopoeia, rhyme, rhythm.</p>
+            <p><b>Figures:</b> metaphor, symbol, irony, hyperbole, understatement, allusion.</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="cardHeader"><h3>Practice</h3></div>
+          <div class="cardBody">
+            <div class="toolbar">
+              <div class="left">
+                <button class="btn primary" onclick="showFlashcards(3)">Flashcards</button>
+                <button class="btn primary" onclick="showQuiz(3)">Quiz</button>
+                <button class="btn" onclick="showMatching(3)">Matching</button>
+                <button class="btn" onclick="showMindMap(3)">Mind Map</button>
+              </div>
+              <div class="right">
+                <button class="btn" onclick="showSection('module4')">Next →</button>
+              </div>
+            </div>
+            <div id="m3Practice"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="module4">
+      <div class="grid">
+        <div class="card">
+          <div class="cardHeader">
+            <h2>Module 4: Poetry and Major Aspects of a Poem</h2>
+            <div class="pillRow">
+              <span class="pill">Rhythm</span><span class="pill">Form</span><span class="pill">Imagery</span>
+            </div>
+          </div>
+          <div class="cardBody">
+            <h3>Learn</h3>
+            <p><b>Poetry</b> is patterned language: distinctive rhythm, compressed meaning, imagery, and form.</p>
+            <p><b>Core aspects:</b> patterned arrangement, rhythm, emotion/feeling, concentrated intensity.</p>
+            <p><b>Major elements:</b> voice, word choice/order, imagery, figures, sound, form, theme.</p>
+            <p><b>Structure:</b> poems → stanzas → lines.</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="cardHeader"><h3>Practice</h3></div>
+          <div class="cardBody">
+            <div class="toolbar">
+              <div class="left">
+                <button class="btn primary" onclick="showFlashcards(4)">Flashcards</button>
+                <button class="btn primary" onclick="showQuiz(4)">Quiz</button>
+                <button class="btn" onclick="showMatching(4)">Matching</button>
+                <button class="btn" onclick="showMindMap(4)">Mind Map</button>
+              </div>
+              <div class="right">
+                <button class="btn" onclick="showSection('module5')">Next →</button>
+              </div>
+            </div>
+            <div id="m4Practice"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="module5">
+      <div class="grid">
+        <div class="card">
+          <div class="cardHeader">
+            <h2>Module 5: Sample Poetry — “Winter” (Shakespeare)</h2>
+            <div class="pillRow">
+              <span class="pill">Close Reading</span><span class="pill">Imagery</span><span class="pill">Contrast</span>
+            </div>
+          </div>
+          <div class="cardBody">
+            <h3>Learn</h3>
+            <p><b>Goal:</b> close reading → pattern → effect → theme. Don’t summarize the poem; analyze how it works.</p>
+            <p>Track winter imagery, sound texture, and contrast (cold outdoors vs warmth indoors) to build an interpretation.</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="cardHeader"><h3>Practice</h3></div>
+          <div class="cardBody">
+            <div class="toolbar">
+              <div class="left">
+                <button class="btn primary" onclick="showFlashcards(5)">Flashcards</button>
+                <button class="btn primary" onclick="showQuiz(5)">Quiz</button>
+                <button class="btn" onclick="showMatching(5)">Matching</button>
+                <button class="btn" onclick="showMindMap(5)">Mind Map</button>
+              </div>
+              <div class="right">
+                <button class="btn" onclick="showSection('module6')">Next →</button>
+              </div>
+            </div>
+            <div id="m5Practice"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="module6">
+      <div class="grid">
+        <div class="card">
+          <div class="cardHeader">
+            <h2>Module 6: Drama and Major Aspects of a Play</h2>
+            <div class="pillRow">
+              <span class="pill">Performance</span><span class="pill">Conflict</span><span class="pill">Structure</span>
+            </div>
+          </div>
+          <div class="cardBody">
+            <h3>Learn</h3>
+            <p><b>Drama</b> is written to be performed: dialogue + stage directions + audience effect.</p>
+            <p><b>Ancient Greek structure:</b> prologue → episodes → stasimon (choral odes) → exodos.</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="cardHeader"><h3>Practice</h3></div>
+          <div class="cardBody">
+            <div class="toolbar">
+              <div class="left">
+                <button class="btn primary" onclick="showFlashcards(6)">Flashcards</button>
+                <button class="btn primary" onclick="showQuiz(6)">Quiz</button>
+                <button class="btn" onclick="showMatching(6)">Matching</button>
+                <button class="btn" onclick="showMindMap(6)">Mind Map</button>
+              </div>
+              <div class="right">
+                <button class="btn" onclick="showSection('module7')">Next →</button>
+              </div>
+            </div>
+            <div id="m6Practice"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="module7">
+      <div class="grid">
+        <div class="card">
+          <div class="cardHeader">
+            <h2>Module 7: Sample Play — Trifles (Susan Glaspell)</h2>
+            <div class="pillRow">
+              <span class="pill">Evidence</span><span class="pill">Inference</span><span class="pill">Subtext</span>
+            </div>
+          </div>
+          <div class="cardBody">
+            <h3>Learn</h3>
+            <p>Meaning is produced through “small” domestic details. The play tests what counts as evidence and who is allowed to interpret it.</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="cardHeader"><h3>Practice</h3></div>
+          <div class="cardBody">
+            <div class="toolbar">
+              <div class="left">
+                <button class="btn primary" onclick="showFlashcards(7)">Flashcards</button>
+                <button class="btn primary" onclick="showQuiz(7)">Quiz</button>
+                <button class="btn" onclick="showMatching(7)">Matching</button>
+                <button class="btn" onclick="showMindMap(7)">Mind Map</button>
+              </div>
+              <div class="right">
+                <button class="btn" onclick="showSection('module8')">Next →</button>
+              </div>
+            </div>
+            <div id="m7Practice"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="module8">
+      <div class="grid">
+        <div class="card">
+          <div class="cardHeader">
+            <h2>Module 8: Fiction and Major Aspects of Fiction</h2>
+            <div class="pillRow">
+              <span class="pill">Plot</span><span class="pill">POV</span><span class="pill">Length</span>
+            </div>
+          </div>
+          <div class="cardBody">
+            <h3>Learn</h3>
+            <p><b>Fiction</b>: invented characters and events.</p>
+            <p><b>By length:</b> Novel (often 40k+ words), Novella (10k–40k), Short story (1k–10k).</p>
+            <p><b>Core aspects:</b> plot, character, setting, point of view, theme.</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="cardHeader"><h3>Practice</h3></div>
+          <div class="cardBody">
+            <div class="toolbar">
+              <div class="left">
+                <button class="btn primary" onclick="showFlashcards(8)">Flashcards</button>
+                <button class="btn primary" onclick="showQuiz(8)">Quiz</button>
+                <button class="btn" onclick="showMatching(8)">Matching</button>
+                <button class="btn" onclick="showMindMap(8)">Mind Map</button>
+              </div>
+              <div class="right">
+                <button class="btn" onclick="showSection('module9')">Next →</button>
+              </div>
+            </div>
+            <div id="m8Practice"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="module9">
+      <div class="grid">
+        <div class="card">
+          <div class="cardHeader">
+            <h2>Module 9: Sample Novel — Pride & Prejudice (Jane Austen)</h2>
+            <div class="pillRow">
+              <span class="pill">Irony</span><span class="pill">Class</span><span class="pill">Marriage economy</span>
+            </div>
+          </div>
+          <div class="cardBody">
+            <h3>Learn</h3>
+            <p>Austen uses irony to critique social class and the marriage market. Track narration, dialogue, and social codes.</p>
+            <p><b>Opening idea:</b> universal truth statement signals social satire, not literal rule.</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="cardHeader"><h3>Practice</h3></div>
+          <div class="cardBody">
+            <div class="toolbar">
+              <div class="left">
+                <button class="btn primary" onclick="showFlashcards(9)">Flashcards</button>
+                <button class="btn primary" onclick="showQuiz(9)">Quiz</button>
+                <button class="btn" onclick="showMatching(9)">Matching</button>
+                <button class="btn" onclick="showMindMap(9)">Mind Map</button>
+              </div>
+              <div class="right">
+                <button class="btn" onclick="showSection('review')">Next →</button>
+              </div>
+            </div>
+            <div id="m9Practice"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- REVIEW -->
+    <section id="review">
+      <div class="grid">
+        <div class="card">
+          <div class="cardHeader">
+            <h2>Course Review</h2>
+            <div class="pillRow">
+              <span class="pill">All flashcards</span><span class="pill">All quizzes</span><span class="pill">All mind maps</span>
+            </div>
+          </div>
+          <div class="cardBody">
+            <p><b>Course aim:</b> introduce major genres + core literary terms + analysis skills.</p>
+            <div class="toolbar">
+              <div class="left">
+                <button class="btn primary" onclick="showAllMindMaps()">All Mind Maps</button>
+                <button class="btn primary" onclick="showAllQuizzes()">All Quizzes</button>
+                <button class="btn primary" onclick="showAllFlashcards()">All Flashcards</button>
+              </div>
+              <div class="right">
+                <button class="btn" onclick="showSection('home')">Back to Home</button>
+              </div>
+            </div>
+            <div id="reviewArea"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="cardHeader"><h3>Progress</h3></div>
+          <div class="cardBody">
+            <div class="note">
+              Score is simple on purpose: it punishes guessing.
+              <br/>Flashcards: only “Mastered” counts. Quizzes: only correct counts.
+            </div>
+            <div class="pillRow">
+              <span class="pill" id="reviewMastered">Mastered: 0 / 50</span>
+              <span class="pill" id="reviewCorrect">Correct: 0 / 50</span>
+            </div>
+            <div class="note" style="border-style: solid; border-color: rgba(255,209,102,.35); background: rgba(255,209,102,.12);">
+              Strategy: Master terms → then practice recognizing them in short examples.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
   </main>
-</div>
 
-<script>
-/* ===========================
-   DATA (same modules content)
-=========================== */
-const modules = [
-  { id:"home", title:"Home", subtitle:"Pick a mode: Lesson, Flashcards, Quiz, Matching, or Mind Map.",
-    learn: `
-      <div class="note">
-        <b>This version is interactive.</b><br/>
-        • Flashcards: space to flip, ←/→ to move, 1-3 to rate, XP rewards<br/>
-        • Quiz: timed, streak + XP, confetti on perfect set<br/>
-        • Matching: drag terms to definitions (immediate validation)<br/>
-        • Mind map: click nodes to expand or jump modules
+  <footer>
+    <p>Developer: <b>Halim Faroug A. Elhag, Lecturer, UHB / UofK</b></p>
+    <div class="footerRight">
+      <div class="meter">
+        <span><b id="scoreText">Score</b>: <span id="scoreVal">0</span></span>
+        <div class="bar" title="Overall progress">
+          <div id="progressFill"></div>
+        </div>
       </div>
-      <p><b>Start</b>: choose Module 1 → Flashcards → Quiz → Matching → Mind Map.</p>
-    `
-  },
-  { id:"m1", title:"Module 1: Introduction to Literature & Its Genres", subtitle:"Genres + what literature does.",
-    learn: `
-      <ul>
-        <li><b>Literature</b>: language shaped for meaning and effect.</li>
-        <li><b>Genres</b>: poetry, drama, fiction.</li>
-        <li><b>Why study</b>: critical reading + interpretation + argument skills.</li>
-      </ul>
-    `
-  },
-  { id:"m2", title:"Module 2: Basic Literary Terms", subtitle:"Core terms for analysis.",
-    learn: `
-      <ul>
-        <li><b>Figure of speech</b>: non-literal language for effect.</li>
-        <li><b>Denotation vs connotation</b>: basic vs associated meaning.</li>
-        <li><b>Theme</b>: central idea/claim.</li>
-      </ul>
-    `
-  },
-  { id:"m3", title:"Module 3: Figures of Speech and Sound Devices", subtitle:"Meaning + music.",
-    learn: `
-      <ul>
-        <li><b>Sound devices</b>: alliteration, assonance, consonance.</li>
-        <li><b>Figures</b>: metaphor, simile, symbol, irony, allusion.</li>
-      </ul>
-    `
-  },
-  { id:"m4", title:"Module 4: Poetry and Major Aspects of a Poem", subtitle:"Patterned language.",
-    learn: `
-      <ul>
-        <li>Speaker, diction, syntax, imagery, sound, form, theme.</li>
-        <li>Stanzas are like paragraphs; lines are units of rhythm/meaning.</li>
-      </ul>
-    `
-  },
-  { id:"m5", title:"Module 5: Sample Poetry — “Winter” (Shakespeare)", subtitle:"Close reading.",
-    learn: `
-      <ul>
-        <li>Track imagery (cold vs warmth) + sound + contrast.</li>
-        <li>Argue effect → theme (don’t summarize).</li>
-      </ul>
-    `
-  },
-  { id:"m6", title:"Module 6: Drama and Major Aspects of a Play", subtitle:"Performance text.",
-    learn: `
-      <ul>
-        <li>Dialogue + stage directions + conflict.</li>
-        <li>Structure: prologue → episodes → stasimon → exodos.</li>
-      </ul>
-    `
-  },
-  { id:"m7", title:"Module 7: Sample Play — Trifles (Susan Glaspell)", subtitle:"Evidence & inference.",
-    learn: `
-      <ul>
-        <li>Meaning from “small” details.</li>
-        <li>Authority decides what counts as evidence.</li>
-      </ul>
-    `
-  },
-  { id:"m8", title:"Module 8: Fiction and Major Aspects of Fiction", subtitle:"Narrative craft.",
-    learn: `
-      <ul>
-        <li>Plot, character, setting, POV, theme.</li>
-        <li>Novel (40k+), novella (10k–40k), short story (1k–10k).</li>
-      </ul>
-    `
-  },
-  { id:"m9", title:"Module 9: Pride & Prejudice (Austen)", subtitle:"Irony, class, marriage economy.",
-    learn: `
-      <ul>
-        <li>Opening: irony/social critique.</li>
-        <li>Marriage linked to class/property/reputation.</li>
-      </ul>
-    `
-  },
-  { id:"review", title:"Review Hub", subtitle:"Mixed mastery.",
-    learn: `
-      <p>Use mixed flashcards + timed quiz sets + matching to kill weak points fast.</p>
-    `
-  },
-];
+      <button class="btn" onclick="showSection('home')">Home</button>
+      <button class="btn" onclick="showSection('review')">Review</button>
+    </div>
+  </footer>
 
-/* ===========================
-   Flashcards (50)
-=========================== */
-const baseCards = [
-  { id:"c1", module:"m1", term:"Literature", def:"Language shaped for meaning/experience and effect.", level:0 },
-  { id:"c2", module:"m1", term:"Genre", def:"A category with conventions (poetry, drama, fiction).", level:0 },
-  { id:"c3", module:"m1", term:"Interpretation", def:"Explaining meaning from evidence (details → claim).", level:0 },
-  { id:"c4", module:"m2", term:"Figure of speech", def:"Non-literal language used for vivid/rhetorical effect.", level:0 },
-  { id:"c5", module:"m2", term:"Denotation", def:"Basic dictionary meaning.", level:0 },
-  { id:"c6", module:"m2", term:"Connotation", def:"Associated meanings/feelings of a word.", level:0 },
-  { id:"c7", module:"m2", term:"Theme", def:"Central idea/claim developed by the text.", level:0 },
-  { id:"c8", module:"m2", term:"Tone", def:"Speaker’s attitude (ironic, joyful, bitter…).", level:0 },
-  { id:"c9", module:"m2", term:"Simile", def:"Comparison using like/as.", level:0 },
-  { id:"c10", module:"m2", term:"Metaphor", def:"Direct comparison without like/as.", level:0 },
-  { id:"c11", module:"m2", term:"Imagery", def:"Sensory description (sight/sound/touch/taste/smell).", level:0 },
-  { id:"c12", module:"m2", term:"Personification", def:"Human qualities given to non-human things/ideas.", level:0 },
-  { id:"c13", module:"m2", term:"Onomatopoeia", def:"Words that imitate sounds (buzz, hiss, tick).", level:0 },
-  { id:"c14", module:"m3", term:"Alliteration", def:"Repetition of initial consonant sounds.", level:0 },
-  { id:"c15", module:"m3", term:"Assonance", def:"Repetition of vowel sounds.", level:0 },
-  { id:"c16", module:"m3", term:"Consonance", def:"Repetition of consonant sounds.", level:0 },
-  { id:"c17", module:"m3", term:"Symbol", def:"Object/action representing more than itself.", level:0 },
-  { id:"c18", module:"m3", term:"Irony", def:"Meaning contrasts with expectation or literal statement.", level:0 },
-  { id:"c19", module:"m4", term:"Speaker", def:"The voice speaking in the poem (not always the poet).", level:0 },
-  { id:"c20", module:"m4", term:"Stanza", def:"Grouped lines in a poem (like a paragraph).", level:0 },
-  { id:"c21", module:"m4", term:"Meter", def:"Pattern of stressed/unstressed syllables.", level:0 },
-  { id:"c22", module:"m4", term:"Form", def:"Structural pattern shaping pace/emphasis.", level:0 },
-  { id:"c23", module:"m5", term:"Close reading", def:"Analyze patterns (sound/imagery/structure) for effect/theme.", level:0 },
-  { id:"c24", module:"m6", term:"Stage directions", def:"Instructions for setting/movement/action/tone in a play.", level:0 },
-  { id:"c25", module:"m6", term:"Conflict", def:"Central struggle driving dramatic action.", level:0 },
-  { id:"c26", module:"m7", term:"Inference", def:"Reasoned conclusion drawn from evidence (details).", level:0 },
-  { id:"c27", module:"m7", term:"Subtext", def:"Meaning implied beneath words/actions.", level:0 },
-  { id:"c28", module:"m8", term:"Plot", def:"Event structure with causality (conflict → outcome).", level:0 },
-  { id:"c29", module:"m8", term:"Point of view", def:"Who tells/sees; affects reliability and interpretation.", level:0 },
-  { id:"c30", module:"m8", term:"Setting", def:"Time/place/social world that shapes meaning.", level:0 },
-  { id:"c31", module:"m8", term:"Foreshadowing", def:"Hints that prepare for later events.", level:0 },
-  { id:"c32", module:"m8", term:"Climax", def:"Peak tension/turning point.", level:0 },
-  { id:"c33", module:"m8", term:"Resolution", def:"Ending that settles conflict (or leaves it open).", level:0 },
-  { id:"c34", module:"m8", term:"Novel", def:"Extended fictional prose narrative (often 40,000+ words).", level:0 },
-  { id:"c35", module:"m8", term:"Novella", def:"Between novel and short story (often 10k–40k words).", level:0 },
-  { id:"c36", module:"m8", term:"Short story", def:"Focused fiction often read in one sitting (often 1k–10k words).", level:0 },
-  { id:"c37", module:"m9", term:"Irony (Austen)", def:"Narration implies critique beneath polite social language.", level:0 },
-  { id:"c38", module:"m9", term:"Marriage economy", def:"Marriage linked to money/property/social survival.", level:0 },
-  { id:"c39", module:"m9", term:"Social class", def:"Rank/status shaping reputation and choices.", level:0 },
-];
-
-// pad to 50
-const flashcards = (() => {
-  const out = [...baseCards];
-  let i = 40;
-  while (out.length < 50){
-    out.push({ id:`c${i++}`, module:"review", term:`Exam Skill ${out.length+1}`, def:"State a claim, cite a detail, explain how it proves the claim.", level:0 });
-  }
-  return out.slice(0,50);
-})();
-
-/* ===========================
-   Quizzes (50)
-=========================== */
-const baseQuizzes = [
-  { id:"q1", module:"m1", q:"Literature is best described as…", opts:["Language shaped for meaning/effect","A list of historical facts","Only poetry","Only fiction"], ans:0, why:"Literature is crafted language for meaning/effect." },
-  { id:"q2", module:"m1", q:"Which is NOT a major genre?", opts:["Poetry","Drama","Fiction","Algebra"], ans:3, why:"Algebra is not a literary genre." },
-  { id:"q3", module:"m2", q:"A simile compares using…", opts:["like/as","only rhyme","stage directions","footnotes"], ans:0, why:"Similes use like/as." },
-  { id:"q4", module:"m2", q:"Metaphor is…", opts:["Direct comparison","Comparison using like/as","Only sound","Only plot"], ans:0, why:"Metaphor is direct comparison." },
-  { id:"q5", module:"m3", q:"Alliteration is…", opts:["Repeated initial consonants","Repeated vowels","A theme","A setting"], ans:0, why:"Alliteration repeats initial consonant sounds." },
-  { id:"q6", module:"m4", q:"The speaker is…", opts:["Always the poet","The voice speaking in the poem","The rhyme scheme","The stanza"], ans:1, why:"Speaker is the poem’s voice." },
-  { id:"q7", module:"m6", q:"Stage directions mainly…", opts:["Guide performance","Explain definitions","Replace dialogue","Count lines"], ans:0, why:"They guide staging/performance." },
-  { id:"q8", module:"m8", q:"POV affects…", opts:["What is seen/told and reliability","Only cover design","Only biography","Only rhyme"], ans:0, why:"POV shapes access and reliability." },
-];
-
-const quizGen = [
-  () => ({module:"m2", q:"Denotation refers to…", opts:["Basic dictionary meaning","Emotional associations","A rhyme pattern","A plot summary"], ans:0, why:"Denotation = basic meaning."}),
-  () => ({module:"m2", q:"Connotation refers to…", opts:["Emotional/cultural associations","Only dictionary meaning","Only meter","Only scenes"], ans:0, why:"Connotation = associations."}),
-  () => ({module:"m3", q:"Assonance is…", opts:["Repeated vowel sounds","Repeated consonants only","A symbol","A theme"], ans:0, why:"Assonance repeats vowel sounds."}),
-  () => ({module:"m4", q:"Meter is primarily about…", opts:["Rhythmic stress pattern","Plot structure","Character names","Setting only"], ans:0, why:"Meter = stress pattern."}),
-  () => ({module:"m7", q:"In Trifles, meaning often comes from…", opts:["Small details treated as evidence","Only long speeches","Only the title","Random guessing"], ans:0, why:"Details function as clues."}),
-  () => ({module:"m8", q:"Foreshadowing is…", opts:["Hints about later events","A stanza type","A stage prop","A rhyme error"], ans:0, why:"Foreshadowing hints at later events."}),
-  () => ({module:"m9", q:"Pride & Prejudice opening is best read as…", opts:["Irony/social critique","A biology fact","A stage direction","A literal law"], ans:0, why:"It signals critique via irony."}),
-];
-
-const quizzes = (() => {
-  const list = [...baseQuizzes];
-  let i = 9;
-  while (list.length < 50){
-    const item = quizGen[(list.length-1) % quizGen.length]();
-    item.id = `q${i++}`;
-    list.push(item);
-  }
-  return list.slice(0,50);
-})();
-
-/* ===========================
-   Mind map nodes (interactive canvas)
-=========================== */
-const mindNodes = {
-  m1: {
-    label:"Literature",
-    children:[
-      {label:"Poetry", jump:"m4", children:[{label:"Sound"},{label:"Imagery"},{label:"Form"}]},
-      {label:"Drama", jump:"m6", children:[{label:"Dialogue"},{label:"Stage directions"},{label:"Conflict"}]},
-      {label:"Fiction", jump:"m8", children:[{label:"Plot"},{label:"Character"},{label:"Setting"},{label:"POV"}]}
-    ]
-  },
-  m2: { label:"Terms", children:[{label:"Denotation"},{label:"Connotation"},{label:"Theme"},{label:"Tone"},{label:"Simile"},{label:"Metaphor"}] },
-  m3: { label:"Devices", children:[{label:"Alliteration"},{label:"Assonance"},{label:"Consonance"},{label:"Symbol"},{label:"Irony"}] },
-  m4: { label:"Poetry", children:[{label:"Speaker"},{label:"Stanza"},{label:"Meter"},{label:"Form"},{label:"Theme"}] },
-  m5: { label:"Close Reading", children:[{label:"Patterns"},{label:"Effect"},{label:"Theme"}] },
-  m6: { label:"Drama", children:[{label:"Dialogue"},{label:"Stage directions"},{label:"Conflict"}] },
-  m7: { label:"Trifles", children:[{label:"Details as evidence"},{label:"Inference"},{label:"Subtext"}] },
-  m8: { label:"Fiction", children:[{label:"Plot"},{label:"Character"},{label:"Setting"},{label:"POV"},{label:"Theme"}] },
-  m9: { label:"Austen", children:[{label:"Irony"},{label:"Class"},{label:"Marriage economy"}] },
-  review:{ label:"Mastery", children:[{label:"Recall"},{label:"Fix wrong answers"},{label:"Frameworks"}] }
-};
-
-/* ===========================
-   STATE / STORAGE
-=========================== */
-const STORE = "ENGL280_INTERACTIVE_V1";
-const defaultState = {
-  lastModule:"home",
-  bookmarks:[],
-  xp:0,
-  cardLevel: Object.fromEntries(flashcards.map(c=>[c.id,0])),
-  quizCorrect: Object.fromEntries(quizzes.map(q=>[q.id,false])),
-  mapsVisited: {},
-  lastActiveDate:null,
-  streak:0,
-
-  // flashcards view state
-  deckIndexByModule: {},
-
-  // quiz session
-  lastQuizSet: []
-};
-
-let state = load();
-
-function load(){
-  try{
-    const raw = localStorage.getItem(STORE);
-    if (!raw) return structuredClone(defaultState);
-    const s = JSON.parse(raw);
-    return {
-      ...structuredClone(defaultState),
-      ...s,
-      bookmarks: Array.isArray(s.bookmarks) ? s.bookmarks : [],
-      cardLevel: { ...structuredClone(defaultState.cardLevel), ...(s.cardLevel||{}) },
-      quizCorrect: { ...structuredClone(defaultState.quizCorrect), ...(s.quizCorrect||{}) },
-      mapsVisited: { ...(s.mapsVisited||{}) },
-      deckIndexByModule: { ...(s.deckIndexByModule||{}) },
-      lastQuizSet: Array.isArray(s.lastQuizSet) ? s.lastQuizSet : []
+  <script>
+    /* ========= NAV + SECTIONS ========= */
+    const moduleIds = ["home","module1","module2","module3","module4","module5","module6","module7","module8","module9","review"];
+    const navLabels = {
+      home:"Home", module1:"M1", module2:"M2", module3:"M3", module4:"M4", module5:"M5",
+      module6:"M6", module7:"M7", module8:"M8", module9:"M9", review:"Review"
     };
-  }catch{
-    return structuredClone(defaultState);
-  }
-}
-function save(){ localStorage.setItem(STORE, JSON.stringify(state)); renderStats(); }
 
-/* XP / Level */
-function levelFromXP(xp){ return Math.max(1, Math.floor(xp/120)+1); }
-function addXP(amount, reason=""){
-  const beforeLevel = levelFromXP(state.xp);
-  state.xp += amount;
-  save();
-  const afterLevel = levelFromXP(state.xp);
-  if (afterLevel > beforeLevel){
-    confettiBurst();
-    toast(`Level up → <b>Level ${afterLevel}</b> 🎉 (+${amount} XP)`);
-  } else if (amount > 0){
-    toast(`+${amount} XP ${reason ? "— " + reason : ""}`);
-  }
-}
-
-/* streak */
-function todayISO(){
-  const d = new Date(); d.setHours(0,0,0,0);
-  return d.toISOString().slice(0,10);
-}
-function bumpStreak(){
-  const t = todayISO();
-  if (!state.lastActiveDate){
-    state.lastActiveDate = t; state.streak = 1; save(); return;
-  }
-  if (state.lastActiveDate === t) return;
-  const last = new Date(state.lastActiveDate + "T00:00:00");
-  const now = new Date(t + "T00:00:00");
-  const diff = Math.round((now-last)/(1000*60*60*24));
-  state.streak = (diff === 1) ? (state.streak+1) : 1;
-  state.lastActiveDate = t;
-  save();
-}
-
-/* ===========================
-   UI refs
-=========================== */
-const navEl = document.getElementById("nav");
-const searchInput = document.getElementById("searchInput");
-const pageTitleEl = document.getElementById("pageTitle");
-const pageSubEl = document.getElementById("pageSubtitle");
-const learnBody = document.getElementById("learnBody");
-const toolsBody = document.getElementById("toolsBody");
-const progressFill = document.getElementById("progressFill");
-
-const statXP = document.getElementById("statXP");
-const statLevel = document.getElementById("statLevel");
-const statCards = document.getElementById("statCards");
-const statQuizzes = document.getElementById("statQuizzes");
-const statMaps = document.getElementById("statMaps");
-const statStreak = document.getElementById("statStreak");
-
-const modeChips = document.getElementById("modeChips");
-const nextBtn = document.getElementById("nextBtn");
-const bookmarkBtn = document.getElementById("bookmarkBtn");
-const quickPracticeBtn = document.getElementById("quickPracticeBtn");
-const focusBtn = document.getElementById("focusBtn");
-const resetBtn = document.getElementById("resetBtn");
-
-let currentModule = state.lastModule || "home";
-let currentMode = "learn";
-
-/* ===========================
-   NAV
-=========================== */
-function moduleIcon(id){
-  if (id==="home") return "🏡";
-  if (id==="review") return "🌿";
-  return "📖";
-}
-function renderNav(){
-  const q = (searchInput.value||"").trim().toLowerCase();
-  navEl.innerHTML = "";
-  modules.forEach(m=>{
-    const hay = (m.title+" "+(m.subtitle||"")+" "+(m.learn||"")).toLowerCase();
-    if (q && !hay.includes(q)) return;
-
-    const btn = document.createElement("button");
-    btn.className = (m.id===currentModule) ? "active" : "";
-    btn.innerHTML = `<span>${moduleIcon(m.id)} ${m.title.replace(/^Module\\s+\\d+:\\s+/i,"")}</span><small>${m.id==="home"?"Start":(m.id==="review"?"Mixed mastery":"Lesson + practice")}</small>`;
-    btn.onclick = ()=>openModule(m.id,true);
-    navEl.appendChild(btn);
-  });
-}
-
-function openModule(id, fromUser=false){
-  const m = modules.find(x=>x.id===id);
-  if (!m) return;
-  currentModule = id;
-  state.lastModule = id;
-  save();
-
-  pageTitleEl.textContent = m.title;
-  pageSubEl.textContent = m.subtitle||"";
-
-  if (fromUser) currentMode="learn";
-  setActiveChip(currentMode);
-  renderMain();
-  renderTools();
-  bumpStreak();
-}
-
-function nextModuleId(){
-  const ids = modules.map(m=>m.id);
-  const i = ids.indexOf(currentModule);
-  return ids[(i+1)%ids.length];
-}
-nextBtn.onclick = ()=>openModule(nextModuleId(), true);
-
-searchInput.addEventListener("input", ()=>{ renderNav(); renderTools(); });
-
-/* Keyboard shortcuts */
-window.addEventListener("keydown",(e)=>{
-  if (e.ctrlKey && e.key === "/"){
-    e.preventDefault();
-    searchInput.focus();
-  }
-
-  // Flashcard shortcuts
-  if (currentMode === "flashcards"){
-    if (e.key === " "){ e.preventDefault(); flipCard(); }
-    if (e.key === "ArrowRight"){ e.preventDefault(); nextCard(); }
-    if (e.key === "ArrowLeft"){ e.preventDefault(); prevCard(); }
-    if (e.key === "1"){ rateCard(0); }
-    if (e.key === "2"){ rateCard(1); }
-    if (e.key === "3"){ rateCard(2); }
-  }
-});
-
-/* ===========================
-   MODE CHIPS
-=========================== */
-function setActiveChip(mode){
-  [...modeChips.querySelectorAll(".chip")].forEach(c=>{
-    c.classList.toggle("active", c.dataset.mode===mode);
-  });
-}
-modeChips.addEventListener("click",(e)=>{
-  const chip = e.target.closest(".chip");
-  if (!chip) return;
-  currentMode = chip.dataset.mode;
-  setActiveChip(currentMode);
-  renderMain();
-  renderTools();
-});
-
-/* ===========================
-   MAIN RENDER
-=========================== */
-function renderMain(){
-  const m = modules.find(x=>x.id===currentModule);
-  if (!m) return;
-
-  if (currentMode==="learn"){
-    learnBody.innerHTML = m.learn || `<p>No content yet.</p>`;
-    return;
-  }
-  if (currentMode==="flashcards"){ renderFlashcards(m); return; }
-  if (currentMode==="quiz"){ renderQuiz(m); return; }
-  if (currentMode==="match"){ renderMatching(m); return; }
-  if (currentMode==="mindmap"){ renderMindMap(m); return; }
-}
-
-/* ===========================
-   FLASHCARDS (real interaction)
-   - deck per module
-   - index preserved
-   - flip/prev/next
-   - rating buttons add XP + spaced repetition behavior
-=========================== */
-let currentDeck = [];
-let currentCardIndex = 0;
-
-function buildDeck(moduleId){
-  if (moduleId==="review") return shuffle([...flashcards]);
-  return shuffle(flashcards.filter(c=>c.module===moduleId));
-}
-
-function getSavedIndex(moduleId){
-  return state.deckIndexByModule[moduleId] ?? 0;
-}
-function setSavedIndex(moduleId, idx){
-  state.deckIndexByModule[moduleId] = idx;
-  save();
-}
-
-function renderFlashcards(m){
-  currentDeck = buildDeck(m.id);
-  if (!currentDeck.length){
-    learnBody.innerHTML = `<div class="note"><b>No flashcards for this module.</b></div>`;
-    return;
-  }
-  currentCardIndex = Math.min(getSavedIndex(m.id), currentDeck.length-1);
-
-  const card = currentDeck[currentCardIndex];
-  const lvl = state.cardLevel[card.id] ?? 0;
-
-  learnBody.innerHTML = `
-    <div class="panelRow">
-      <div class="counterPills">
-        <span class="tag">Card <b>${currentCardIndex+1}</b> / ${currentDeck.length}</span>
-        <span class="tag">Space: flip</span>
-        <span class="tag">← / →</span>
-      </div>
-      <div class="counterPills">
-        <span class="tag">Rate: 1-3</span>
-        <span class="tag">XP on honest rating</span>
-      </div>
-    </div>
-
-    <div class="flashArea">
-      <div class="flashCard" id="flashCard">
-        <div>
-          <div class="flashFace">${escapeHTML(card.term)}</div>
-          <div class="flashBack">${escapeHTML(card.def)}</div>
-        </div>
-        <div class="lvlRow">
-          <button class="lvlBtn ${lvl===0?"active":""}" data-lvl="0">1 Review</button>
-          <button class="lvlBtn ${lvl===1?"active":""}" data-lvl="1">2 Known</button>
-          <button class="lvlBtn ${lvl===2?"active":""}" data-lvl="2">3 Mastered</button>
-        </div>
-      </div>
-
-      <div class="panelRow">
-        <button class="btn" id="prevCardBtn">← Prev</button>
-        <button class="btn primary" id="flipBtn">Flip</button>
-        <button class="btn" id="nextCardBtn">Next →</button>
-      </div>
-
-      <div class="note">
-        <b>Don’t lie to yourself.</b> If you flipped it, it’s not “Mastered.”
-      </div>
-    </div>
-  `;
-
-  const flashEl = document.getElementById("flashCard");
-  flashEl.onclick = (e)=>{
-    if (e.target.closest(".lvlBtn")) return;
-    flipCard();
-  };
-
-  document.getElementById("flipBtn").onclick = ()=>flipCard();
-  document.getElementById("prevCardBtn").onclick = ()=>prevCard();
-  document.getElementById("nextCardBtn").onclick = ()=>nextCard();
-
-  [...document.querySelectorAll(".lvlBtn")].forEach(btn=>{
-    btn.onclick = (e)=>{
-      e.stopPropagation();
-      rateCard(parseInt(btn.dataset.lvl,10));
-    };
-  });
-}
-
-function flipCard(){
-  const el = document.getElementById("flashCard");
-  if (!el) return;
-  el.classList.toggle("revealed");
-  bumpStreak();
-  // micro XP for engagement
-  addXP(1, "card flip");
-}
-
-function rateCard(level){
-  const m = modules.find(x=>x.id===currentModule);
-  const card = currentDeck[currentCardIndex];
-  if (!card) return;
-
-  const before = state.cardLevel[card.id] ?? 0;
-  state.cardLevel[card.id] = level;
-
-  // XP rule: reward improvement, not spamming
-  if (level > before) addXP(8 + level*2, "card rating");
-  else addXP(2, "card rating");
-
-  save();
-  bumpStreak();
-
-  // auto-advance if mastered/known to keep pace
-  if (level >= 1) nextCard();
-  else renderFlashcards(m);
-}
-
-function nextCard(){
-  const m = modules.find(x=>x.id===currentModule);
-  currentCardIndex = Math.min(currentDeck.length-1, currentCardIndex+1);
-  setSavedIndex(m.id, currentCardIndex);
-  renderFlashcards(m);
-}
-function prevCard(){
-  const m = modules.find(x=>x.id===currentModule);
-  currentCardIndex = Math.max(0, currentCardIndex-1);
-  setSavedIndex(m.id, currentCardIndex);
-  renderFlashcards(m);
-}
-
-/* ===========================
-   QUIZ (timed + session score + confetti)
-=========================== */
-let quizTimer = null;
-let quizTimeLeft = 0;
-let quizSession = [];
-
-function renderQuiz(m){
-  // build a session set
-  const pool = (m.id==="review") ? quizzes : quizzes.filter(q=>q.module===m.id);
-  if (!pool.length){
-    learnBody.innerHTML = `<div class="note"><b>No quizzes for this module.</b></div>`;
-    return;
-  }
-  quizSession = shuffle([...pool]).slice(0, 6);
-  state.lastQuizSet = quizSession.map(x=>x.id);
-  save();
-
-  quizTimeLeft = 75; // seconds
-  clearInterval(quizTimer);
-  quizTimer = setInterval(()=>{
-    quizTimeLeft--;
-    const tEl = document.getElementById("timer");
-    if (tEl) tEl.textContent = quizTimeLeft + "s";
-    if (quizTimeLeft <= 0){
-      clearInterval(quizTimer);
-      gradeQuiz(true);
-    }
-  }, 1000);
-
-  learnBody.innerHTML = `
-    <div class="panelRow">
-      <div class="counterPills">
-        <span class="tag">Timed set</span>
-        <span class="tag">Timer: <b id="timer">${quizTimeLeft}s</b></span>
-        <span class="tag">6 questions</span>
-      </div>
-      <div class="counterPills">
-        <button class="btn" id="newSetBtn">New Set</button>
-        <button class="btn primary" id="gradeBtn">Grade</button>
-      </div>
-    </div>
-
-    <div id="quizList"></div>
-
-    <div class="note">
-      <b>Hard truth:</b> if you can’t answer under time pressure, you don’t know it yet.
-    </div>
-  `;
-
-  const listEl = document.getElementById("quizList");
-  quizSession.forEach((q, idx)=>{
-    const already = !!state.quizCorrect[q.id];
-    const box = document.createElement("div");
-    box.className = "quizBox";
-    box.innerHTML = `
-      <div class="quizTop">
-        <h4>${idx+1}. ${escapeHTML(q.q)}</h4>
-        <div class="quizMeta">${escapeHTML(q.module.toUpperCase())} · ${already ? "✅ solved" : "new"}</div>
-      </div>
-      <div class="qOpts">
-        ${q.opts.map((opt,i)=>`
-          <label class="opt">
-            <input type="radio" name="qq_${q.id}" value="${i}">
-            <span>${escapeHTML(opt)}</span>
-          </label>
-        `).join("")}
-      </div>
-      <div class="feedback" id="fb_${q.id}"></div>
-    `;
-    listEl.appendChild(box);
-  });
-
-  document.getElementById("newSetBtn").onclick = ()=>renderQuiz(m);
-  document.getElementById("gradeBtn").onclick = ()=>gradeQuiz(false);
-}
-
-function gradeQuiz(fromTimeout){
-  clearInterval(quizTimer);
-
-  let correctCount = 0;
-  quizSession.forEach(q=>{
-    const checked = document.querySelector(`input[name="qq_${q.id}"]:checked`);
-    const user = checked ? parseInt(checked.value,10) : null;
-    const ok = (user !== null && user === q.ans);
-    const fb = document.getElementById(`fb_${q.id}`);
-    if (ok){
-      correctCount++;
-      fb.className = "feedback good";
-      fb.innerHTML = `✅ <b>Correct.</b> ${escapeHTML(q.why)}`;
-      state.quizCorrect[q.id] = true;
-    } else {
-      fb.className = "feedback bad";
-      fb.innerHTML = `❌ <b>Wrong.</b> ${escapeHTML(q.why)}`;
-    }
-  });
-
-  save();
-  bumpStreak();
-
-  // XP scoring
-  const base = correctCount * 12;
-  const speedBonus = fromTimeout ? 0 : Math.max(0, Math.floor(quizTimeLeft/5));
-  addXP(base + speedBonus, `quiz: ${correctCount}/6`);
-
-  if (correctCount === 6){
-    confettiBurst();
-    toast(`<b>Perfect.</b> 6/6 ✅`);
-  } else {
-    toast(`Score: <b>${correctCount}/6</b>. Fix wrong ones now.`);
-  }
-}
-
-/* ===========================
-   MATCHING GAME (drag-drop)
-=========================== */
-function renderMatching(m){
-  const pool = (m.id==="review") ? flashcards : flashcards.filter(c=>c.module===m.id);
-  if (pool.length < 4){
-    learnBody.innerHTML = `<div class="note"><b>Not enough cards for matching.</b> Use Review mode or add more terms.</div>`;
-    return;
-  }
-  const set = shuffle([...pool]).slice(0, 6);
-  const terms = shuffle(set.map(x=>({id:x.id, text:x.term})));
-  const defs = shuffle(set.map(x=>({id:x.id, text:x.def})));
-
-  learnBody.innerHTML = `
-    <div class="panelRow">
-      <div class="counterPills">
-        <span class="tag">Drag terms → drop on correct definition</span>
-        <span class="tag">Instant validation</span>
-      </div>
-      <div class="counterPills">
-        <button class="btn" id="newMatchBtn">New Match</button>
-      </div>
-    </div>
-
-    <div class="matchWrap">
-      <div class="matchGrid">
-        <div class="dropZone" id="termsZone">
-          <div class="dropTitle">Terms (drag these)</div>
-          <div class="dropHint">Tip: start with easiest.</div>
-          <div style="display:grid;gap:10px;margin-top:10px;" id="termsList"></div>
-        </div>
-        <div class="dropZone" id="defsZone">
-          <div class="dropTitle">Definitions (drop here)</div>
-          <div class="dropHint">Drop a term onto its definition.</div>
-          <div style="display:grid;gap:10px;margin-top:10px;" id="defsList"></div>
-        </div>
-      </div>
-
-      <div class="note" id="matchNote">
-        Match all to earn a bonus.
-      </div>
-    </div>
-  `;
-
-  document.getElementById("newMatchBtn").onclick = ()=>renderMatching(m);
-
-  const termsList = document.getElementById("termsList");
-  const defsList = document.getElementById("defsList");
-
-  let solved = 0;
-
-  terms.forEach(t=>{
-    const el = document.createElement("div");
-    el.className = "draggable";
-    el.draggable = true;
-    el.dataset.id = t.id;
-    el.textContent = t.text;
-    el.addEventListener("dragstart",(e)=>{
-      e.dataTransfer.setData("text/plain", t.id);
-      addXP(1, "drag");
-    });
-    termsList.appendChild(el);
-  });
-
-  defs.forEach(d=>{
-    const wrap = document.createElement("div");
-    wrap.className = "draggable";
-    wrap.style.cursor = "default";
-    wrap.style.userSelect = "text";
-    wrap.dataset.id = d.id;
-    wrap.innerHTML = `<b style="display:block;margin-bottom:6px;">Definition</b>${escapeHTML(d.text)}`;
-    wrap.addEventListener("dragover",(e)=>e.preventDefault());
-    wrap.addEventListener("drop",(e)=>{
-      e.preventDefault();
-      const draggedId = e.dataTransfer.getData("text/plain");
-      if (!draggedId) return;
-
-      const termEl = [...termsList.querySelectorAll(".draggable")].find(x=>x.dataset.id===draggedId);
-      if (!termEl) return;
-
-      if (draggedId === d.id){
-        wrap.style.borderColor = "rgba(22,163,74,.45)";
-        wrap.style.background = "rgba(22,163,74,.10)";
-        wrap.innerHTML = `<b style="display:block;margin-bottom:6px;">✅ Matched</b><div style="margin-bottom:8px;"><b>${escapeHTML(termEl.textContent)}</b></div>${escapeHTML(d.text)}`;
-        termEl.remove();
-
-        solved++;
-        addXP(10, "match correct");
-        bumpStreak();
-
-        if (solved === defs.length){
-          addXP(40, "matching bonus");
-          confettiBurst();
-          toast(`<b>Matching complete.</b> Bonus XP earned ✅`);
-          document.getElementById("matchNote").innerHTML = `<b>Completed.</b> Now switch to Quiz and lock it in.`;
-        }
-      } else {
-        addXP(0, "");
-        toast(`Wrong match. Stop guessing — read the definition carefully.`);
-        // small shake
-        wrap.animate([{transform:"translateX(0)"},{transform:"translateX(-8px)"},{transform:"translateX(8px)"},{transform:"translateX(0)"}], {duration:260});
-      }
-    });
-    defsList.appendChild(wrap);
-  });
-}
-
-/* ===========================
-   MIND MAP (interactive canvas)
-   - click nodes to expand/collapse
-   - click node with jump opens module
-=========================== */
-let mapState = { expanded: new Set() };
-
-function renderMindMap(m){
-  const key = m.id;
-  const root = mindNodes[key] || mindNodes.m1;
-
-  learnBody.innerHTML = `
-    <div class="panelRow">
-      <div class="counterPills">
-        <span class="tag">Click nodes to expand</span>
-        <span class="tag">Click blue nodes to jump modules</span>
-      </div>
-      <div class="counterPills">
-        <button class="btn" id="expandAllBtn">Expand all</button>
-        <button class="btn" id="collapseAllBtn">Collapse</button>
-      </div>
-    </div>
-
-    <div class="mapCanvasWrap">
-      <canvas id="mapCanvas"></canvas>
-      <div class="mapLegend">
-        <b>Legend:</b> Green nodes = concepts. Blue nodes = jump links. <b>Interactivity:</b> click a node.
-      </div>
-    </div>
-  `;
-
-  const canvas = document.getElementById("mapCanvas");
-  const ctx = canvas.getContext("2d");
-
-  function resize(){
-    const dpr = devicePixelRatio || 1;
-    const rect = canvas.getBoundingClientRect();
-    canvas.width = rect.width * dpr;
-    canvas.height = 460 * dpr;
-    canvas.style.height = "460px";
-    ctx.setTransform(dpr,0,0,dpr,0,0);
-  }
-  resize();
-  window.addEventListener("resize", resize, { once:true });
-
-  // build layout
-  const nodes = [];
-  const edges = [];
-  const expanded = mapState.expanded;
-
-  // default: expand root only
-  if (!expanded.has(key+":root")) expanded.add(key+":root");
-
-  function walk(node, depth, parentIndex, path){
-    const id = key + ":" + path;
-    const isExpanded = expanded.has(id);
-    const index = nodes.length;
-    const jump = node.jump || null;
-
-    nodes.push({
-      id, label: node.label, depth, jump,
-      x: 0, y: 0, w: 0, h: 0
-    });
-
-    if (parentIndex !== null) edges.push([parentIndex, index]);
-
-    if (node.children && node.children.length){
-      if (depth === 0 || isExpanded){
-        node.children.forEach((ch, i)=> walk(ch, depth+1, index, path+"."+i));
-      }
-    }
-  }
-
-  function rebuild(){
-    nodes.length = 0; edges.length=0;
-    walk({label: root.label, children: root.children}, 0, null, "root");
-
-    // group by depth
-    const byDepth = new Map();
-    nodes.forEach((n,i)=>{
-      if (!byDepth.has(n.depth)) byDepth.set(n.depth, []);
-      byDepth.get(n.depth).push(i);
-    });
-
-    const w = canvas.getBoundingClientRect().width;
-    const h = 460;
-
-    const maxDepth = Math.max(...nodes.map(n=>n.depth));
-    const xGap = maxDepth ? (w-60)/maxDepth : (w-60);
-
-    byDepth.forEach((idxs, depth)=>{
-      const yGap = (h-60) / (idxs.length+1);
-      idxs.forEach((idx, j)=>{
-        nodes[idx].x = 30 + depth * xGap;
-        nodes[idx].y = 30 + (j+1) * yGap;
+    const navBar = document.getElementById("navBar");
+    function buildNav(){
+      navBar.innerHTML = "";
+      moduleIds.forEach(id=>{
+        const b = document.createElement("button");
+        b.textContent = navLabels[id];
+        b.onclick = ()=>showSection(id);
+        b.id = "nav_"+id;
+        navBar.appendChild(b);
       });
-    });
+    }
+    buildNav();
 
-    draw();
-  }
+    function showSection(id) {
+      document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));
+      const el = document.getElementById(id);
+      if (el) el.classList.add("active");
 
-  function draw(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
+      // highlight nav
+      moduleIds.forEach(mid=>{
+        const nb = document.getElementById("nav_"+mid);
+        if (nb) nb.classList.toggle("active", mid===id);
+      });
+    }
 
-    // edges
-    ctx.lineWidth = 2;
-    edges.forEach(([a,b])=>{
-      const A = nodes[a], B = nodes[b];
-      ctx.strokeStyle = "rgba(10,35,18,0.18)";
-      ctx.beginPath();
-      ctx.moveTo(A.x+140, A.y);
-      ctx.lineTo(B.x, B.y);
-      ctx.stroke();
-    });
+    /* ========= CLOCK (fixed text but real-time display) ========= */
+    function updateClock(){
+      const now = new Date();
+      const line = `Current time: ${now.toLocaleString()} (your device time).`;
+      const clockLine = document.getElementById("clockLine");
+      if (clockLine) clockLine.textContent = line;
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
 
-    // nodes
-    nodes.forEach(n=>{
-      const paddingX = 16;
-      ctx.font = "700 16px " + getComputedStyle(document.body).fontFamily;
-      const textW = ctx.measureText(n.label).width;
-      const boxW = Math.max(140, Math.min(260, textW + paddingX*2));
-      const boxH = 44;
+    /* ========= STORAGE + PROGRESS ========= */
+    const STORE = "ENGL280_PLATFORM_V2";
+    const state = loadState();
 
-      n.w = boxW; n.h = boxH;
-
-      const isLink = !!n.jump;
-      ctx.fillStyle = isLink ? "rgba(0,163,255,0.14)" : "rgba(34,197,94,0.12)";
-      ctx.strokeStyle = isLink ? "rgba(0,163,255,0.35)" : "rgba(34,197,94,0.35)";
-
-      roundRect(ctx, n.x, n.y - boxH/2, boxW, boxH, 14);
-      ctx.fill();
-      ctx.stroke();
-
-      ctx.fillStyle = "rgba(7,18,11,0.90)";
-      ctx.fillText(n.label, n.x + paddingX, n.y + 6);
-
-      // expand marker
-      const hasChildren = getNodeChildren(root, key, n.id)?.length;
-      if (hasChildren){
-        const expandedHere = expanded.has(n.id);
-        ctx.fillStyle = "rgba(7,18,11,0.55)";
-        ctx.font = "900 16px " + getComputedStyle(document.body).fontFamily;
-        ctx.fillText(expandedHere ? "–" : "+", n.x + boxW - 22, n.y + 6);
+    function loadState(){
+      try{
+        const raw = localStorage.getItem(STORE);
+        if (!raw) return { score:0, mastered:{}, correct:{}, musicOn:false };
+        const s = JSON.parse(raw);
+        return {
+          score: s.score||0,
+          mastered: s.mastered||{},
+          correct: s.correct||{},
+          musicOn: !!s.musicOn
+        };
+      } catch {
+        return { score:0, mastered:{}, correct:{}, musicOn:false };
       }
-    });
-  }
-
-  function getNodeChildren(rootNode, moduleKey, nodeId){
-    // nodeId like: module:root.0.1
-    const path = nodeId.split(":")[1];
-    const parts = path.split(".").slice(1); // remove 'root'
-    let cur = {label: root.label, children: root.children};
-    for (const p of parts){
-      const idx = parseInt(p,10);
-      if (!cur.children || !cur.children[idx]) return null;
-      cur = cur.children[idx];
     }
-    return cur.children || null;
-  }
+    function saveState(){ localStorage.setItem(STORE, JSON.stringify(state)); updateStats(); }
 
-  function hitTest(x,y){
-    // x,y in CSS pixels
-    for (let i=nodes.length-1;i>=0;i--){
-      const n = nodes[i];
-      const top = n.y - n.h/2;
-      if (x>=n.x && x<=n.x+n.w && y>=top && y<=top+n.h) return n;
-    }
-    return null;
-  }
-
-  canvas.addEventListener("click",(e)=>{
-    const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    const n = hitTest(x,y);
-    if (!n) return;
-
-    bumpStreak();
-    addXP(3, "mind map");
-
-    if (n.jump){
-      state.mapsVisited[n.id] = true;
-      save();
-      openModule(n.jump, true);
-      return;
+    function resetProgress(){
+      if (!confirm("Reset progress (mastery + quiz correctness + score)?")) return;
+      localStorage.removeItem(STORE);
+      location.reload();
     }
 
-    const children = getNodeChildren(root, key, n.id);
-    if (children && children.length){
-      if (mapState.expanded.has(n.id)) mapState.expanded.delete(n.id);
-      else mapState.expanded.add(n.id);
-      state.mapsVisited[n.id] = true;
-      save();
-      rebuild();
+    function updateStats(){
+      const masteredCount = Object.values(state.mastered).filter(v=>v==="mastered").length;
+      const correctCount  = Object.values(state.correct).filter(Boolean).length;
+
+      const score = masteredCount + correctCount;
+      state.score = score;
+
+      // UI pills
+      const statPill = document.getElementById("statPill");
+      const fcPill = document.getElementById("fcPill");
+      const qPill = document.getElementById("qPill");
+      if (statPill) statPill.textContent = `Score: ${score}`;
+      if (fcPill) fcPill.textContent = `Mastered: ${masteredCount} / 50`;
+      if (qPill) qPill.textContent = `Correct: ${correctCount} / 50`;
+
+      const reviewMastered = document.getElementById("reviewMastered");
+      const reviewCorrect = document.getElementById("reviewCorrect");
+      if (reviewMastered) reviewMastered.textContent = `Mastered: ${masteredCount} / 50`;
+      if (reviewCorrect) reviewCorrect.textContent = `Correct: ${correctCount} / 50`;
+
+      const scoreVal = document.getElementById("scoreVal");
+      if (scoreVal) scoreVal.textContent = score;
+
+      // progress bar (total 125 = 50+50+25)
+      const total = 125;
+      const exploredMaps = exploredMindMapsCount();
+      const progress = Math.round(((masteredCount + correctCount + exploredMaps) / total) * 100);
+      const fill = document.getElementById("progressFill");
+      if (fill) fill.style.width = `${Math.min(100, progress)}%`;
     }
-  });
 
-  document.getElementById("expandAllBtn").onclick = ()=>{
-    // brute expand all current reachable nodes
-    nodes.forEach(n=> mapState.expanded.add(n.id));
-    rebuild();
-    addXP(8, "expand map");
-  };
-  document.getElementById("collapseAllBtn").onclick = ()=>{
-    mapState.expanded = new Set([key+":root"]);
-    rebuild();
-  };
+    /* ========= DATA: 50 FLASHCARDS (real content) ========= */
+    // status: review/known/mastered
+    const flashcards = [
+      // Module 1 (6)
+      { id:"fc1", module:1, term:"Literature", definition:"Language shaped for meaning, experience, and effect." },
+      { id:"fc2", module:1, term:"Genre", definition:"A category of literature with recognizable conventions (e.g., poetry, drama, fiction)." },
+      { id:"fc3", module:1, term:"Purpose of Literature", definition:"To explore human experience, provoke thought, entertain, and reflect society/culture." },
+      { id:"fc4", module:1, term:"Interpretation", definition:"A claim about meaning supported by textual evidence and explanation." },
+      { id:"fc5", module:1, term:"Theme", definition:"Central idea/insight developed by the text (not a single word topic)." },
+      { id:"fc6", module:1, term:"Convention", definition:"A typical feature readers expect in a genre (e.g., dialogue in drama)." },
 
-  rebuild();
-}
+      // Module 2 (12)
+      { id:"fc7", module:2, term:"Figure of Speech", definition:"Non-literal language used for rhetorical or vivid effect." },
+      { id:"fc8", module:2, term:"Literal Meaning", definition:"The direct, basic meaning (denotation)." },
+      { id:"fc9", module:2, term:"Non-literal Meaning", definition:"Meaning beyond the direct sense (figurative meaning/connotation)." },
+      { id:"fc10", module:2, term:"Rhetoric", definition:"The art of effective/persuasive speaking or writing." },
+      { id:"fc11", module:2, term:"Simile", definition:"Comparison using 'like' or 'as' (e.g., as bright as the sun)." },
+      { id:"fc12", module:2, term:"Metaphor", definition:"Direct comparison without 'like/as' (e.g., time is a thief)." },
+      { id:"fc13", module:2, term:"Analogy", definition:"Extended comparison used to explain an unfamiliar concept." },
+      { id:"fc14", module:2, term:"Imagery", definition:"Language appealing to the senses (sight, sound, touch, taste, smell)." },
+      { id:"fc15", module:2, term:"Personification", definition:"Giving human qualities to non-human things or abstract ideas." },
+      { id:"fc16", module:2, term:"Onomatopoeia", definition:"Words that imitate sounds (buzz, hiss, tick)." },
+      { id:"fc17", module:2, term:"Denotation", definition:"Dictionary meaning of a word." },
+      { id:"fc18", module:2, term:"Connotation", definition:"Emotional/cultural associations of a word." },
 
-/* ===========================
-   TOOLS PANEL
-=========================== */
-function renderTools(){
-  const m = modules.find(x=>x.id===currentModule);
-  const bookmarked = state.bookmarks.includes(currentModule);
+      // Module 3 (10)
+      { id:"fc19", module:3, term:"Alliteration", definition:"Repetition of initial consonant sounds (wild winds)." },
+      { id:"fc20", module:3, term:"Assonance", definition:"Repetition of vowel sounds (mellow wedding bells)." },
+      { id:"fc21", module:3, term:"Consonance", definition:"Repetition of consonant sounds within/at ends of words." },
+      { id:"fc22", module:3, term:"Rhyme", definition:"Matching sounds, often at line ends, creating pattern." },
+      { id:"fc23", module:3, term:"Rhythm", definition:"Beat or flow created by stressed/unstressed syllables." },
+      { id:"fc24", module:3, term:"Symbol", definition:"An object/action that represents more than itself." },
+      { id:"fc25", module:3, term:"Irony", definition:"Contrast between expectation and reality, or stated vs meant." },
+      { id:"fc26", module:3, term:"Hyperbole", definition:"Deliberate exaggeration for emphasis." },
+      { id:"fc27", module:3, term:"Understatement", definition:"Deliberately downplaying for effect." },
+      { id:"fc28", module:3, term:"Allusion", definition:"Brief reference to a known text/event/person to add meaning." },
 
-  const moduleCards = (m.id==="home"||m.id==="review") ? 50 : flashcards.filter(c=>c.module===m.id).length;
-  const moduleQuizzes = (m.id==="home"||m.id==="review") ? 50 : quizzes.filter(q=>q.module===m.id).length;
+      // Module 4 (8)
+      { id:"fc29", module:4, term:"Speaker", definition:"The voice/persona speaking in the poem (not always the poet)." },
+      { id:"fc30", module:4, term:"Stanza", definition:"A grouped set of lines in a poem (like a paragraph)." },
+      { id:"fc31", module:4, term:"Line", definition:"A single row of words in a poem; unit of rhythm/meaning." },
+      { id:"fc32", module:4, term:"Meter", definition:"Pattern of stressed/unstressed syllables." },
+      { id:"fc33", module:4, term:"Diction", definition:"Word choice and its effect (formal, colloquial, precise)." },
+      { id:"fc34", module:4, term:"Syntax", definition:"Word order; can create emphasis or surprise." },
+      { id:"fc35", module:4, term:"Form", definition:"Overall structure/pattern (sonnet, free verse, etc.)." },
+      { id:"fc36", module:4, term:"Theme in Poetry", definition:"Meaning built through sound, imagery, structure, and voice." },
 
-  toolsBody.innerHTML = `
-    <div class="note" style="margin-top:0;">
-      <b>${bookmarked ? "★ Bookmarked" : "☆ Not bookmarked"}</b><br/>
-      Cards: <b>${moduleCards}</b> · Quizzes: <b>${moduleQuizzes}</b><br/>
-      <span style="display:block;margin-top:6px;">Fast path: <b>Flashcards → Quiz → Matching</b></span>
-    </div>
+      // Module 5 (3)
+      { id:"fc37", module:5, term:"Close Reading", definition:"Careful analysis of language patterns to explain effect/meaning." },
+      { id:"fc38", module:5, term:"Contrast", definition:"Opposition (cold/warm, harsh/soft) used to sharpen meaning." },
+      { id:"fc39", module:5, term:"Sound Texture", definition:"How sound devices create mood and emphasis." },
 
-    <div class="panelRow">
-      <button class="btn primary" id="goCardsBtn">Cards</button>
-      <button class="btn primary" id="goQuizBtn">Quiz</button>
-      <button class="btn primary" id="goMatchBtn">Match</button>
-      <button class="btn" id="goMapBtn">Map</button>
-    </div>
+      // Module 6 (4)
+      { id:"fc40", module:6, term:"Dialogue", definition:"Character speech; main vehicle of action in drama." },
+      { id:"fc41", module:6, term:"Stage Directions", definition:"Performance instructions: setting, movement, tone, props." },
+      { id:"fc42", module:6, term:"Conflict (Drama)", definition:"Central struggle driving the plot." },
+      { id:"fc43", module:6, term:"Exodos", definition:"Final part of Greek tragedy, the exit/closing scene." },
 
-    <div class="panelRow">
-      <button class="btn" id="weakCardsBtn">Weak cards (review)</button>
-      <button class="btn" id="mixQuizBtn">Mixed quiz</button>
-    </div>
-  `;
+      // Module 7 (3)
+      { id:"fc44", module:7, term:"Inference", definition:"A conclusion drawn from evidence (details → meaning)." },
+      { id:"fc45", module:7, term:"Subtext", definition:"Meaning beneath what is spoken; implied motivations/tensions." },
+      { id:"fc46", module:7, term:"Evidence", definition:"Details that support an interpretation (not opinions)." },
 
-  document.getElementById("goCardsBtn").onclick = ()=>{ currentMode="flashcards"; setActiveChip(currentMode); renderMain(); };
-  document.getElementById("goQuizBtn").onclick  = ()=>{ currentMode="quiz"; setActiveChip(currentMode); renderMain(); };
-  document.getElementById("goMatchBtn").onclick = ()=>{ currentMode="match"; setActiveChip(currentMode); renderMain(); };
-  document.getElementById("goMapBtn").onclick   = ()=>{ currentMode="mindmap"; setActiveChip(currentMode); renderMain(); };
+      // Module 8 (3)
+      { id:"fc47", module:8, term:"Point of View (POV)", definition:"Who tells the story; controls information and reliability." },
+      { id:"fc48", module:8, term:"Plot", definition:"Events arranged with causality (not just a list of events)." },
+      { id:"fc49", module:8, term:"Setting", definition:"Time/place/social world shaping characters and meaning." },
 
-  document.getElementById("weakCardsBtn").onclick = ()=>{
-    // jump to review, but keep flashcards and focus on low levels by repeatedly shuffling
-    openModule("review", true);
-    currentMode="flashcards"; setActiveChip(currentMode);
-    renderMain();
-  };
+      // Module 9 (1)
+      { id:"fc50", module:9, term:"Social Satire (Austen)", definition:"Critique of manners/class via irony and social observation." },
+    ];
 
-  document.getElementById("mixQuizBtn").onclick = ()=>{
-    openModule("review", true);
-    currentMode="quiz"; setActiveChip(currentMode);
-    renderMain();
-  };
-}
+    /* ========= DATA: 50 QUIZ QUESTIONS (real content) ========= */
+    const quizzes = [
+      // Module 1 (6)
+      { id:"q1", module:1, question:"Literature is best described as…", type:"multiple",
+        options:["Language shaped for meaning/effect","A list of scientific facts","Only poetry","Only drama"], answer:"Language shaped for meaning/effect",
+        explanation:"Literature uses language artistically to create meaning and effect." },
+      { id:"q2", module:1, question:"Which is NOT a major literary genre?", type:"multiple",
+        options:["Poetry","Drama","Fiction","Algebra"], answer:"Algebra",
+        explanation:"Algebra is not a literary genre." },
+      { id:"q3", module:1, question:"An interpretation should be supported by…", type:"multiple",
+        options:["Evidence from the text","Only personal opinion","The author’s photo","Random guess"], answer:"Evidence from the text",
+        explanation:"Interpretation = claim + evidence + explanation." },
+      { id:"q4", module:1, question:"Theme is best defined as…", type:"multiple",
+        options:["A central idea/insight","A character’s name","A setting description","A single word topic"], answer:"A central idea/insight",
+        explanation:"Theme is an insight/claim, not just a topic." },
+      { id:"q5", module:1, question:"Genre conventions are…", type:"multiple",
+        options:["Typical features readers expect","Proof that a text is true","Grammar rules only","Only about rhyme"], answer:"Typical features readers expect",
+        explanation:"Conventions help readers recognize and interpret genre." },
+      { id:"q6", module:1, question:"True/False: Literature study builds critical reading skills.", type:"truefalse",
+        options:["True","False"], answer:true, explanation:"Literature trains analysis and argumentation.", module:1 },
 
-/* ===========================
-   BOOKMARK / QUICK PRACTICE / FOCUS / RESET
-=========================== */
-bookmarkBtn.onclick = ()=>{
-  const i = state.bookmarks.indexOf(currentModule);
-  if (i>=0) state.bookmarks.splice(i,1);
-  else state.bookmarks.push(currentModule);
-  save();
-  toast(state.bookmarks.includes(currentModule) ? "Bookmarked ★" : "Removed bookmark");
-  bumpStreak();
-  renderTools();
-};
+      // Module 2 (12)
+      { id:"q7", module:2, question:"A simile compares using…", type:"multiple",
+        options:["like/as","only rhyme","stage directions","footnotes"], answer:"like/as",
+        explanation:"Similes use 'like' or 'as'." },
+      { id:"q8", module:2, question:"Metaphor is…", type:"multiple",
+        options:["Direct comparison","Comparison using like/as","Only sound","Only plot"], answer:"Direct comparison",
+        explanation:"Metaphor compares directly without like/as." },
+      { id:"q9", module:2, question:"Imagery appeals to…", type:"multiple",
+        options:["The five senses","Only logic","Only memory","Only grammar"], answer:"The five senses",
+        explanation:"Imagery is sensory description." },
+      { id:"q10", module:2, question:"Personification gives…", type:"multiple",
+        options:["Human traits to non-human things","Numbers to words","Settings to characters","Rhymes to plots"], answer:"Human traits to non-human things",
+        explanation:"Personification humanizes the non-human." },
+      { id:"q11", module:2, question:"Onomatopoeia is…", type:"multiple",
+        options:["Sound-imitating words","A plot twist","A stanza form","A theme"], answer:"Sound-imitating words",
+        explanation:"Onomatopoeia imitates real sounds." },
+      { id:"q12", module:2, question:"Denotation refers to…", type:"multiple",
+        options:["Dictionary meaning","Emotional association","Rhyme scheme","Narrator voice"], answer:"Dictionary meaning",
+        explanation:"Denotation = literal meaning." },
+      { id:"q13", module:2, question:"Connotation refers to…", type:"multiple",
+        options:["Associations/feelings","Only dictionary meaning","Only rhythm","Only stage movement"], answer:"Associations/feelings",
+        explanation:"Connotation = emotional/cultural meaning." },
+      { id:"q14", module:2, question:"True/False: A figure of speech is always literal.", type:"truefalse",
+        options:["True","False"], answer:false, explanation:"Figures of speech are non-literal." },
+      { id:"q15", module:2, question:"Which is an example of a simile?", type:"multiple",
+        options:["Her smile was as bright as the sun.","Time is a thief.","The wind whispered.","Buzz."], answer:"Her smile was as bright as the sun.",
+        explanation:"Simile uses as/like." },
+      { id:"q16", module:2, question:"Which is an example of metaphor?", type:"multiple",
+        options:["Time is a thief.","As cold as ice.","The clock ticked.","The roses are red."], answer:"Time is a thief.",
+        explanation:"Metaphor is direct comparison." },
+      { id:"q17", module:2, question:"Analogy is mainly used to…", type:"multiple",
+        options:["Explain an unfamiliar concept","Create a rhyme","List facts","Provide stage directions"], answer:"Explain an unfamiliar concept",
+        explanation:"Analogy compares to clarify." },
+      { id:"q18", module:2, question:"Short answer: Define imagery.", type:"short",
+        answer:"sensory", explanation:"Imagery = sensory language appealing to the five senses.", module:2 },
 
-quickPracticeBtn.onclick = ()=>{
-  openModule("review", true);
-  currentMode="quiz"; setActiveChip(currentMode);
-  renderMain();
-};
+      // Module 3 (10)
+      { id:"q19", module:3, question:"Alliteration is repetition of…", type:"multiple",
+        options:["Initial consonant sounds","Initial vowel sounds only","Plot events","Character names"], answer:"Initial consonant sounds",
+        explanation:"Alliteration repeats initial consonants." },
+      { id:"q20", module:3, question:"Assonance is repetition of…", type:"multiple",
+        options:["Vowel sounds","Only consonants","Only punctuation","Only imagery"], answer:"Vowel sounds",
+        explanation:"Assonance repeats vowel sounds." },
+      { id:"q21", module:3, question:"Consonance is repetition of…", type:"multiple",
+        options:["Consonant sounds","Only vowels","Only rhyme","Only metaphor"], answer:"Consonant sounds",
+        explanation:"Consonance repeats consonant sounds." },
+      { id:"q22", module:3, question:"Irony involves…", type:"multiple",
+        options:["Contrast between expectation and reality","Only rhyme","Only meter","Only setting"], answer:"Contrast between expectation and reality",
+        explanation:"Irony = mismatch between what seems and what is." },
+      { id:"q23", module:3, question:"A symbol…", type:"multiple",
+        options:["Represents more than itself","Is always literal","Is only sound","Is only plot"], answer:"Represents more than itself",
+        explanation:"Symbols carry extra meaning." },
+      { id:"q24", module:3, question:"Allusion is…", type:"multiple",
+        options:["A reference to something known","A stanza break","A type of conflict","A rhyme error"], answer:"A reference to something known",
+        explanation:"Allusion adds meaning through reference." },
+      { id:"q25", module:3, question:"Hyperbole is…", type:"multiple",
+        options:["Exaggeration for effect","A factual report","A symbol only","A form of meter"], answer:"Exaggeration for effect",
+        explanation:"Hyperbole exaggerates deliberately." },
+      { id:"q26", module:3, question:"Understatement is…", type:"multiple",
+        options:["Downplaying for effect","Overstating for effect","Only imagery","Only rhyme"], answer:"Downplaying for effect",
+        explanation:"Understatement minimizes deliberately." },
+      { id:"q27", module:3, question:"True/False: Sound devices can shape mood.", type:"truefalse",
+        options:["True","False"], answer:true, explanation:"Sound texture affects tone/mood.", module:3 },
+      { id:"q28", module:3, question:"Short answer: give ONE sound device.", type:"short",
+        answer:"alliteration", explanation:"Examples: alliteration / assonance / consonance / onomatopoeia.", module:3 },
 
-focusBtn.onclick = ()=>{
-  const sidebar = document.querySelector(".sidebar");
-  const app = document.querySelector(".app");
-  if (sidebar.style.display==="none"){
-    sidebar.style.display="";
-    app.style.gridTemplateColumns="360px 1fr";
-  } else {
-    sidebar.style.display="none";
-    app.style.gridTemplateColumns="1fr";
-  }
-};
+      // Module 4 (8)
+      { id:"q29", module:4, question:"A stanza is…", type:"multiple",
+        options:["A group of lines","A character","A setting","A plot twist"], answer:"A group of lines",
+        explanation:"Stanza = grouped lines." },
+      { id:"q30", module:4, question:"The speaker is…", type:"multiple",
+        options:["The voice speaking in the poem","Always the poet","Always the reader","The rhyme scheme"], answer:"The voice speaking in the poem",
+        explanation:"Speaker is a persona/voice." },
+      { id:"q31", module:4, question:"Meter refers to…", type:"multiple",
+        options:["Stress pattern","Plot structure","Stage movement","Character traits"], answer:"Stress pattern",
+        explanation:"Meter = stressed/unstressed pattern." },
+      { id:"q32", module:4, question:"Poetry is typically…", type:"multiple",
+        options:["Compressed and patterned","Only long prose","Only factual","Only dialogue"], answer:"Compressed and patterned",
+        explanation:"Poetry intensifies meaning through pattern." },
+      { id:"q33", module:4, question:"Diction means…", type:"multiple",
+        options:["Word choice","Line breaks","Stage setting","Rhyme only"], answer:"Word choice",
+        explanation:"Diction is word choice and its effect." },
+      { id:"q34", module:4, question:"Syntax means…", type:"multiple",
+        options:["Word order","Only vocabulary","Only sound","Only imagery"], answer:"Word order",
+        explanation:"Syntax = arrangement of words." },
+      { id:"q35", module:4, question:"True/False: Form can shape meaning.", type:"truefalse",
+        options:["True","False"], answer:true, explanation:"Structure influences emphasis and pacing.", module:4 },
+      { id:"q36", module:4, question:"Short answer: What is a line in poetry?", type:"short",
+        answer:"row", explanation:"A line is a single row of words; unit of rhythm/meaning.", module:4 },
 
-resetBtn.onclick = ()=>{
-  if (!confirm("Reset all progress?")) return;
-  localStorage.removeItem(STORE);
-  state = structuredClone(defaultState);
-  save();
-  openModule("home", true);
-  toast("Progress reset.");
-};
+      // Module 5 (4)
+      { id:"q37", module:5, question:"Close reading focuses on…", type:"multiple",
+        options:["How language works","Only plot summary","Only author biography","Only book cover"], answer:"How language works",
+        explanation:"Close reading = patterns → effect → meaning." },
+      { id:"q38", module:5, question:"Contrast helps a poem by…", type:"multiple",
+        options:["Sharpening meaning through oppositions","Removing imagery","Avoiding sound","Forcing a single reading"], answer:"Sharpening meaning through oppositions",
+        explanation:"Contrast highlights tensions and themes." },
+      { id:"q39", module:5, question:"True/False: Summarizing is the same as analyzing.", type:"truefalse",
+        options:["True","False"], answer:false, explanation:"Analysis explains how meaning is produced.", module:5 },
+      { id:"q40", module:5, question:"Short answer: Give one thing to track in close reading.", type:"short",
+        answer:"imagery", explanation:"Examples: imagery, sound devices, diction, structure, tone.", module:5 },
 
-/* ===========================
-   STATS / PROGRESS BAR
-=========================== */
-function renderStats(){
-  const mastered = Object.values(state.cardLevel).filter(v=>v===2).length;
-  const quizOK = Object.values(state.quizCorrect).filter(Boolean).length;
+      // Module 6 (4)
+      { id:"q41", module:6, question:"Drama is primarily meant to be…", type:"multiple",
+        options:["Performed","Memorized as a list","Only read silently","Only drawn"], answer:"Performed",
+        explanation:"Drama is written for performance." },
+      { id:"q42", module:6, question:"Stage directions mainly…", type:"multiple",
+        options:["Guide performance","Replace dialogue","Explain metaphors","Count syllables"], answer:"Guide performance",
+        explanation:"They instruct staging and action." },
+      { id:"q43", module:6, question:"Conflict is…", type:"multiple",
+        options:["Central struggle driving action","The font of the text","A stanza type","A rhyme scheme"], answer:"Central struggle driving action",
+        explanation:"Conflict creates tension and plot." },
+      { id:"q44", module:6, question:"True/False: Dialogue is crucial in drama.", type:"truefalse",
+        options:["True","False"], answer:true, explanation:"Dialogue drives action and character.", module:6 },
 
-  // mapsVisited: count nodes visited in mind map (rough)
-  const maps = Object.values(state.mapsVisited).filter(Boolean).length;
+      // Module 7 (4)
+      { id:"q45", module:7, question:"In Trifles, meaning often comes from…", type:"multiple",
+        options:["Small details treated as evidence","Only long speeches","Random guessing","Only the title"], answer:"Small details treated as evidence",
+        explanation:"Details produce inference." },
+      { id:"q46", module:7, question:"Subtext is…", type:"multiple",
+        options:["Implied meaning beneath words","Only stage directions","Only rhyme","Only plot"], answer:"Implied meaning beneath words",
+        explanation:"Subtext is what’s suggested, not said." },
+      { id:"q47", module:7, question:"Inference means…", type:"multiple",
+        options:["Conclusion from evidence","A dictionary definition only","A rhyme scheme","A scene break"], answer:"Conclusion from evidence",
+        explanation:"Inference uses clues to reason." },
+      { id:"q48", module:7, question:"True/False: Evidence matters more than opinion in analysis.", type:"truefalse",
+        options:["True","False"], answer:true, explanation:"Claims need support.", module:7 },
 
-  statXP.textContent = state.xp;
-  statLevel.textContent = levelFromXP(state.xp);
-  statCards.textContent = mastered;
-  statQuizzes.textContent = quizOK;
-  statMaps.textContent = Math.min(25, maps); // cap display
-  statStreak.textContent = state.streak || 0;
+      // Module 8 (1) + Module 9 (1) + Review fill (to reach 50)
+      { id:"q49", module:8, question:"A novella is usually…", type:"multiple",
+        options:["Longer than a short story, shorter than a novel","Longer than a novel","Shorter than a paragraph","Not a fiction form"], answer:"Longer than a short story, shorter than a novel",
+        explanation:"Novella sits between short story and novel." },
+      { id:"q50", module:9, question:"Austen’s opening line in Pride & Prejudice signals…", type:"multiple",
+        options:["Irony and social critique","A scientific law","A stage direction","A literal command"], answer:"Irony and social critique",
+        explanation:"It’s social satire, not a factual rule." },
+    ];
 
-  const total = 50+50+25;
-  const score = mastered + quizOK + Math.min(25, maps);
-  const pct = Math.round((score/total)*100);
-  progressFill.style.width = pct + "%";
-}
+    /* ========= DATA: 25 MIND MAPS (expandable) ========= */
+    const mindmaps = [
+      { id:"mm1", module:1, title:"Literature Genres", nodes:[
+        {text:"Poetry", children:[{text:"Sound"}, {text:"Imagery"}, {text:"Form"}], link:"module4"},
+        {text:"Drama", children:[{text:"Dialogue"}, {text:"Stage Directions"}, {text:"Conflict"}], link:"module6"},
+        {text:"Fiction", children:[{text:"Plot"}, {text:"Character"}, {text:"Setting"}, {text:"POV"}], link:"module8"},
+      ]},
+      { id:"mm2", module:2, title:"Figures of Speech (Core)", nodes:[
+        {text:"Simile", children:[{text:"like/as"}]},
+        {text:"Metaphor", children:[{text:"direct comparison"}]},
+        {text:"Personification", children:[{text:"human traits"}]},
+        {text:"Onomatopoeia", children:[{text:"sound words"}]},
+        {text:"Imagery", children:[{text:"five senses"}]},
+      ], link:"module2"},
+      { id:"mm3", module:3, title:"Sound Devices", nodes:[
+        {text:"Alliteration"}, {text:"Assonance"}, {text:"Consonance"}, {text:"Rhyme"}, {text:"Rhythm"}
+      ], link:"module3"},
+      { id:"mm4", module:4, title:"Poetry Elements", nodes:[
+        {text:"Speaker"}, {text:"Diction"}, {text:"Syntax"}, {text:"Imagery"}, {text:"Sound"}, {text:"Form"}, {text:"Theme"}
+      ], link:"module4"},
+      { id:"mm5", module:5, title:"Close Reading Path", nodes:[
+        {text:"Pattern", children:[{text:"sound"}, {text:"imagery"}, {text:"structure"}]},
+        {text:"Effect", children:[{text:"mood"}, {text:"emphasis"}]},
+        {text:"Theme", children:[{text:"insight/claim"}]},
+      ], link:"module5"},
+      { id:"mm6", module:6, title:"Drama Components", nodes:[
+        {text:"Dialogue"}, {text:"Stage Directions"}, {text:"Conflict"}, {text:"Scenes/Acts"}
+      ], link:"module6"},
+      { id:"mm7", module:7, title:"Trifles (Evidence)", nodes:[
+        {text:"Details", children:[{text:"domestic space"}, {text:"objects"}]},
+        {text:"Inference"}, {text:"Authority"}, {text:"Subtext"}
+      ], link:"module7"},
+      { id:"mm8", module:8, title:"Fiction Toolkit", nodes:[
+        {text:"Plot"}, {text:"Character"}, {text:"Setting"}, {text:"POV"}, {text:"Theme"}
+      ], link:"module8"},
+      { id:"mm9", module:9, title:"Austen Focus", nodes:[
+        {text:"Irony"}, {text:"Class"}, {text:"Marriage economy"}, {text:"Manners"}
+      ], link:"module9"},
+    ];
 
-/* ===========================
-   TOAST
-=========================== */
-const toastEl = document.getElementById("toast");
-let toastT = null;
-function toast(html){
-  toastEl.innerHTML = html;
-  toastEl.classList.add("show");
-  clearTimeout(toastT);
-  toastT = setTimeout(()=>toastEl.classList.remove("show"), 2600);
-}
+    // pad mindmaps to 25 (still meaningful, not empty)
+    while (mindmaps.length < 25){
+      const n = mindmaps.length + 1;
+      mindmaps.push({
+        id:"mm"+n,
+        module:0,
+        title:`Revision Map ${n}`,
+        nodes:[
+          {text:"Claim", children:[{text:"what you argue"}]},
+          {text:"Evidence", children:[{text:"quote/detail"}]},
+          {text:"Explanation", children:[{text:"how evidence proves claim"}]},
+          {text:"Device", children:[{text:"figure/sound/form"}]},
+        ],
+        link:"review"
+      });
+    }
 
-/* ===========================
-   CONFETTI FX
-=========================== */
-const fxCanvas = document.getElementById("fxCanvas");
-const fx = fxCanvas.getContext("2d");
-let fxW=0, fxH=0, fxDPR=1;
-function resizeFX(){
-  fxDPR = devicePixelRatio || 1;
-  fxW = fxCanvas.width = innerWidth * fxDPR;
-  fxH = fxCanvas.height = innerHeight * fxDPR;
-  fxCanvas.style.width = innerWidth + "px";
-  fxCanvas.style.height = innerHeight + "px";
-}
-window.addEventListener("resize", resizeFX);
-resizeFX();
+    function exploredMindMapsCount(){
+      // count maps opened at least once in this session stored in state.correct as a hack? Better: local-only set.
+      // We'll persist via localStorage key.
+      const raw = localStorage.getItem(STORE+"_maps");
+      if (!raw) return 0;
+      try { return Object.keys(JSON.parse(raw)).length; } catch { return 0; }
+    }
+    function markMindMapExplored(id){
+      const key = STORE+"_maps";
+      let obj = {};
+      try{ obj = JSON.parse(localStorage.getItem(key) || "{}"); }catch{}
+      obj[id]=true;
+      localStorage.setItem(key, JSON.stringify(obj));
+      updateStats();
+    }
 
-let confetti = [];
-function confettiBurst(){
-  const count = 140;
-  for (let i=0;i<count;i++){
-    confetti.push({
-      x: (innerWidth/2) * fxDPR,
-      y: (innerHeight/3) * fxDPR,
-      vx: (Math.random()*2-1) * 9 * fxDPR,
-      vy: (-Math.random()*1.2 - 1.4) * 10 * fxDPR,
-      g: (0.35 + Math.random()*0.25) * fxDPR,
-      r: (2.5 + Math.random()*5) * fxDPR,
-      a: 1,
-      rot: Math.random()*Math.PI*2,
-      vr: (Math.random()*2-1)*0.18
-    });
-  }
-}
-function fxLoop(){
-  fx.clearRect(0,0,fxW,fxH);
-  confetti = confetti.filter(p=>p.a>0.02 && p.y < fxH+80);
-  confetti.forEach(p=>{
-    p.x += p.vx;
-    p.y += p.vy;
-    p.vy += p.g;
-    p.rot += p.vr;
-    p.a *= 0.985;
+    /* ========= RENDER HELPERS ========= */
+    function getPracticeContainer(module){
+      return document.getElementById(`m${module}Practice`);
+    }
+    function clearPractice(module){
+      const c = getPracticeContainer(module);
+      if (c) c.innerHTML = "";
+    }
+    function escapeHTML(s){
+      return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+    }
+    function shuffle(arr){
+      const a = arr.slice();
+      for (let i=a.length-1;i>0;i--){
+        const j = Math.floor(Math.random()*(i+1));
+        [a[i],a[j]]=[a[j],a[i]];
+      }
+      return a;
+    }
 
-    fx.save();
-    fx.translate(p.x, p.y);
-    fx.rotate(p.rot);
-    fx.globalAlpha = p.a;
-    fx.fillStyle = `rgba(0,163,255,0.9)`;
-    fx.fillRect(-p.r, -p.r/2, p.r*2, p.r);
-    fx.fillStyle = `rgba(34,197,94,0.85)`;
-    fx.fillRect(-p.r/2, -p.r, p.r, p.r*2);
-    fx.restore();
-  });
-  requestAnimationFrame(fxLoop);
-}
-fxLoop();
+    /* ========= FLASHCARDS UI ========= */
+    function showFlashcards(module) {
+      clearPractice(module);
+      const container = getPracticeContainer(module);
+      if (!container) return;
 
-/* ===========================
-   BACKGROUND ANIMATION (nature)
-=========================== */
-const bgCanvas = document.getElementById("bgCanvas");
-const bg = bgCanvas.getContext("2d");
-let W=0,H=0,DPR=1;
+      const deck = flashcards.filter(f => f.module === module);
+      const mixed = shuffle(deck);
 
-function resizeBG(){
-  DPR = devicePixelRatio || 1;
-  W = bgCanvas.width = innerWidth * DPR;
-  H = bgCanvas.height = innerHeight * DPR;
-  bgCanvas.style.width = innerWidth+"px";
-  bgCanvas.style.height = innerHeight+"px";
-}
-window.addEventListener("resize", resizeBG);
-resizeBG();
+      container.innerHTML = `
+        <div class="note">
+          <b>Flashcards</b> — click the card to flip. Mark status honestly: Review / Known / Mastered.
+        </div>
+        <div class="flashWrap" id="flashWrap${module}"></div>
+      `;
 
-const leaves = [];
-const clouds = [];
-const pollen = [];
-const rand = (a,b)=>a+Math.random()*(b-a);
+      const wrap = document.getElementById(`flashWrap${module}`);
+      mixed.forEach(f=>{
+        const status = state.mastered[f.id] || "review";
+        const card = document.createElement("div");
+        card.className = "flashcard";
+        card.innerHTML = `
+          <div>
+            <div class="flashFront">${escapeHTML(f.term)}</div>
+            <div class="flashBack">${escapeHTML(f.definition)}</div>
+          </div>
+          <div class="statusRow">
+            <button class="statusBtn ${status==="review"?"active":""}" data-id="${f.id}" data-st="review">Review</button>
+            <button class="statusBtn ${status==="known"?"active":""}" data-id="${f.id}" data-st="known">Known</button>
+            <button class="statusBtn ${status==="mastered"?"active":""}" data-id="${f.id}" data-st="mastered">Mastered</button>
+          </div>
+        `;
 
-function initBG(){
-  leaves.length=0; clouds.length=0; pollen.length=0;
-  const leafCount = Math.round(Math.min(52, Math.max(20, innerWidth/25)));
-  const cloudCount = Math.round(Math.min(10, Math.max(5, innerWidth/220)));
-  const pollenCount = Math.round(Math.min(90, Math.max(40, innerWidth/18)));
+        card.addEventListener("click",(e)=>{
+          if (e.target.classList.contains("statusBtn")) return;
+          card.classList.toggle("flipped");
+        });
 
-  for(let i=0;i<leafCount;i++){
-    leaves.push({ x:rand(0,W), y:rand(0,H), r:rand(10,24)*DPR, s:rand(0.35,1.05)*DPR, rot:rand(0,Math.PI*2), drot:rand(-0.012,0.012), sway:rand(0.6,2.2)*DPR });
-  }
-  for(let i=0;i<cloudCount;i++){
-    clouds.push({ x:rand(0,W), y:rand(0,H*0.45), w:rand(180,320)*DPR, h:rand(60,110)*DPR, vx:rand(0.04,0.12)*DPR, a:rand(0.08,0.16) });
-  }
-  for(let i=0;i<pollenCount;i++){
-    pollen.push({ x:rand(0,W), y:rand(0,H), r:rand(1.3,3.2)*DPR, vx:rand(-0.06,0.06)*DPR, vy:rand(-0.03,0.10)*DPR, a:rand(0.12,0.24) });
-  }
-}
-initBG();
-window.addEventListener("resize", initBG);
+        card.querySelectorAll(".statusBtn").forEach(btn=>{
+          btn.addEventListener("click",(e)=>{
+            e.stopPropagation();
+            const id = btn.dataset.id;
+            const st = btn.dataset.st;
+            state.mastered[id] = st;
+            saveState();
+            // refresh active buttons in this card only
+            card.querySelectorAll(".statusBtn").forEach(b=>b.classList.toggle("active", b.dataset.st===st));
+          });
+        });
 
-function drawSun(){
-  const cx=W*0.78, cy=H*0.14;
-  const r1=Math.min(W,H)*0.10;
-  const r2=Math.min(W,H)*0.24;
-  const g=bg.createRadialGradient(cx,cy,r1,cx,cy,r2);
-  g.addColorStop(0,"rgba(255,209,102,0.36)");
-  g.addColorStop(1,"rgba(255,209,102,0.00)");
-  bg.fillStyle=g;
-  bg.beginPath(); bg.arc(cx,cy,r2,0,Math.PI*2); bg.fill();
-}
-function drawCloud(c){
-  bg.save();
-  bg.translate(c.x,c.y);
-  bg.fillStyle=`rgba(255,255,255,${c.a})`;
-  bg.beginPath();
-  bg.ellipse(0,0,c.w*0.32,c.h*0.35,0,0,Math.PI*2);
-  bg.ellipse(c.w*0.18,-c.h*0.10,c.w*0.28,c.h*0.30,0,0,Math.PI*2);
-  bg.ellipse(-c.w*0.18,-c.h*0.12,c.w*0.26,c.h*0.28,0,0,Math.PI*2);
-  bg.ellipse(0,-c.h*0.20,c.w*0.22,c.h*0.26,0,0,Math.PI*2);
-  bg.fill();
-  bg.restore();
-}
-function drawLeaf(l){
-  bg.save();
-  bg.translate(l.x,l.y);
-  bg.rotate(l.rot);
-  const grad=bg.createRadialGradient(0,0,1,0,0,l.r);
-  grad.addColorStop(0,"rgba(34,197,94,0.22)");
-  grad.addColorStop(1,"rgba(0,163,255,0.06)");
-  bg.fillStyle=grad;
-  bg.beginPath();
-  bg.ellipse(0,0,l.r*0.55,l.r,0,0,Math.PI*2);
-  bg.fill();
-  bg.strokeStyle="rgba(7,18,11,0.10)";
-  bg.lineWidth=1*DPR;
-  bg.beginPath();
-  bg.moveTo(0,-l.r*0.85);
-  bg.lineTo(0,l.r*0.85);
-  bg.stroke();
-  bg.restore();
-}
-function bgLoop(){
-  bg.clearRect(0,0,W,H);
+        wrap.appendChild(card);
+      });
 
-  const haze=bg.createRadialGradient(W*0.25,H*0.10,0,W*0.25,H*0.10,Math.min(W,H)*0.55);
-  haze.addColorStop(0,"rgba(0,163,255,0.08)");
-  haze.addColorStop(1,"rgba(0,0,0,0)");
-  bg.fillStyle=haze; bg.fillRect(0,0,W,H);
+      updateStats();
+    }
 
-  drawSun();
+    function showAllFlashcards(){
+      const reviewArea = document.getElementById("reviewArea");
+      if (!reviewArea) return;
+      reviewArea.innerHTML = `<div class="note"><b>All Flashcards (50)</b> — click to flip; status persists.</div>`;
+      // reuse module 0 renderer
+      const deck = shuffle(flashcards);
+      const wrap = document.createElement("div");
+      wrap.className = "flashWrap";
+      deck.forEach(f=>{
+        const status = state.mastered[f.id] || "review";
+        const card = document.createElement("div");
+        card.className = "flashcard";
+        card.innerHTML = `
+          <div>
+            <div class="flashFront">${escapeHTML(f.term)} <span style="font-size:14px;color:rgba(11,27,19,.55);font-weight:800;">(M${f.module})</span></div>
+            <div class="flashBack">${escapeHTML(f.definition)}</div>
+          </div>
+          <div class="statusRow">
+            <button class="statusBtn ${status==="review"?"active":""}" data-id="${f.id}" data-st="review">Review</button>
+            <button class="statusBtn ${status==="known"?"active":""}" data-id="${f.id}" data-st="known">Known</button>
+            <button class="statusBtn ${status==="mastered"?"active":""}" data-id="${f.id}" data-st="mastered">Mastered</button>
+          </div>
+        `;
+        card.addEventListener("click",(e)=>{
+          if (e.target.classList.contains("statusBtn")) return;
+          card.classList.toggle("flipped");
+        });
+        card.querySelectorAll(".statusBtn").forEach(btn=>{
+          btn.addEventListener("click",(e)=>{
+            e.stopPropagation();
+            state.mastered[btn.dataset.id] = btn.dataset.st;
+            saveState();
+            card.querySelectorAll(".statusBtn").forEach(b=>b.classList.toggle("active", b.dataset.st===btn.dataset.st));
+          });
+        });
+        wrap.appendChild(card);
+      });
+      reviewArea.appendChild(wrap);
+      updateStats();
+    }
 
-  clouds.forEach(c=>{
-    c.x += c.vx;
-    if (c.x > W+c.w) c.x = -c.w;
-    drawCloud(c);
-  });
+    /* ========= QUIZ UI ========= */
+    function showQuiz(module) {
+      clearPractice(module);
+      const container = getPracticeContainer(module);
+      if (!container) return;
 
-  pollen.forEach(p=>{
-    p.x += p.vx; p.y += p.vy;
-    if (p.x < -60) p.x = W+60;
-    if (p.x > W+60) p.x = -60;
-    if (p.y > H+60) p.y = -60;
-    if (p.y < -60) p.y = H+60;
-    bg.beginPath();
-    bg.fillStyle = `rgba(255,209,102,${p.a})`;
-    bg.arc(p.x,p.y,p.r,0,Math.PI*2);
-    bg.fill();
-  });
+      const set = shuffle(quizzes.filter(q => q.module === module)).slice(0, 6); // 6 at a time
+      container.innerHTML = `
+        <div class="note">
+          <b>Quiz</b> — 6 questions randomized. Submit each question to get feedback. Correct answers are stored.
+        </div>
+        <div id="quizWrap${module}"></div>
+        <div class="toolbar" style="margin-top:12px;">
+          <div class="left">
+            <button class="btn" onclick="showQuiz(${module})">New Set</button>
+          </div>
+        </div>
+      `;
 
-  leaves.forEach(l=>{
-    l.y += l.s;
-    l.x += Math.sin(l.y/(90*DPR)) * l.sway * 0.08;
-    l.rot += l.drot;
-    if (l.y > H + 60){ l.y = -60; l.x = rand(0,W); }
-    drawLeaf(l);
-  });
+      const wrap = document.getElementById(`quizWrap${module}`);
+      set.forEach((q, idx)=>{
+        const box = document.createElement("div");
+        box.className = "quiz-question";
+        box.innerHTML = `<p>${idx+1}. ${escapeHTML(q.question)}</p>`;
 
-  requestAnimationFrame(bgLoop);
-}
-bgLoop();
+        if (q.type === "multiple") {
+          q.options.forEach(opt=>{
+            const lab = document.createElement("label");
+            lab.className = "opt";
+            lab.innerHTML = `<input type="radio" name="q_${module}_${q.id}" value="${escapeHTML(opt)}"><span>${escapeHTML(opt)}</span>`;
+            box.appendChild(lab);
+          });
+        } else if (q.type === "truefalse") {
+          ["true","false"].forEach(v=>{
+            const lab = document.createElement("label");
+            lab.className = "opt";
+            lab.innerHTML = `<input type="radio" name="q_${module}_${q.id}" value="${v}"><span>${v[0].toUpperCase()+v.slice(1)}</span>`;
+            box.appendChild(lab);
+          });
+        } else { // short
+          const input = document.createElement("input");
+          input.type = "text";
+          input.style.width = "100%";
+          input.style.padding = "12px";
+          input.style.borderRadius = "14px";
+          input.style.border = "1px solid rgba(11,27,19,.16)";
+          input.style.fontSize = "18px";
+          input.id = `short_${module}_${q.id}`;
+          box.appendChild(input);
+        }
 
-/* ===========================
-   MUSIC (WebAudio)
-=========================== */
-let audioCtx=null;
-let musicOn=false;
-let musicNodes=[];
-const musicBtn = document.getElementById("musicBtn");
-const startMusicTopBtn = document.getElementById("startMusicTopBtn");
+        const btn = document.createElement("button");
+        btn.className = "btn primary";
+        btn.textContent = "Submit";
+        btn.style.marginTop = "10px";
 
-async function ensureAudio(){
-  audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-  if (audioCtx.state==="suspended") await audioCtx.resume();
-}
-function startMusic(){
-  if (musicOn) return;
-  musicOn=true;
+        btn.onclick = ()=>{
+          let userAnswer;
+          if (q.type === "short"){
+            userAnswer = (document.getElementById(`short_${module}_${q.id}`).value || "").trim().toLowerCase();
+            const ok = userAnswer.includes((q.answer||"").toLowerCase());
+            renderFeedback(box, ok, q.explanation);
+            if (ok) state.correct[q.id] = true;
+          } else {
+            const checked = document.querySelector(`input[name="q_${module}_${q.id}"]:checked`);
+            if (!checked){
+              renderFeedback(box, false, "No answer selected.");
+              return;
+            }
+            const val = checked.value;
+            const ok = (q.type === "truefalse")
+              ? (String(q.answer) === (val==="true" ? "true":"false"))
+              : (val === q.answer);
+            renderFeedback(box, ok, q.explanation);
+            if (ok) state.correct[q.id] = true;
+          }
+          saveState();
+        };
 
-  const ctx=audioCtx;
-  const master=ctx.createGain();
-  master.gain.value = 0.06;
-  master.connect(ctx.destination);
+        box.appendChild(btn);
+        wrap.appendChild(box);
+      });
 
-  // wind
-  const bufferSize = 2*ctx.sampleRate;
-  const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-  const out = noiseBuffer.getChannelData(0);
-  for (let i=0;i<bufferSize;i++) out[i]=(Math.random()*2-1)*0.25;
-  const noise = ctx.createBufferSource(); noise.buffer=noiseBuffer; noise.loop=true;
+      updateStats();
+    }
 
-  const windFilter = ctx.createBiquadFilter(); windFilter.type="lowpass"; windFilter.frequency.value=520;
-  const windGain = ctx.createGain(); windGain.gain.value=0.7;
+    function renderFeedback(container, ok, explanation){
+      // remove old feedback if any
+      const old = container.querySelector(".feedback");
+      if (old) old.remove();
+      const p = document.createElement("div");
+      p.className = "feedback " + (ok ? "good":"bad");
+      p.innerHTML = ok ? `✅ <b>Correct.</b> ${escapeHTML(explanation)}` : `❌ <b>Incorrect.</b> ${escapeHTML(explanation)}`;
+      container.appendChild(p);
+    }
 
-  const lfo = ctx.createOscillator(); lfo.type="sine"; lfo.frequency.value=0.08;
-  const lfoGain = ctx.createGain(); lfoGain.gain.value=150;
-  lfo.connect(lfoGain); lfoGain.connect(windFilter.frequency);
+    function showAllQuizzes(){
+      const reviewArea = document.getElementById("reviewArea");
+      if (!reviewArea) return;
+      reviewArea.innerHTML = `<div class="note"><b>All Quizzes (50)</b> — open a module for randomized sets, or review questions here.</div>`;
 
-  noise.connect(windFilter); windFilter.connect(windGain); windGain.connect(master);
+      const list = document.createElement("div");
+      quizzes.forEach((q, i)=>{
+        const box = document.createElement("div");
+        box.className = "quiz-question";
+        const done = state.correct[q.id] ? "✅" : "—";
+        box.innerHTML = `<p>${i+1}. ${done} <span style="color:rgba(11,27,19,.55);font-weight:800;">(M${q.module})</span> ${escapeHTML(q.question)}</p>`;
+        const explain = document.createElement("div");
+        explain.className = "note";
+        explain.style.margin = "10px 0 0";
+        explain.style.borderStyle = "solid";
+        explain.style.borderColor = "rgba(11,27,19,.14)";
+        explain.style.background = "rgba(255,255,255,.55)";
+        explain.innerHTML = `<b>Answer:</b> ${escapeHTML(String(q.answer))}<br/><b>Why:</b> ${escapeHTML(q.explanation)}`;
+        box.appendChild(explain);
+        list.appendChild(box);
+      });
+      reviewArea.appendChild(list);
+      updateStats();
+    }
 
-  // pad
-  const padGain = ctx.createGain(); padGain.gain.value=0.55; padGain.connect(master);
-  const freqs = [196,220,247,294];
-  const oscs = freqs.map(f=>{
-    const o=ctx.createOscillator(); o.type="sine"; o.frequency.value=f;
-    const g=ctx.createGain(); g.gain.value=0.12;
-    o.connect(g); g.connect(padGain);
-    return {o,g};
-  });
+    /* ========= MATCHING GAME (extra interactivity per module) ========= */
+    function showMatching(module){
+      clearPractice(module);
+      const container = getPracticeContainer(module);
+      if (!container) return;
 
-  // birds
-  let chirpTimer=null;
-  function chirp(){
-    if (!musicOn) return;
-    const t=ctx.currentTime;
-    const o=ctx.createOscillator();
-    const g=ctx.createGain();
-    o.type="sine";
-    o.frequency.setValueAtTime(900+Math.random()*900,t);
-    o.frequency.exponentialRampToValueAtTime(1200+Math.random()*1200,t+0.09);
-    g.gain.setValueAtTime(0.0001,t);
-    g.gain.exponentialRampToValueAtTime(0.20,t+0.02);
-    g.gain.exponentialRampToValueAtTime(0.0001,t+0.14);
-    const hp=ctx.createBiquadFilter(); hp.type="highpass"; hp.frequency.value=600;
-    o.connect(hp); hp.connect(g); g.connect(master);
-    o.start(t); o.stop(t+0.16);
-    chirpTimer=setTimeout(chirp, 900+Math.random()*2200);
-  }
-  chirp();
+      const pool = flashcards.filter(f=>f.module===module);
+      const set = shuffle(pool).slice(0,6);
+      const terms = shuffle(set.map(x=>({id:x.id, text:x.term})));
+      const defs  = shuffle(set.map(x=>({id:x.id, text:x.definition})));
 
-  noise.start(); lfo.start(); oscs.forEach(x=>x.o.start());
+      container.innerHTML = `
+        <div class="note">
+          <b>Matching</b> — drag a term onto its correct definition.
+        </div>
+        <div class="matchGrid">
+          <div class="zone">
+            <b>Terms</b>
+            <div id="terms_${module}"></div>
+          </div>
+          <div class="zone">
+            <b>Definitions</b>
+            <div id="defs_${module}"></div>
+          </div>
+        </div>
+        <div class="toolbar" style="margin-top:12px;">
+          <div class="left">
+            <button class="btn" onclick="showMatching(${module})">New Match</button>
+          </div>
+        </div>
+      `;
 
-  musicNodes=[master,noise,windFilter,windGain,lfo,lfoGain,padGain,...oscs.map(x=>x.o)];
-  musicNodes.__chirpTimer = ()=>chirpTimer;
+      const termsEl = document.getElementById(`terms_${module}`);
+      const defsEl  = document.getElementById(`defs_${module}`);
 
-  musicBtn.textContent="Music: ON";
-  startMusicTopBtn.textContent="Music ON";
-  addXP(5, "music");
-}
-function stopMusic(){
-  if (!musicOn) return;
-  musicOn=false;
-  try{ musicNodes.forEach(n=>{ if (n && typeof n.stop==="function") try{n.stop(0);}catch{} }); }catch{}
-  const tfn = musicNodes.__chirpTimer;
-  if (tfn){ const t=tfn(); if (t) clearTimeout(t); }
-  musicNodes=[];
-  musicBtn.textContent="Music";
-  startMusicTopBtn.textContent="Start Music";
-}
-async function toggleMusic(){
-  await ensureAudio();
-  if (!musicOn) startMusic();
-  else stopMusic();
-  bumpStreak();
-}
-musicBtn.onclick = ()=>toggleMusic();
-startMusicTopBtn.onclick = ()=>toggleMusic();
+      let solved = 0;
 
-/* ===========================
-   UTIL
-=========================== */
-function shuffle(arr){
-  for (let i=arr.length-1;i>0;i--){
-    const j = Math.floor(Math.random()*(i+1));
-    [arr[i],arr[j]] = [arr[j],arr[i]];
-  }
-  return arr;
-}
-function escapeHTML(s){
-  return String(s)
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#39;");
-}
-function roundRect(ctx, x, y, w, h, r){
-  const rr = Math.min(r, w/2, h/2);
-  ctx.beginPath();
-  ctx.moveTo(x+rr, y);
-  ctx.arcTo(x+w, y, x+w, y+h, rr);
-  ctx.arcTo(x+w, y+h, x, y+h, rr);
-  ctx.arcTo(x, y+h, x, y, rr);
-  ctx.arcTo(x, y, x+w, y, rr);
-  ctx.closePath();
-}
+      terms.forEach(t=>{
+        const el = document.createElement("div");
+        el.className = "draggable";
+        el.draggable = true;
+        el.dataset.id = t.id;
+        el.textContent = t.text;
+        el.addEventListener("dragstart",(e)=>{
+          e.dataTransfer.setData("text/plain", t.id);
+        });
+        termsEl.appendChild(el);
+      });
 
-/* ===========================
-   INIT
-=========================== */
-renderNav();
-renderStats();
-openModule(currentModule,false);
-renderTools();
+      defs.forEach(d=>{
+        const dz = document.createElement("div");
+        dz.className = "dropDef";
+        dz.dataset.id = d.id;
+        dz.innerHTML = `<b style="display:block;margin-bottom:6px;">Definition</b>${escapeHTML(d.text)}`;
+        dz.addEventListener("dragover",(e)=>e.preventDefault());
+        dz.addEventListener("drop",(e)=>{
+          e.preventDefault();
+          const draggedId = e.dataTransfer.getData("text/plain");
+          const termEl = termsEl.querySelector(`.draggable[data-id="${draggedId}"]`);
+          if (!termEl) return;
 
-/* default: make it feel interactive immediately */
-toast("Tip: go Flashcards → use Space / ← / → / 1-3.");
-</script>
+          if (draggedId === d.id){
+            dz.style.borderColor = "rgba(22,163,74,.45)";
+            dz.style.background = "rgba(22,163,74,.10)";
+            dz.innerHTML = `<b style="display:block;margin-bottom:6px;">✅ Matched</b><div style="margin-bottom:8px;"><b>${escapeHTML(termEl.textContent)}</b></div>${escapeHTML(d.text)}`;
+            termEl.remove();
+            solved++;
+            if (solved === defs.length){
+              const done = document.createElement("div");
+              done.className = "note";
+              done.innerHTML = `<b>Complete.</b> Now do the quiz to lock it in.`;
+              container.appendChild(done);
+            }
+          } else {
+            dz.style.borderColor = "rgba(255,77,77,.40)";
+            dz.style.background = "rgba(255,77,77,.10)";
+            dz.animate([{transform:"translateX(0)"},{transform:"translateX(-8px)"},{transform:"translateX(8px)"},{transform:"translateX(0)"}], {duration:260});
+          }
+        });
+        defsEl.appendChild(dz);
+      });
+    }
+
+    /* ========= MIND MAP UI ========= */
+    function showMindMap(module) {
+      clearPractice(module);
+      const container = getPracticeContainer(module);
+      if (!container) return;
+
+      const maps = mindmaps.filter(m => (m.module===module || m.module===0)).slice(0, 3); // 3 maps per module view
+      container.innerHTML = `<div class="note"><b>Mind Maps</b> — click to expand/collapse. Some nodes jump to modules.</div>`;
+
+      maps.forEach(m=>{
+        const mapDiv = document.createElement("div");
+        mapDiv.className = "mindmap";
+        mapDiv.innerHTML = `<div class="node">${escapeHTML(m.title)} <span style="font-size:14px;font-weight:800;color:rgba(11,27,19,.55);">(${m.id})</span><div class="child"></div></div>`;
+        const node = mapDiv.querySelector(".node");
+        const child = mapDiv.querySelector(".child");
+
+        child.innerHTML = `<ul style="margin:0;padding-left:18px;">
+          ${m.nodes.map(n=>`
+            <li style="margin:8px 0;">
+              ${n.link ? `<a href="#" onclick="showSection('${n.link}'); return false;" style="color:#0077cc;font-weight:900;text-decoration:none;">${escapeHTML(n.text)}</a>` : `<span>${escapeHTML(n.text)}</span>`}
+              ${n.children ? `<ul style="margin:6px 0 0 18px;">${n.children.map(c=>`<li>${escapeHTML(c.text)}</li>`).join("")}</ul>` : ""}
+            </li>
+          `).join("")}
+        </ul>`;
+
+        node.addEventListener("click", ()=>{
+          node.classList.toggle("expanded");
+          mapDiv.classList.toggle("expanded");
+          markMindMapExplored(m.id);
+        });
+
+        container.appendChild(mapDiv);
+      });
+
+      updateStats();
+    }
+
+    function showAllMindMaps() {
+      const reviewArea = document.getElementById("reviewArea");
+      if (!reviewArea) return;
+      reviewArea.innerHTML = `<div class="note"><b>All Mind Maps (25)</b> — click map title to expand.</div>`;
+
+      mindmaps.forEach(m=>{
+        const mapDiv = document.createElement("div");
+        mapDiv.className = "mindmap";
+        mapDiv.style.marginBottom = "12px";
+        mapDiv.innerHTML = `<div class="node">${escapeHTML(m.title)} <span style="font-size:14px;font-weight:800;color:rgba(11,27,19,.55);">(${m.id})</span><div class="child"></div></div>`;
+        const node = mapDiv.querySelector(".node");
+        const child = mapDiv.querySelector(".child");
+
+        child.innerHTML = `<ul style="margin:0;padding-left:18px;">
+          ${m.nodes.map(n=>`
+            <li style="margin:8px 0;">
+              ${m.link ? `<a href="#" onclick="showSection('${m.link}'); return false;" style="color:#0077cc;font-weight:900;text-decoration:none;">${escapeHTML(n.text)}</a>` : `<span>${escapeHTML(n.text)}</span>`}
+              ${n.children ? `<ul style="margin:6px 0 0 18px;">${n.children.map(c=>`<li>${escapeHTML(c.text)}</li>`).join("")}</ul>` : ""}
+            </li>
+          `).join("")}
+        </ul>`;
+
+        node.addEventListener("click", ()=>{
+          node.classList.toggle("expanded");
+          mapDiv.classList.toggle("expanded");
+          markMindMapExplored(m.id);
+        });
+
+        reviewArea.appendChild(mapDiv);
+      });
+
+      updateStats();
+    }
+
+    /* ========= BACKGROUND MUSIC (OFFLINE WebAudio) ========= */
+    let audioCtx = null;
+    let musicOn = false;
+    let nodes = [];
+    let chirpTimer = null;
+
+    async function ensureAudio(){
+      audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === "suspended") await audioCtx.resume();
+    }
+
+    function startMusic(){
+      if (musicOn) return;
+      musicOn = true;
+
+      const ctx = audioCtx;
+      const master = ctx.createGain();
+      master.gain.value = 0.06;  // soft
+      master.connect(ctx.destination);
+
+      // wind noise
+      const bufferSize = 2 * ctx.sampleRate;
+      const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const data = noiseBuffer.getChannelData(0);
+      for (let i=0;i<bufferSize;i++) data[i]=(Math.random()*2-1)*0.22;
+      const noise = ctx.createBufferSource();
+      noise.buffer = noiseBuffer;
+      noise.loop = true;
+
+      const windFilter = ctx.createBiquadFilter();
+      windFilter.type = "lowpass";
+      windFilter.frequency.value = 520;
+
+      const windGain = ctx.createGain();
+      windGain.gain.value = 0.75;
+
+      // slow filter movement
+      const lfo = ctx.createOscillator();
+      lfo.type = "sine";
+      lfo.frequency.value = 0.08;
+      const lfoGain = ctx.createGain();
+      lfoGain.gain.value = 140;
+      lfo.connect(lfoGain);
+      lfoGain.connect(windFilter.frequency);
+
+      noise.connect(windFilter);
+      windFilter.connect(windGain);
+      windGain.connect(master);
+
+      // soft pad
+      const padGain = ctx.createGain();
+      padGain.gain.value = 0.55;
+      padGain.connect(master);
+
+      const freqs = [196, 220, 247, 294]; // gentle chord tones
+      const oscs = freqs.map(f=>{
+        const o = ctx.createOscillator();
+        o.type = "sine";
+        o.frequency.value = f;
+        const g = ctx.createGain();
+        g.gain.value = 0.12;
+        o.connect(g); g.connect(padGain);
+        return o;
+      });
+
+      // bird chirps
+      function chirp(){
+        if (!musicOn) return;
+        const t = ctx.currentTime;
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = "sine";
+        o.frequency.setValueAtTime(900+Math.random()*900, t);
+        o.frequency.exponentialRampToValueAtTime(1200+Math.random()*1200, t+0.09);
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(0.20, t+0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, t+0.14);
+        const hp = ctx.createBiquadFilter();
+        hp.type = "highpass";
+        hp.frequency.value = 600;
+        o.connect(hp); hp.connect(g); g.connect(master);
+        o.start(t); o.stop(t+0.16);
+        chirpTimer = setTimeout(chirp, 900 + Math.random()*2200);
+      }
+
+      noise.start();
+      lfo.start();
+      oscs.forEach(o=>o.start());
+      chirp();
+
+      nodes = [master, noise, windFilter, windGain, lfo, lfoGain, padGain, ...oscs];
+
+      document.getElementById("musicBtn").textContent = "Stop Music";
+      state.musicOn = true; saveState();
+    }
+
+    function stopMusic(){
+      if (!musicOn) return;
+      musicOn = false;
+      try{
+        nodes.forEach(n=>{
+          if (n && typeof n.stop === "function"){
+            try{ n.stop(0); }catch{}
+          }
+        });
+      }catch{}
+      nodes = [];
+      if (chirpTimer) clearTimeout(chirpTimer);
+      chirpTimer = null;
+
+      document.getElementById("musicBtn").textContent = "Start Music";
+      state.musicOn = false; saveState();
+    }
+
+    async function toggleMusic(){
+      await ensureAudio();
+      if (!musicOn) startMusic(); else stopMusic();
+    }
+
+    document.getElementById("musicBtn").addEventListener("click", toggleMusic);
+
+    /* ========= BACKGROUND CANVAS (bright nature motion) ========= */
+    const bgCanvas = document.getElementById("bgCanvas");
+    const bg = bgCanvas.getContext("2d");
+    let W=0,H=0,DPR=1;
+    const clouds = [];
+    const leaves = [];
+    const pollen = [];
+
+    function resizeBG(){
+      DPR = devicePixelRatio || 1;
+      W = bgCanvas.width = innerWidth * DPR;
+      H = bgCanvas.height = innerHeight * DPR;
+      bgCanvas.style.width = innerWidth + "px";
+      bgCanvas.style.height = innerHeight + "px";
+      initBG();
+    }
+    window.addEventListener("resize", resizeBG);
+
+    function rand(a,b){ return a + Math.random()*(b-a); }
+
+    function initBG(){
+      clouds.length=0; leaves.length=0; pollen.length=0;
+
+      const cloudCount = Math.round(Math.min(10, Math.max(5, innerWidth/220)));
+      const leafCount  = Math.round(Math.min(48, Math.max(20, innerWidth/26)));
+      const pollCount  = Math.round(Math.min(90, Math.max(40, innerWidth/18)));
+
+      for (let i=0;i<cloudCount;i++){
+        clouds.push({ x:rand(0,W), y:rand(0,H*0.45), w:rand(170,320)*DPR, h:rand(60,110)*DPR, vx:rand(0.05,0.13)*DPR, a:rand(0.08,0.16) });
+      }
+      for (let i=0;i<leafCount;i++){
+        leaves.push({ x:rand(0,W), y:rand(0,H), r:rand(10,24)*DPR, s:rand(0.35,1.10)*DPR, rot:rand(0,Math.PI*2), drot:rand(-0.012,0.012), sway:rand(0.6,2.2)*DPR });
+      }
+      for (let i=0;i<pollCount;i++){
+        pollen.push({ x:rand(0,W), y:rand(0,H), r:rand(1.2,3.1)*DPR, vx:rand(-0.06,0.06)*DPR, vy:rand(-0.03,0.10)*DPR, a:rand(0.10,0.22) });
+      }
+    }
+
+    function drawSun(){
+      const cx=W*0.78, cy=H*0.14;
+      const r1=Math.min(W,H)*0.10;
+      const r2=Math.min(W,H)*0.24;
+      const g=bg.createRadialGradient(cx,cy,r1,cx,cy,r2);
+      g.addColorStop(0,"rgba(255,209,102,0.36)");
+      g.addColorStop(1,"rgba(255,209,102,0.00)");
+      bg.fillStyle=g;
+      bg.beginPath(); bg.arc(cx,cy,r2,0,Math.PI*2); bg.fill();
+    }
+
+    function drawCloud(c){
+      bg.save();
+      bg.translate(c.x,c.y);
+      bg.fillStyle=`rgba(255,255,255,${c.a})`;
+      bg.beginPath();
+      bg.ellipse(0,0,c.w*0.32,c.h*0.35,0,0,Math.PI*2);
+      bg.ellipse(c.w*0.18,-c.h*0.10,c.w*0.28,c.h*0.30,0,0,Math.PI*2);
+      bg.ellipse(-c.w*0.18,-c.h*0.12,c.w*0.26,c.h*0.28,0,0,Math.PI*2);
+      bg.ellipse(0,-c.h*0.20,c.w*0.22,c.h*0.26,0,0,Math.PI*2);
+      bg.fill();
+      bg.restore();
+    }
+
+    function drawLeaf(l){
+      bg.save();
+      bg.translate(l.x,l.y);
+      bg.rotate(l.rot);
+      const grad=bg.createRadialGradient(0,0,1,0,0,l.r);
+      grad.addColorStop(0,"rgba(34,197,94,0.22)");
+      grad.addColorStop(1,"rgba(0,163,255,0.06)");
+      bg.fillStyle=grad;
+      bg.beginPath();
+      bg.ellipse(0,0,l.r*0.55,l.r,0,0,Math.PI*2);
+      bg.fill();
+      bg.strokeStyle="rgba(11,27,19,0.10)";
+      bg.lineWidth=1*DPR;
+      bg.beginPath();
+      bg.moveTo(0,-l.r*0.85);
+      bg.lineTo(0,l.r*0.85);
+      bg.stroke();
+      bg.restore();
+    }
+
+    function bgLoop(){
+      bg.clearRect(0,0,W,H);
+
+      const haze=bg.createRadialGradient(W*0.25,H*0.10,0,W*0.25,H*0.10,Math.min(W,H)*0.55);
+      haze.addColorStop(0,"rgba(0,163,255,0.08)");
+      haze.addColorStop(1,"rgba(0,0,0,0)");
+      bg.fillStyle=haze;
+      bg.fillRect(0,0,W,H);
+
+      drawSun();
+
+      clouds.forEach(c=>{
+        c.x += c.vx;
+        if (c.x > W + c.w) c.x = -c.w;
+        drawCloud(c);
+      });
+
+      pollen.forEach(p=>{
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < -60) p.x = W+60;
+        if (p.x > W+60) p.x = -60;
+        if (p.y > H+60) p.y = -60;
+        if (p.y < -60) p.y = H+60;
+        bg.beginPath();
+        bg.fillStyle = `rgba(255,209,102,${p.a})`;
+        bg.arc(p.x,p.y,p.r,0,Math.PI*2);
+        bg.fill();
+      });
+
+      leaves.forEach(l=>{
+        l.y += l.s;
+        l.x += Math.sin(l.y/(90*DPR)) * l.sway * 0.08;
+        l.rot += l.drot;
+        if (l.y > H + 60){ l.y = -60; l.x = rand(0,W); }
+        drawLeaf(l);
+      });
+
+      requestAnimationFrame(bgLoop);
+    }
+
+    resizeBG();
+    bgLoop();
+
+    /* ========= INIT ========= */
+    updateStats();
+
+    // keep nav highlight synced
+    showSection("home");
+
+    // restore music state (do NOT auto-start; just set button text)
+    if (state.musicOn){
+      document.getElementById("musicBtn").textContent = "Stop Music";
+      // can't autoplay; user must click once.
+      state.musicOn = false; saveState();
+    }
+  </script>
 </body>
 </html>
