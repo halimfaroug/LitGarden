@@ -1,2240 +1,1962 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>ENGL280: An Introduction to Literature — Interactive Study Platform</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ENGL280 — Interactive Study Platform</title>
 
-  <!--
-    Changes vs previous:
-    - Brighter, nature-themed palette (fresh greens/sky)
-    - Much brighter background (daylight)
-    - Bigger font across UI
-    - Better-looking font stack (Poppins-like; offline-safe)
-    - Background music: offline WebAudio “nature ambience” (birds + wind + soft pad)
-      NOTE: Browsers require a user click to start audio.
-  -->
+<style>
+  :root{
+    --bg1:#e9fff6; --bg2:#eaf7ff; --bg3:#fff7e7;
+    --panel: rgba(255,255,255,.78);
+    --panel2: rgba(255,255,255,.62);
+    --stroke: rgba(10,35,18,.16);
+    --text: rgba(7,18,11,.92);
+    --muted: rgba(7,18,11,.62);
 
-  <style>
-    :root{
-      /* Bright nature theme */
-      --bgTop:#eafcff;
-      --bgMid:#e9fff1;
-      --bgBot:#f7fff9;
+    --sky:#00a3ff;
+    --leaf:#22c55e;
+    --sun:#ffd166;
+    --danger:#ff4d4d;
+    --ok:#16a34a;
 
-      --panel: rgba(255,255,255,.72);
-      --panel2: rgba(255,255,255,.58);
-      --stroke: rgba(12,40,24,.14);
+    --radius: 20px;
+    --shadow: 0 18px 60px rgba(6, 28, 14, .14);
+    --shadow2: 0 10px 30px rgba(6, 28, 14, .12);
 
-      --text: rgba(8,20,12,.92);
-      --muted: rgba(8,20,12,.62);
+    --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+            Arial, "Noto Sans", "Liberation Sans", sans-serif;
 
-      --accent:#00a3ff;     /* sky */
-      --accent2:#22c55e;    /* leaf green */
-      --accent3:#ffd166;    /* warm sunlight */
+    --base: 24px;
+    --h1: 44px;
+    --h2: 30px;
+    --h3: 24px;
+    --small: 17px;
+  }
 
-      --danger:#ff4d4d;
-      --ok:#16a34a;
+  *{ box-sizing:border-box; }
+  html,body{ height:100%; }
+  body{
+    margin:0;
+    font-family:var(--font);
+    font-size:var(--base);
+    color:var(--text);
+    overflow:hidden;
+    background:
+      radial-gradient(1200px 800px at 10% 10%, rgba(0,163,255,.18), transparent 55%),
+      radial-gradient(1000px 700px at 90% 15%, rgba(34,197,94,.18), transparent 55%),
+      radial-gradient(900px 600px at 65% 90%, rgba(255,209,102,.14), transparent 55%),
+      linear-gradient(180deg, var(--bg2), var(--bg1), var(--bg3));
+  }
 
-      --radius: 20px;
-      --shadow: 0 18px 60px rgba(6, 28, 14, .14);
-      --shadow2: 0 10px 30px rgba(6, 28, 14, .12);
+  /* animated background */
+  #bgCanvas{ position:fixed; inset:0; z-index:-2; }
+  .vignette{
+    position:fixed; inset:0; z-index:-1; pointer-events:none;
+    background:
+      radial-gradient(900px 700px at 50% -10%, rgba(255,255,255,.92), transparent 60%),
+      radial-gradient(900px 700px at 10% 60%, rgba(0,163,255,.12), transparent 60%),
+      radial-gradient(900px 700px at 90% 70%, rgba(34,197,94,.12), transparent 60%),
+      radial-gradient(900px 700px at 70% 95%, rgba(255,209,102,.10), transparent 60%);
+  }
 
-      /* Bigger font */
-      --base: 24px;
-      --h1: 44px;
-      --h2: 30px;
-      --h3: 24px;
-      --small: 17px;
+  .app{ height:100%; display:grid; grid-template-columns: 360px 1fr; }
+  .sidebar{
+    padding:22px;
+    border-right:1px solid var(--stroke);
+    background: linear-gradient(180deg, rgba(255,255,255,.78), rgba(255,255,255,.58));
+    backdrop-filter: blur(10px);
+    overflow:auto;
+  }
+  .brand{ display:flex; align-items:center; gap:12px; margin-bottom: 14px; }
+  .logo{
+    width:54px; height:54px; border-radius:18px;
+    background: radial-gradient(circle at 30% 25%, rgba(0,163,255,.90), rgba(34,197,94,.55) 55%, rgba(255,209,102,.42));
+    box-shadow: var(--shadow2);
+    position:relative; overflow:hidden;
+  }
+  .logo::after{
+    content:""; position:absolute; inset:-45%;
+    background: conic-gradient(from 180deg, rgba(255,255,255,0), rgba(255,255,255,.55), rgba(255,255,255,0));
+    animation: spin 6s linear infinite;
+  }
+  @keyframes spin{ to{ transform:rotate(360deg);} }
 
-      /* Better-looking offline-safe font stack (Poppins-like) */
-      --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
-              Arial, "Noto Sans", "Liberation Sans", sans-serif;
-    }
+  .brand h1{ font-size: 24px; margin:0; line-height:1.1; letter-spacing:.3px; }
+  .sub{ font-size: var(--small); color:var(--muted); margin-top:4px; }
 
-    *{ box-sizing:border-box; }
-    html,body{ height:100%; }
-    body{
-      margin:0;
-      font-family: var(--font);
-      font-size: var(--base);
-      color: var(--text);
-      overflow:hidden;
-      background:
-        radial-gradient(1200px 800px at 15% 10%, rgba(0,163,255,.18), transparent 55%),
-        radial-gradient(1000px 700px at 85% 15%, rgba(34,197,94,.18), transparent 55%),
-        radial-gradient(900px 600px at 65% 90%, rgba(255,209,102,.12), transparent 55%),
-        linear-gradient(180deg, var(--bgTop), var(--bgMid), var(--bgBot));
-    }
+  .pillRow{ display:flex; flex-wrap:wrap; gap:10px; margin: 12px 0 16px; }
+  .pill{
+    padding: 10px 12px;
+    border-radius:999px;
+    border:1px solid var(--stroke);
+    background: var(--panel2);
+    box-shadow: 0 10px 24px rgba(6,28,14,.08);
+    font-size: 16px;
+    cursor:pointer;
+    user-select:none;
+    transition: transform .12s ease, background .2s ease, border-color .2s ease;
+  }
+  .pill:hover{ transform: translateY(-1px); }
+  .pill:active{ transform: translateY(0) scale(.99); }
 
-    /* Background canvas */
-    #bgCanvas{
-      position:fixed;
-      inset:0;
-      z-index:-2;
-    }
+  .searchBox{ position:sticky; top:0; padding-top: 6px; z-index:5; }
+  .search{
+    display:flex; gap:10px; align-items:center;
+    padding: 12px 12px;
+    border-radius:16px;
+    border:1px solid var(--stroke);
+    background: rgba(255,255,255,.80);
+    box-shadow: var(--shadow2);
+  }
+  .search input{
+    flex:1; border:0; outline:none; background:transparent;
+    color:var(--text); font-size: 18px;
+  }
+  .kbd{
+    font-size:12px; color:var(--muted);
+    border:1px solid var(--stroke);
+    padding: 4px 8px;
+    border-radius:10px;
+    background: rgba(255,255,255,.55);
+    white-space:nowrap;
+  }
 
-    /* Brighter vignette (daylight haze) */
-    .vignette{
-      position:fixed;
-      inset:0;
-      z-index:-1;
-      pointer-events:none;
-      background:
-        radial-gradient(900px 700px at 50% -10%, rgba(255,255,255,.92), transparent 60%),
-        radial-gradient(900px 700px at 10% 60%, rgba(0,163,255,.12), transparent 60%),
-        radial-gradient(900px 700px at 90% 70%, rgba(34,197,94,.12), transparent 60%),
-        radial-gradient(900px 700px at 70% 95%, rgba(255,209,102,.10), transparent 60%);
-      opacity:1;
-    }
+  .nav{ margin-top: 14px; display:flex; flex-direction:column; gap:10px; }
+  .nav button{
+    width:100%;
+    text-align:left;
+    padding: 15px 14px;
+    border-radius:16px;
+    border:1px solid var(--stroke);
+    background: rgba(255,255,255,.70);
+    color: var(--text);
+    font-size: 18px;
+    cursor:pointer;
+    transition: transform .12s ease, background .2s ease, border-color .2s ease;
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    box-shadow: 0 10px 24px rgba(6,28,14,.07);
+  }
+  .nav button:hover{
+    transform: translateY(-1px);
+    background: rgba(255,255,255,.86);
+    border-color: rgba(0,163,255,.35);
+  }
+  .nav button.active{
+    border-color: rgba(34,197,94,.45);
+    background: linear-gradient(90deg, rgba(34,197,94,.18), rgba(0,163,255,.12));
+  }
+  .nav small{ color: var(--muted); font-size: 14px; }
 
-    .app{
-      height:100%;
-      display:grid;
-      grid-template-columns: 360px 1fr;
-      gap:0;
-    }
+  .progressCard{
+    margin-top: 16px;
+    padding: 14px;
+    border-radius: var(--radius);
+    border:1px solid var(--stroke);
+    background: rgba(255,255,255,.74);
+    box-shadow: var(--shadow2);
+  }
+  .progressCard h3{ margin:0 0 10px; font-size: 19px; }
+  .bar{
+    height: 12px; border-radius:999px;
+    background: rgba(0,0,0,.05);
+    overflow:hidden; border:1px solid rgba(0,0,0,.07);
+  }
+  .bar > div{
+    height:100%; width:0%;
+    background: linear-gradient(90deg, rgba(0,163,255,.92), rgba(34,197,94,.82), rgba(255,209,102,.72));
+    border-radius: 999px;
+    transition: width .35s ease;
+  }
+  .stats{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top: 10px; font-size: 15px; color: var(--muted); }
+  .stats b{ color: var(--text); font-weight: 800; }
 
-    /* Sidebar */
-    .sidebar{
-      padding: 22px;
-      border-right: 1px solid var(--stroke);
-      background: linear-gradient(180deg, rgba(255,255,255,.75), rgba(255,255,255,.55));
-      backdrop-filter: blur(10px);
-      overflow:auto;
-    }
+  .footer{
+    margin-top: 16px;
+    padding: 12px 14px;
+    border-radius: 18px;
+    border:1px solid var(--stroke);
+    background: rgba(255,255,255,.74);
+    color: var(--muted);
+    font-size: 15px;
+    box-shadow: 0 10px 24px rgba(6,28,14,.06);
+  }
 
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      margin-bottom: 14px;
-    }
-    .logo{
-      width:52px;height:52px;
-      border-radius: 16px;
-      background: radial-gradient(circle at 30% 25%, rgba(0,163,255,.85), rgba(34,197,94,.55) 55%, rgba(255,209,102,.35));
-      box-shadow: var(--shadow2);
-      position:relative;
-      overflow:hidden;
-    }
-    .logo::after{
-      content:"";
-      position:absolute; inset:-45%;
-      background: conic-gradient(from 180deg, rgba(255,255,255,0), rgba(255,255,255,.55), rgba(255,255,255,0));
-      animation: spin 6s linear infinite;
-    }
-    @keyframes spin{ to{ transform:rotate(360deg);} }
+  .content{ padding: 26px; overflow:auto; position:relative; }
+  .topbar{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom: 18px; flex-wrap:wrap; }
+  .titleBlock h2{ margin:0; font-size: var(--h1); letter-spacing:.2px; line-height:1.05; }
+  .titleBlock p{ margin:10px 0 0; color: var(--muted); font-size: 20px; max-width: 980px; }
 
-    .brand h1{
-      font-size: 24px;
-      margin:0;
-      letter-spacing:.3px;
-      line-height:1.1;
-    }
-    .brand .sub{
-      font-size: var(--small);
-      color: var(--muted);
-      margin-top:4px;
-    }
+  .actions{ display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
+  .btn{
+    padding: 12px 14px;
+    border-radius: 16px;
+    border:1px solid var(--stroke);
+    background: rgba(255,255,255,.76);
+    color: var(--text);
+    font-size: 16px;
+    cursor:pointer;
+    transition: transform .12s ease, background .2s ease, border-color .2s ease;
+    user-select:none;
+    box-shadow: 0 10px 24px rgba(6,28,14,.07);
+  }
+  .btn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.90); }
+  .btn:active{ transform: translateY(0) scale(.99); }
+  .btn.primary{
+    border-color: rgba(0,163,255,.35);
+    background: linear-gradient(90deg, rgba(0,163,255,.18), rgba(34,197,94,.12));
+  }
+  .btn.danger{
+    border-color: rgba(255,77,77,.45);
+    background: rgba(255,77,77,.12);
+  }
 
-    .pillRow{
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-      margin: 12px 0 16px;
-    }
-    .pill{
-      padding: 10px 12px;
-      border-radius: 999px;
-      border:1px solid var(--stroke);
-      background: var(--panel2);
-      box-shadow: 0 10px 24px rgba(6,28,14,.08);
-      font-size: 16px;
-      cursor:pointer;
-      user-select:none;
-      transition: transform .12s ease, background .2s ease, border-color .2s ease;
-    }
-    .pill:hover{ transform: translateY(-1px); }
-    .pill:active{ transform: translateY(0px) scale(.99); }
+  .grid{ display:grid; grid-template-columns: 1.15fr .85fr; gap: 16px; align-items:start; }
 
-    .searchBox{
-      position:sticky;
-      top:0;
-      padding-top: 6px;
-      z-index:5;
-    }
-    .search{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      padding: 12px 12px;
-      border-radius: 16px;
-      border:1px solid var(--stroke);
-      background: rgba(255,255,255,.75);
-      box-shadow: var(--shadow2);
-    }
-    .search input{
-      flex:1;
-      border:0;
-      outline:none;
-      background:transparent;
-      color: var(--text);
-      font-size: 18px;
-    }
-    .kbd{
-      font-size: 12px;
-      color: var(--muted);
-      border:1px solid var(--stroke);
-      padding: 4px 8px;
-      border-radius: 10px;
-      white-space:nowrap;
-      background: rgba(255,255,255,.55);
-    }
+  .card{
+    border: 1px solid var(--stroke);
+    background: rgba(255,255,255,.74);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow:hidden;
+    transform: translateY(6px);
+    opacity: .0;
+    transition: transform .35s ease, opacity .35s ease;
+  }
+  .card.show{ transform: translateY(0); opacity: 1; }
 
-    .nav{
-      margin-top: 14px;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-    }
-    .nav button{
-      width:100%;
-      text-align:left;
-      padding: 15px 14px;
-      border-radius: 16px;
-      border:1px solid var(--stroke);
-      background: rgba(255,255,255,.68);
-      color: var(--text);
-      font-size: 18px;
-      cursor:pointer;
-      transition: transform .12s ease, background .2s ease, border-color .2s ease;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      box-shadow: 0 10px 24px rgba(6,28,14,.07);
-    }
-    .nav button:hover{
-      transform: translateY(-1px);
-      background: rgba(255,255,255,.82);
-      border-color: rgba(0,163,255,.35);
-    }
-    .nav button.active{
-      border-color: rgba(34,197,94,.45);
-      background: linear-gradient(90deg, rgba(34,197,94,.18), rgba(0,163,255,.12));
-    }
-    .nav small{
-      color: var(--muted);
-      font-size: 14px;
-    }
+  .cardHeader{
+    padding: 16px 18px;
+    border-bottom: 1px solid var(--stroke);
+    background: linear-gradient(180deg, rgba(255,255,255,.88), rgba(255,255,255,.66));
+    display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+  }
+  .cardHeader h3{ margin:0; font-size: var(--h2); }
+  .cardBody{ padding: 18px; }
 
-    .progressCard{
-      margin-top: 16px;
-      padding: 14px 14px;
-      border-radius: var(--radius);
-      border:1px solid var(--stroke);
-      background: rgba(255,255,255,.70);
-      box-shadow: var(--shadow2);
-    }
-    .progressCard h3{
-      margin:0 0 10px;
-      font-size: 19px;
-    }
-    .bar{
-      height: 12px;
-      border-radius: 999px;
-      background: rgba(0,0,0,.05);
-      overflow:hidden;
-      border:1px solid rgba(0,0,0,.07);
-    }
-    .bar > div{
-      height:100%;
-      width:0%;
-      background: linear-gradient(90deg, rgba(0,163,255,.92), rgba(34,197,94,.82), rgba(255,209,102,.72));
-      border-radius: 999px;
-      transition: width .35s ease;
-    }
-    .stats{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:10px;
-      margin-top: 10px;
-      font-size: 15px;
-      color: var(--muted);
-    }
-    .stats b{ color: var(--text); font-weight: 800; }
+  .chips{ display:flex; flex-wrap:wrap; gap:10px; }
+  .chip{
+    padding: 10px 12px;
+    border-radius:999px;
+    border:1px solid var(--stroke);
+    background: rgba(255,255,255,.72);
+    font-size: 16px;
+    cursor:pointer;
+    transition: transform .12s ease, background .2s ease, border-color .2s ease;
+    user-select:none;
+    box-shadow: 0 8px 18px rgba(6,28,14,.06);
+  }
+  .chip:hover{ transform: translateY(-1px); background: rgba(255,255,255,.90); border-color: rgba(0,163,255,.28); }
+  .chip.active{ border-color: rgba(34,197,94,.45); background: rgba(34,197,94,.12); }
 
-    /* Main content */
-    .content{
-      padding: 26px;
-      overflow:auto;
-      position:relative;
-    }
+  .note{
+    padding: 14px;
+    border-radius: 16px;
+    border:1px dashed rgba(34,197,94,.35);
+    background: rgba(34,197,94,.08);
+    color: rgba(7,18,11,.78);
+    font-size: 17px;
+    line-height: 1.55;
+    margin-top: 14px;
+  }
 
-    .topbar{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      margin-bottom: 18px;
-      flex-wrap:wrap;
-    }
-    .titleBlock h2{
-      margin:0;
-      font-size: var(--h1);
-      letter-spacing:.2px;
-      line-height:1.05;
-    }
-    .titleBlock p{
-      margin:10px 0 0;
-      color: var(--muted);
-      font-size: 20px;
-      max-width: 980px;
-    }
+  .cardBody p{ font-size: 22px; line-height:1.6; margin: 10px 0; }
+  .cardBody li{ font-size: 21px; line-height:1.55; margin: 8px 0; }
 
-    .actions{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      justify-content:flex-end;
-    }
-    .btn{
-      padding: 12px 14px;
-      border-radius: 16px;
-      border:1px solid var(--stroke);
-      background: rgba(255,255,255,.72);
-      color: var(--text);
-      font-size: 16px;
-      cursor:pointer;
-      transition: transform .12s ease, background .2s ease, border-color .2s ease;
-      user-select:none;
-      box-shadow: 0 10px 24px rgba(6,28,14,.07);
-    }
-    .btn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.86); }
-    .btn:active{ transform: translateY(0px) scale(.99); }
+  /* INTERACTIVITY PANELS */
+  .panelRow{ display:flex; gap:10px; flex-wrap:wrap; margin-bottom: 12px; align-items:center; justify-content:space-between; }
+  .counterPills{ display:flex; gap:8px; flex-wrap:wrap; }
+  .tag{
+    padding: 7px 10px;
+    border-radius: 999px;
+    border:1px solid var(--stroke);
+    background: rgba(255,255,255,.74);
+    color: var(--muted);
+    font-size: 14px;
+    box-shadow: 0 8px 18px rgba(6,28,14,.05);
+  }
 
-    .btn.primary{
-      border-color: rgba(0,163,255,.35);
-      background: linear-gradient(90deg, rgba(0,163,255,.18), rgba(34,197,94,.12));
-    }
-    .btn.danger{
-      border-color: rgba(255,77,77,.45);
-      background: rgba(255,77,77,.12);
-    }
+  /* Flashcards */
+  .flashArea{ display:grid; gap: 14px; }
+  .flashCard{
+    min-height: 310px;
+    border-radius: 22px;
+    border: 1px solid var(--stroke);
+    background:
+      radial-gradient(900px 340px at 20% 10%, rgba(0,163,255,.18), transparent 60%),
+      radial-gradient(900px 340px at 80% 20%, rgba(34,197,94,.16), transparent 55%),
+      radial-gradient(900px 340px at 60% 95%, rgba(255,209,102,.12), transparent 55%),
+      rgba(255,255,255,.78);
+    box-shadow: var(--shadow);
+    padding: 18px;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    cursor:pointer;
+    user-select:none;
+    transition: transform .18s ease, border-color .18s ease;
+    position:relative;
+    overflow:hidden;
+  }
+  .flashCard:hover{ transform: translateY(-2px); border-color: rgba(0,163,255,.35); }
+  .flashCard:active{ transform: translateY(0) scale(.995); }
 
-    .grid{
-      display:grid;
-      grid-template-columns: 1.15fr .85fr;
-      gap: 16px;
-      align-items:start;
-    }
+  .flashFace{
+    font-size: 40px;
+    line-height:1.12;
+    letter-spacing:.2px;
+    font-weight: 900;
+  }
+  .flashBack{
+    font-size: 24px;
+    line-height:1.6;
+    color: rgba(7,18,11,.74);
+    margin-top: 14px;
+    display:none;
+    font-weight: 550;
+  }
+  .flashCard.revealed .flashBack{ display:block; }
 
-    .card{
-      border: 1px solid var(--stroke);
-      background: rgba(255,255,255,.70);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-    }
-    .cardHeader{
-      padding: 16px 18px;
-      border-bottom: 1px solid var(--stroke);
-      background: linear-gradient(180deg, rgba(255,255,255,.82), rgba(255,255,255,.62));
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-    .cardHeader h3{
-      margin:0;
-      font-size: var(--h2);
-    }
-    .cardBody{
-      padding: 18px;
-    }
+  .lvlRow{ display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+  .lvlBtn{
+    padding: 10px 12px;
+    border-radius: 14px;
+    border:1px solid var(--stroke);
+    background: rgba(255,255,255,.80);
+    color: var(--text);
+    font-size: 14px;
+    cursor:pointer;
+    box-shadow: 0 8px 18px rgba(6,28,14,.05);
+  }
+  .lvlBtn.active{ border-color: rgba(34,197,94,.50); background: rgba(34,197,94,.14); }
 
-    .chips{
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-    }
-    .chip{
-      padding: 10px 12px;
-      border-radius: 999px;
-      border:1px solid var(--stroke);
-      background: rgba(255,255,255,.68);
-      font-size: 16px;
-      cursor:pointer;
-      transition: transform .12s ease, background .2s ease, border-color .2s ease;
-      user-select:none;
-      box-shadow: 0 8px 18px rgba(6,28,14,.06);
-    }
-    .chip:hover{ transform: translateY(-1px); background: rgba(255,255,255,.84); border-color: rgba(0,163,255,.28);}
-    .chip.active{ border-color: rgba(34,197,94,.45); background: rgba(34,197,94,.12); }
+  /* Quiz */
+  .quizBox{
+    padding: 16px;
+    border-radius: 18px;
+    border:1px solid var(--stroke);
+    background: rgba(255,255,255,.78);
+    margin-bottom: 14px;
+    box-shadow: 0 10px 24px rgba(6,28,14,.08);
+  }
+  .quizTop{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom: 10px; }
+  .quizTop h4{ margin:0; font-size: 24px; line-height:1.35; font-weight: 900; }
+  .quizMeta{
+    color: var(--muted); font-size: 14px; white-space:nowrap;
+    padding: 6px 10px; border-radius:999px; border:1px solid var(--stroke);
+    background: rgba(255,255,255,.72);
+    box-shadow: 0 8px 18px rgba(6,28,14,.05);
+  }
+  .opt{
+    display:flex; gap:10px; align-items:flex-start;
+    padding: 12px 12px;
+    border-radius: 16px;
+    border:1px solid var(--stroke);
+    background: rgba(255,255,255,.74);
+    cursor:pointer;
+    margin-top: 10px;
+    transition: transform .12s ease, background .2s ease, border-color .2s ease;
+    box-shadow: 0 8px 18px rgba(6,28,14,.05);
+  }
+  .opt:hover{ transform: translateY(-1px); background: rgba(255,255,255,.90); border-color: rgba(0,163,255,.28); }
+  .opt input{ margin-top: 4px; transform: scale(1.25); }
+  .feedback{
+    margin-top: 12px;
+    font-size: 17px;
+    line-height:1.55;
+    padding: 12px 12px;
+    border-radius: 16px;
+    border:1px solid var(--stroke);
+    background: rgba(255,255,255,.68);
+    display:none;
+  }
+  .feedback.good{ display:block; border-color: rgba(22,163,74,.35); background: rgba(22,163,74,.10); }
+  .feedback.bad{ display:block; border-color: rgba(255,77,77,.35); background: rgba(255,77,77,.10); }
 
-    .note{
-      padding: 14px 14px;
-      border-radius: 16px;
-      border:1px dashed rgba(34,197,94,.35);
-      background: rgba(34,197,94,.08);
-      color: rgba(8,20,12,.78);
-      font-size: 17px;
-      line-height:1.55;
-      margin-top: 14px;
-    }
+  /* Matching game */
+  .matchWrap{ display:grid; gap:12px; }
+  .matchGrid{ display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .dropZone{
+    border:2px dashed rgba(0,163,255,.30);
+    border-radius: 18px;
+    background: rgba(0,163,255,.06);
+    padding: 12px;
+    min-height: 120px;
+  }
+  .draggable{
+    padding: 12px 12px;
+    border-radius: 16px;
+    border:1px solid var(--stroke);
+    background: rgba(255,255,255,.82);
+    box-shadow: 0 10px 24px rgba(6,28,14,.06);
+    cursor: grab;
+    user-select:none;
+    font-size: 18px;
+  }
+  .draggable:active{ cursor:grabbing; }
+  .dropTitle{ font-weight: 900; margin: 0 0 8px; font-size: 18px; }
+  .dropHint{ color:var(--muted); font-size: 15px; }
 
-    /* Lesson text */
-    .cardBody p{ font-size: 22px; line-height:1.6; }
-    .cardBody li{ font-size: 21px; line-height:1.55; margin: 8px 0; }
+  /* Mind map interactive */
+  .mapCanvasWrap{
+    border:1px solid var(--stroke);
+    border-radius: 18px;
+    background: rgba(255,255,255,.78);
+    box-shadow: 0 10px 24px rgba(6,28,14,.08);
+    overflow:hidden;
+  }
+  #mapCanvas{ width:100%; height: 460px; display:block; }
+  .mapLegend{ padding: 12px 14px; border-top:1px solid var(--stroke); color:var(--muted); font-size: 15px; }
+  .mapLegend b{ color:var(--text); }
 
-    /* Flashcards */
-    .deckTop{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:center;
-      justify-content:space-between;
-      margin-bottom: 12px;
-    }
-    .deckTop .left{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:center;
-    }
-    .select{
-      padding: 10px 12px;
-      border-radius: 14px;
-      border:1px solid var(--stroke);
-      background: rgba(255,255,255,.78);
-      color: var(--text);
-      font-size: 16px;
-      outline:none;
-      box-shadow: 0 8px 18px rgba(6,28,14,.06);
-    }
+  /* Toast */
+  .toast{
+    position:fixed;
+    right: 18px;
+    bottom: 18px;
+    max-width: 520px;
+    padding: 14px 14px;
+    border-radius: 18px;
+    border:1px solid var(--stroke);
+    background: rgba(255,255,255,.86);
+    box-shadow: var(--shadow);
+    transform: translateY(12px);
+    opacity:0;
+    pointer-events:none;
+    transition: transform .25s ease, opacity .25s ease;
+    z-index: 99;
+    font-size: 16px;
+    color: rgba(7,18,11,.78);
+  }
+  .toast.show{ transform: translateY(0); opacity: 1; }
 
-    .flashWrap{
-      display:grid;
-      grid-template-columns: 1fr;
-      gap: 14px;
-    }
-    .flashCard{
-      min-height: 290px;
-      border-radius: 20px;
-      border: 1px solid var(--stroke);
-      background:
-        radial-gradient(900px 340px at 20% 10%, rgba(0,163,255,.18), transparent 60%),
-        radial-gradient(900px 340px at 80% 20%, rgba(34,197,94,.16), transparent 55%),
-        radial-gradient(900px 340px at 60% 95%, rgba(255,209,102,.12), transparent 55%),
-        rgba(255,255,255,.72);
-      box-shadow: var(--shadow);
-      padding: 18px;
-      display:flex;
-      flex-direction:column;
-      justify-content:space-between;
-      cursor:pointer;
-      user-select:none;
-      transition: transform .25s ease, border-color .25s ease;
-      position:relative;
-      overflow:hidden;
-    }
-    .flashCard:hover{ transform: translateY(-2px); border-color: rgba(0,163,255,.35); }
-    .flashCard:active{ transform: translateY(0px) scale(.995); }
+  /* Confetti canvas */
+  #fxCanvas{ position:fixed; inset:0; pointer-events:none; z-index: 80; }
 
-    .flashFace{
-      font-size: 38px;
-      line-height:1.15;
-      letter-spacing:.2px;
-      font-weight: 800;
-    }
-    .flashBack{
-      font-size: 24px;
-      line-height:1.6;
-      color: rgba(8,20,12,.74);
-      margin-top: 14px;
-      display:none;
-      font-weight: 500;
-    }
-    .flashCard.revealed .flashBack{ display:block; }
-    .flashMeta{
-      margin-top: 12px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      color: var(--muted);
-      font-size: 15px;
-      flex-wrap:wrap;
-    }
-    .tag{
-      padding: 6px 10px;
-      border-radius: 999px;
-      border:1px solid var(--stroke);
-      background: rgba(255,255,255,.70);
-      color: var(--muted);
-      font-size: 14px;
-      box-shadow: 0 8px 18px rgba(6,28,14,.05);
-    }
-    .level{
-      display:flex;
-      gap:8px;
-      align-items:center;
-      flex-wrap:wrap;
-    }
-    .lvlBtn{
-      padding: 9px 12px;
-      border-radius: 14px;
-      border:1px solid var(--stroke);
-      background: rgba(255,255,255,.78);
-      color: var(--text);
-      font-size: 14px;
-      cursor:pointer;
-      box-shadow: 0 8px 18px rgba(6,28,14,.05);
-    }
-    .lvlBtn.active{
-      border-color: rgba(34,197,94,.50);
-      background: rgba(34,197,94,.14);
-    }
-
-    /* Quiz */
-    .qBox{
-      padding: 16px;
-      border-radius: 18px;
-      border:1px solid var(--stroke);
-      background: rgba(255,255,255,.74);
-      margin-bottom: 14px;
-      box-shadow: 0 10px 24px rgba(6,28,14,.08);
-    }
-    .qTop{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:12px;
-      margin-bottom: 10px;
-      flex-wrap:wrap;
-    }
-    .qTop h4{
-      margin:0;
-      font-size: 24px;
-      line-height:1.35;
-      font-weight: 800;
-    }
-    .qMeta{
-      color: var(--muted);
-      font-size: 14px;
-      white-space:nowrap;
-      padding: 6px 10px;
-      border-radius: 999px;
-      border:1px solid var(--stroke);
-      background: rgba(255,255,255,.68);
-      height: fit-content;
-      box-shadow: 0 8px 18px rgba(6,28,14,.05);
-    }
-    .opt{
-      display:flex;
-      gap:10px;
-      align-items:flex-start;
-      padding: 12px 12px;
-      border-radius: 16px;
-      border:1px solid var(--stroke);
-      background: rgba(255,255,255,.70);
-      cursor:pointer;
-      margin-top: 10px;
-      transition: transform .12s ease, background .2s ease, border-color .2s ease;
-      box-shadow: 0 8px 18px rgba(6,28,14,.05);
-    }
-    .opt:hover{ transform: translateY(-1px); background: rgba(255,255,255,.86); border-color: rgba(0,163,255,.28); }
-    .opt input{ margin-top: 4px; transform: scale(1.25); }
-    .feedback{
-      margin-top: 12px;
-      font-size: 17px;
-      line-height:1.55;
-      color: rgba(8,20,12,.76);
-      padding: 12px 12px;
-      border-radius: 16px;
-      border:1px solid var(--stroke);
-      background: rgba(255,255,255,.64);
-    }
-    .feedback.good{ border-color: rgba(22,163,74,.35); background: rgba(22,163,74,.10); }
-    .feedback.bad{ border-color: rgba(255,77,77,.35); background: rgba(255,77,77,.10); }
-
-    /* Mind maps */
-    .mapList{ display:grid; gap:12px; }
-    details.map{
-      border:1px solid var(--stroke);
-      border-radius: 18px;
-      background: rgba(255,255,255,.74);
-      overflow:hidden;
-      box-shadow: 0 10px 24px rgba(6,28,14,.07);
-    }
-    details.map > summary{
-      padding: 14px 14px;
-      cursor:pointer;
-      list-style:none;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      user-select:none;
-      font-size: 19px;
-      font-weight: 750;
-    }
-    details.map > summary::-webkit-details-marker{ display:none; }
-    .mapBody{
-      padding: 0 14px 14px;
-      color: rgba(8,20,12,.74);
-      font-size: 17px;
-      line-height:1.6;
-    }
-    .tree{ margin: 10px 0 0; padding-left: 18px; }
-    .tree li{ margin: 8px 0; }
-
-    .jump{
-      color: rgba(0,163,255,.95);
-      text-decoration:none;
-      border-bottom: 1px dashed rgba(0,163,255,.55);
-    }
-
-    .footer{
-      margin-top: 16px;
-      padding: 12px 14px;
-      border-radius: 18px;
-      border:1px solid var(--stroke);
-      background: rgba(255,255,255,.72);
-      color: var(--muted);
-      font-size: 15px;
-      box-shadow: 0 10px 24px rgba(6,28,14,.06);
-    }
-
-    /* Modal */
-    .modalBackdrop{
-      position:fixed; inset:0;
-      background: rgba(0,0,0,.25);
-      backdrop-filter: blur(10px);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      padding: 18px;
-      z-index:50;
-    }
-    .modal{
-      width:min(980px, 100%);
-      max-height: 86vh;
-      overflow:auto;
-      border-radius: 20px;
-      border:1px solid var(--stroke);
-      background: rgba(255,255,255,.92);
-      box-shadow: var(--shadow);
-    }
-    .modalHead{
-      padding: 14px 16px;
-      border-bottom: 1px solid var(--stroke);
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      flex-wrap:wrap;
-      background: linear-gradient(180deg, rgba(255,255,255,.95), rgba(255,255,255,.80));
-    }
-    .modalHead h3{ margin:0; font-size: 20px;}
-    .modalBody{ padding: 16px; }
-
-    /* Responsive */
-    @media (max-width: 980px){
-      .app{ grid-template-columns: 1fr; }
-      .sidebar{
-        position:sticky; top:0;
-        border-right:0; border-bottom:1px solid var(--stroke);
-      }
-      body{ overflow:auto; }
-      .content{ overflow:visible; }
-      .grid{ grid-template-columns: 1fr; }
-    }
-  </style>
+  @media (max-width: 980px){
+    .app{ grid-template-columns: 1fr; }
+    .sidebar{ position:sticky; top:0; border-right:0; border-bottom:1px solid var(--stroke); }
+    body{ overflow:auto; }
+    .content{ overflow:visible; }
+    .grid{ grid-template-columns: 1fr; }
+  }
+</style>
 </head>
-
 <body>
-  <canvas id="bgCanvas" aria-hidden="true"></canvas>
-  <div class="vignette" aria-hidden="true"></div>
 
-  <div class="app" id="app">
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-      <div class="brand">
-        <div class="logo" aria-hidden="true"></div>
-        <div>
-          <h1>ENGL280</h1>
-          <div class="sub">Bright Nature Theme • Big Font • Interactive</div>
-        </div>
+<canvas id="bgCanvas" aria-hidden="true"></canvas>
+<canvas id="fxCanvas" aria-hidden="true"></canvas>
+<div class="vignette" aria-hidden="true"></div>
+
+<div class="toast" id="toast"></div>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo" aria-hidden="true"></div>
+      <div>
+        <h1>ENGL280</h1>
+        <div class="sub">High-interaction mode: cards + quizzes + matching + map</div>
       </div>
-
-      <div class="pillRow">
-        <div class="pill" id="focusBtn" title="Hide sidebar for focus">Focus</div>
-        <div class="pill" id="musicBtn" title="Start/Stop music (click required)">Music</div>
-        <div class="pill" id="resetBtn" title="Reset progress">Reset</div>
-      </div>
-
-      <div class="searchBox">
-        <div class="search">
-          <span aria-hidden="true">🔎</span>
-          <input id="searchInput" type="text" placeholder="Search terms, topics, quizzes…" />
-          <span class="kbd">Ctrl /</span>
-        </div>
-      </div>
-
-      <div class="nav" id="nav"></div>
-
-      <div class="progressCard">
-        <h3>Progress</h3>
-        <div class="bar" aria-label="overall progress">
-          <div id="progressFill"></div>
-        </div>
-        <div class="stats">
-          <div><b id="statCards">0</b> / 50 cards mastered</div>
-          <div><b id="statQuizzes">0</b> / 50 quizzes correct</div>
-          <div><b id="statMaps">0</b> / 25 maps visited</div>
-          <div><b id="statStreak">0</b> day streak</div>
-        </div>
-      </div>
-
-      <div class="footer">
-        Developer: <b>Halim Faroug A. Elhag, Lecturer, UHB / UofK</b><br/>
-        Tip: Press <b>Ctrl + /</b> to jump to search. Press <b>G</b> then <b>1–9</b> to open modules.
-      </div>
-    </aside>
-
-    <!-- MAIN -->
-    <main class="content">
-      <div class="topbar">
-        <div class="titleBlock">
-          <h2 id="pageTitle">Home</h2>
-          <p id="pageSubtitle">Brighter design + larger font + natural background + music ambience.</p>
-        </div>
-
-        <div class="actions">
-          <button class="btn" id="bookmarkBtn" title="Bookmark this module">Bookmark</button>
-          <button class="btn primary" id="quickPracticeBtn" title="Start a quick mixed practice set">Quick Practice</button>
-          <button class="btn" id="openDashboardBtn" title="Open a learning dashboard">Dashboard</button>
-          <button class="btn primary" id="startMusicTopBtn" title="Start music">Start Music</button>
-        </div>
-      </div>
-
-      <div class="grid">
-        <section class="card" id="learnCard">
-          <div class="cardHeader">
-            <h3>Learn</h3>
-            <div class="chips" id="modeChips">
-              <div class="chip active" data-mode="learn">Lesson</div>
-              <div class="chip" data-mode="flashcards">Flashcards</div>
-              <div class="chip" data-mode="quiz">Quiz</div>
-              <div class="chip" data-mode="mindmap">Mind Map</div>
-            </div>
-          </div>
-          <div class="cardBody" id="learnBody"></div>
-        </section>
-
-        <aside class="card" id="toolsCard">
-          <div class="cardHeader">
-            <h3>Practice</h3>
-            <button class="btn" id="nextBtn" title="Next module">Next</button>
-          </div>
-          <div class="cardBody" id="toolsBody"></div>
-        </aside>
-      </div>
-    </main>
-  </div>
-
-  <!-- MODAL -->
-  <div class="modalBackdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-hidden="true">
-    <div class="modal">
-      <div class="modalHead">
-        <h3 id="modalTitle">Dashboard</h3>
-        <button class="btn" id="closeModalBtn">Close</button>
-      </div>
-      <div class="modalBody" id="modalBody"></div>
     </div>
-  </div>
 
-  <script>
-    /**********************
-     * DATA (Modules) — same content as previous
-     **********************/
-    const modules = [
-      {
-        id: "home",
-        title: "Home",
-        subtitle: "Bright, natural theme. Big font. Offline-friendly. Music ambience (click to start).",
-        learn: `
-          <div class="note">
-            <b>What’s new:</b><br/>
-            • Brighter nature theme (daylight greens + sky)<br/>
-            • Larger font everywhere<br/>
-            • Better-looking UI font stack (offline-safe)<br/>
-            • Background music ambience (generated, no external files)
+    <div class="pillRow">
+      <div class="pill" id="focusBtn" title="Hide sidebar for focus">Focus</div>
+      <div class="pill" id="musicBtn" title="Start/Stop background music">Music</div>
+      <div class="pill" id="resetBtn" title="Reset progress">Reset</div>
+    </div>
+
+    <div class="searchBox">
+      <div class="search">
+        <span aria-hidden="true">🔎</span>
+        <input id="searchInput" type="text" placeholder="Search terms, topics, quizzes…" />
+        <span class="kbd">Ctrl /</span>
+      </div>
+    </div>
+
+    <div class="nav" id="nav"></div>
+
+    <div class="progressCard">
+      <h3>Progress & XP</h3>
+      <div class="bar"><div id="progressFill"></div></div>
+      <div class="stats">
+        <div><b id="statXP">0</b> XP</div>
+        <div><b id="statLevel">1</b> Level</div>
+        <div><b id="statCards">0</b> / 50 mastered</div>
+        <div><b id="statQuizzes">0</b> / 50 correct</div>
+        <div><b id="statMaps">0</b> / 25 explored</div>
+        <div><b id="statStreak">0</b> day streak</div>
+      </div>
+    </div>
+
+    <div class="footer">
+      Developer: <b>Halim Faroug A. Elhag, Lecturer, UHB / UofK</b><br/>
+      Controls: <b>← / →</b> card nav, <b>Space</b> flip, <b>1-3</b> set card status, <b>Ctrl /</b> search.
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="content">
+    <div class="topbar">
+      <div class="titleBlock">
+        <h2 id="pageTitle">Home</h2>
+        <p id="pageSubtitle">Now it *forces interaction*: swipe-like card controls, timed quizzes, drag-drop matching, clickable mind-map.</p>
+      </div>
+
+      <div class="actions">
+        <button class="btn" id="bookmarkBtn">Bookmark</button>
+        <button class="btn primary" id="quickPracticeBtn">Quick Practice</button>
+        <button class="btn primary" id="startMusicTopBtn">Start Music</button>
+      </div>
+    </div>
+
+    <div class="grid">
+      <section class="card show" id="learnCard">
+        <div class="cardHeader">
+          <h3 id="leftTitle">Learn</h3>
+          <div class="chips" id="modeChips">
+            <div class="chip active" data-mode="learn">Lesson</div>
+            <div class="chip" data-mode="flashcards">Flashcards</div>
+            <div class="chip" data-mode="quiz">Quiz</div>
+            <div class="chip" data-mode="match">Matching</div>
+            <div class="chip" data-mode="mindmap">Mind Map</div>
           </div>
+        </div>
+        <div class="cardBody" id="learnBody"></div>
+      </section>
 
-          <p><b>Use it:</b></p>
-          <ul>
-            <li>Pick a module on the left.</li>
-            <li>Switch mode: <b>Lesson / Flashcards / Quiz / Mind Map</b>.</li>
-            <li>Click <b>Music</b> to start ambience (browser requires a click).</li>
-          </ul>
+      <aside class="card show" id="toolsCard">
+        <div class="cardHeader">
+          <h3>Actions</h3>
+          <button class="btn" id="nextBtn">Next</button>
+        </div>
+        <div class="cardBody" id="toolsBody"></div>
+      </aside>
+    </div>
+  </main>
+</div>
 
-          <p><b>Developer:</b> Halim Faroug A. Elhag, Lecturer, UHB / UofK</p>
-        `
-      },
-      {
-        id: "m1",
-        title: "Module 1: Introduction to Literature & Its Genres",
-        subtitle: "What literature is, what it does, why it matters, and how genres organize experience.",
-        learn: `
-          <p><b>Core questions</b></p>
-          <ul>
-            <li><b>What is literature?</b> Language shaped for meaning, experience, and effect.</li>
-            <li><b>What does it do?</b> It entertains, persuades, preserves culture, questions power, and enlarges empathy.</li>
-            <li><b>Genres</b> are categories (poetry, drama, fiction, etc.) with typical conventions.</li>
-            <li><b>Why study literature?</b> Stronger critical reading, interpretive skill, and argument writing.</li>
-          </ul>
+<script>
+/* ===========================
+   DATA (same modules content)
+=========================== */
+const modules = [
+  { id:"home", title:"Home", subtitle:"Pick a mode: Lesson, Flashcards, Quiz, Matching, or Mind Map.",
+    learn: `
+      <div class="note">
+        <b>This version is interactive.</b><br/>
+        • Flashcards: space to flip, ←/→ to move, 1-3 to rate, XP rewards<br/>
+        • Quiz: timed, streak + XP, confetti on perfect set<br/>
+        • Matching: drag terms to definitions (immediate validation)<br/>
+        • Mind map: click nodes to expand or jump modules
+      </div>
+      <p><b>Start</b>: choose Module 1 → Flashcards → Quiz → Matching → Mind Map.</p>
+    `
+  },
+  { id:"m1", title:"Module 1: Introduction to Literature & Its Genres", subtitle:"Genres + what literature does.",
+    learn: `
+      <ul>
+        <li><b>Literature</b>: language shaped for meaning and effect.</li>
+        <li><b>Genres</b>: poetry, drama, fiction.</li>
+        <li><b>Why study</b>: critical reading + interpretation + argument skills.</li>
+      </ul>
+    `
+  },
+  { id:"m2", title:"Module 2: Basic Literary Terms", subtitle:"Core terms for analysis.",
+    learn: `
+      <ul>
+        <li><b>Figure of speech</b>: non-literal language for effect.</li>
+        <li><b>Denotation vs connotation</b>: basic vs associated meaning.</li>
+        <li><b>Theme</b>: central idea/claim.</li>
+      </ul>
+    `
+  },
+  { id:"m3", title:"Module 3: Figures of Speech and Sound Devices", subtitle:"Meaning + music.",
+    learn: `
+      <ul>
+        <li><b>Sound devices</b>: alliteration, assonance, consonance.</li>
+        <li><b>Figures</b>: metaphor, simile, symbol, irony, allusion.</li>
+      </ul>
+    `
+  },
+  { id:"m4", title:"Module 4: Poetry and Major Aspects of a Poem", subtitle:"Patterned language.",
+    learn: `
+      <ul>
+        <li>Speaker, diction, syntax, imagery, sound, form, theme.</li>
+        <li>Stanzas are like paragraphs; lines are units of rhythm/meaning.</li>
+      </ul>
+    `
+  },
+  { id:"m5", title:"Module 5: Sample Poetry — “Winter” (Shakespeare)", subtitle:"Close reading.",
+    learn: `
+      <ul>
+        <li>Track imagery (cold vs warmth) + sound + contrast.</li>
+        <li>Argue effect → theme (don’t summarize).</li>
+      </ul>
+    `
+  },
+  { id:"m6", title:"Module 6: Drama and Major Aspects of a Play", subtitle:"Performance text.",
+    learn: `
+      <ul>
+        <li>Dialogue + stage directions + conflict.</li>
+        <li>Structure: prologue → episodes → stasimon → exodos.</li>
+      </ul>
+    `
+  },
+  { id:"m7", title:"Module 7: Sample Play — Trifles (Susan Glaspell)", subtitle:"Evidence & inference.",
+    learn: `
+      <ul>
+        <li>Meaning from “small” details.</li>
+        <li>Authority decides what counts as evidence.</li>
+      </ul>
+    `
+  },
+  { id:"m8", title:"Module 8: Fiction and Major Aspects of Fiction", subtitle:"Narrative craft.",
+    learn: `
+      <ul>
+        <li>Plot, character, setting, POV, theme.</li>
+        <li>Novel (40k+), novella (10k–40k), short story (1k–10k).</li>
+      </ul>
+    `
+  },
+  { id:"m9", title:"Module 9: Pride & Prejudice (Austen)", subtitle:"Irony, class, marriage economy.",
+    learn: `
+      <ul>
+        <li>Opening: irony/social critique.</li>
+        <li>Marriage linked to class/property/reputation.</li>
+      </ul>
+    `
+  },
+  { id:"review", title:"Review Hub", subtitle:"Mixed mastery.",
+    learn: `
+      <p>Use mixed flashcards + timed quiz sets + matching to kill weak points fast.</p>
+    `
+  },
+];
 
-          <p><b>Fast genre map</b></p>
-          <ul>
-            <li><b>Poetry:</b> patterned language (sound, rhythm, imagery) + compressed meaning.</li>
-            <li><b>Drama:</b> written for performance (dialogue, stage directions, spectacle).</li>
-            <li><b>Fiction:</b> invented narrative (character, plot, setting, theme).</li>
-          </ul>
-        `
-      },
-      {
-        id: "m2",
-        title: "Module 2: Basic Literary Terms",
-        subtitle: "Key vocabulary for reading and analysis: literal vs figurative, tone, theme, etc.",
-        learn: `
-          <p><b>Essential terms</b></p>
-          <ul>
-            <li><b>Figure of speech:</b> non-literal use for effect (rhetorical/vivid).</li>
-            <li><b>Denotation / Connotation:</b> dictionary meaning vs associated meaning.</li>
-            <li><b>Tone:</b> speaker’s attitude (ironic, joyful, bitter…).</li>
-            <li><b>Theme:</b> central idea/claim about life, society, or human nature.</li>
-            <li><b>Motif:</b> recurring element supporting theme.</li>
-          </ul>
+/* ===========================
+   Flashcards (50)
+=========================== */
+const baseCards = [
+  { id:"c1", module:"m1", term:"Literature", def:"Language shaped for meaning/experience and effect.", level:0 },
+  { id:"c2", module:"m1", term:"Genre", def:"A category with conventions (poetry, drama, fiction).", level:0 },
+  { id:"c3", module:"m1", term:"Interpretation", def:"Explaining meaning from evidence (details → claim).", level:0 },
+  { id:"c4", module:"m2", term:"Figure of speech", def:"Non-literal language used for vivid/rhetorical effect.", level:0 },
+  { id:"c5", module:"m2", term:"Denotation", def:"Basic dictionary meaning.", level:0 },
+  { id:"c6", module:"m2", term:"Connotation", def:"Associated meanings/feelings of a word.", level:0 },
+  { id:"c7", module:"m2", term:"Theme", def:"Central idea/claim developed by the text.", level:0 },
+  { id:"c8", module:"m2", term:"Tone", def:"Speaker’s attitude (ironic, joyful, bitter…).", level:0 },
+  { id:"c9", module:"m2", term:"Simile", def:"Comparison using like/as.", level:0 },
+  { id:"c10", module:"m2", term:"Metaphor", def:"Direct comparison without like/as.", level:0 },
+  { id:"c11", module:"m2", term:"Imagery", def:"Sensory description (sight/sound/touch/taste/smell).", level:0 },
+  { id:"c12", module:"m2", term:"Personification", def:"Human qualities given to non-human things/ideas.", level:0 },
+  { id:"c13", module:"m2", term:"Onomatopoeia", def:"Words that imitate sounds (buzz, hiss, tick).", level:0 },
+  { id:"c14", module:"m3", term:"Alliteration", def:"Repetition of initial consonant sounds.", level:0 },
+  { id:"c15", module:"m3", term:"Assonance", def:"Repetition of vowel sounds.", level:0 },
+  { id:"c16", module:"m3", term:"Consonance", def:"Repetition of consonant sounds.", level:0 },
+  { id:"c17", module:"m3", term:"Symbol", def:"Object/action representing more than itself.", level:0 },
+  { id:"c18", module:"m3", term:"Irony", def:"Meaning contrasts with expectation or literal statement.", level:0 },
+  { id:"c19", module:"m4", term:"Speaker", def:"The voice speaking in the poem (not always the poet).", level:0 },
+  { id:"c20", module:"m4", term:"Stanza", def:"Grouped lines in a poem (like a paragraph).", level:0 },
+  { id:"c21", module:"m4", term:"Meter", def:"Pattern of stressed/unstressed syllables.", level:0 },
+  { id:"c22", module:"m4", term:"Form", def:"Structural pattern shaping pace/emphasis.", level:0 },
+  { id:"c23", module:"m5", term:"Close reading", def:"Analyze patterns (sound/imagery/structure) for effect/theme.", level:0 },
+  { id:"c24", module:"m6", term:"Stage directions", def:"Instructions for setting/movement/action/tone in a play.", level:0 },
+  { id:"c25", module:"m6", term:"Conflict", def:"Central struggle driving dramatic action.", level:0 },
+  { id:"c26", module:"m7", term:"Inference", def:"Reasoned conclusion drawn from evidence (details).", level:0 },
+  { id:"c27", module:"m7", term:"Subtext", def:"Meaning implied beneath words/actions.", level:0 },
+  { id:"c28", module:"m8", term:"Plot", def:"Event structure with causality (conflict → outcome).", level:0 },
+  { id:"c29", module:"m8", term:"Point of view", def:"Who tells/sees; affects reliability and interpretation.", level:0 },
+  { id:"c30", module:"m8", term:"Setting", def:"Time/place/social world that shapes meaning.", level:0 },
+  { id:"c31", module:"m8", term:"Foreshadowing", def:"Hints that prepare for later events.", level:0 },
+  { id:"c32", module:"m8", term:"Climax", def:"Peak tension/turning point.", level:0 },
+  { id:"c33", module:"m8", term:"Resolution", def:"Ending that settles conflict (or leaves it open).", level:0 },
+  { id:"c34", module:"m8", term:"Novel", def:"Extended fictional prose narrative (often 40,000+ words).", level:0 },
+  { id:"c35", module:"m8", term:"Novella", def:"Between novel and short story (often 10k–40k words).", level:0 },
+  { id:"c36", module:"m8", term:"Short story", def:"Focused fiction often read in one sitting (often 1k–10k words).", level:0 },
+  { id:"c37", module:"m9", term:"Irony (Austen)", def:"Narration implies critique beneath polite social language.", level:0 },
+  { id:"c38", module:"m9", term:"Marriage economy", def:"Marriage linked to money/property/social survival.", level:0 },
+  { id:"c39", module:"m9", term:"Social class", def:"Rank/status shaping reputation and choices.", level:0 },
+];
 
-          <p><b>Comparison tools</b></p>
-          <ul>
-            <li><b>Simile:</b> “like/as” comparison.</li>
-            <li><b>Metaphor:</b> direct comparison.</li>
-            <li><b>Analogy:</b> extended comparison explaining a concept.</li>
-          </ul>
+// pad to 50
+const flashcards = (() => {
+  const out = [...baseCards];
+  let i = 40;
+  while (out.length < 50){
+    out.push({ id:`c${i++}`, module:"review", term:`Exam Skill ${out.length+1}`, def:"State a claim, cite a detail, explain how it proves the claim.", level:0 });
+  }
+  return out.slice(0,50);
+})();
 
-          <p><b>Immersion tools</b></p>
-          <ul>
-            <li><b>Imagery:</b> sensory detail.</li>
-            <li><b>Personification:</b> human traits to non-human.</li>
-            <li><b>Onomatopoeia:</b> word echoes sound.</li>
-          </ul>
-        `
-      },
-      {
-        id: "m3",
-        title: "Module 3: Figures of Speech and Sound Devices",
-        subtitle: "Meaning + music: how language works on the mind and the ear.",
-        learn: `
-          <p><b>Figures of speech</b></p>
-          <ul>
-            <li>Metaphor, simile, symbol, hyperbole, understatement, irony, allusion.</li>
-            <li>They compress ideas and intensify effect.</li>
-          </ul>
+/* ===========================
+   Quizzes (50)
+=========================== */
+const baseQuizzes = [
+  { id:"q1", module:"m1", q:"Literature is best described as…", opts:["Language shaped for meaning/effect","A list of historical facts","Only poetry","Only fiction"], ans:0, why:"Literature is crafted language for meaning/effect." },
+  { id:"q2", module:"m1", q:"Which is NOT a major genre?", opts:["Poetry","Drama","Fiction","Algebra"], ans:3, why:"Algebra is not a literary genre." },
+  { id:"q3", module:"m2", q:"A simile compares using…", opts:["like/as","only rhyme","stage directions","footnotes"], ans:0, why:"Similes use like/as." },
+  { id:"q4", module:"m2", q:"Metaphor is…", opts:["Direct comparison","Comparison using like/as","Only sound","Only plot"], ans:0, why:"Metaphor is direct comparison." },
+  { id:"q5", module:"m3", q:"Alliteration is…", opts:["Repeated initial consonants","Repeated vowels","A theme","A setting"], ans:0, why:"Alliteration repeats initial consonant sounds." },
+  { id:"q6", module:"m4", q:"The speaker is…", opts:["Always the poet","The voice speaking in the poem","The rhyme scheme","The stanza"], ans:1, why:"Speaker is the poem’s voice." },
+  { id:"q7", module:"m6", q:"Stage directions mainly…", opts:["Guide performance","Explain definitions","Replace dialogue","Count lines"], ans:0, why:"They guide staging/performance." },
+  { id:"q8", module:"m8", q:"POV affects…", opts:["What is seen/told and reliability","Only cover design","Only biography","Only rhyme"], ans:0, why:"POV shapes access and reliability." },
+];
 
-          <p><b>Sound devices</b></p>
-          <ul>
-            <li><b>Alliteration:</b> repeated initial consonants.</li>
-            <li><b>Assonance:</b> repeated vowel sounds.</li>
-            <li><b>Consonance:</b> repeated consonant sounds.</li>
-            <li><b>Rhyme / rhythm / meter:</b> patterning that shapes pace and mood.</li>
-          </ul>
+const quizGen = [
+  () => ({module:"m2", q:"Denotation refers to…", opts:["Basic dictionary meaning","Emotional associations","A rhyme pattern","A plot summary"], ans:0, why:"Denotation = basic meaning."}),
+  () => ({module:"m2", q:"Connotation refers to…", opts:["Emotional/cultural associations","Only dictionary meaning","Only meter","Only scenes"], ans:0, why:"Connotation = associations."}),
+  () => ({module:"m3", q:"Assonance is…", opts:["Repeated vowel sounds","Repeated consonants only","A symbol","A theme"], ans:0, why:"Assonance repeats vowel sounds."}),
+  () => ({module:"m4", q:"Meter is primarily about…", opts:["Rhythmic stress pattern","Plot structure","Character names","Setting only"], ans:0, why:"Meter = stress pattern."}),
+  () => ({module:"m7", q:"In Trifles, meaning often comes from…", opts:["Small details treated as evidence","Only long speeches","Only the title","Random guessing"], ans:0, why:"Details function as clues."}),
+  () => ({module:"m8", q:"Foreshadowing is…", opts:["Hints about later events","A stanza type","A stage prop","A rhyme error"], ans:0, why:"Foreshadowing hints at later events."}),
+  () => ({module:"m9", q:"Pride & Prejudice opening is best read as…", opts:["Irony/social critique","A biology fact","A stage direction","A literal law"], ans:0, why:"It signals critique via irony."}),
+];
 
-          <div class="note">
-            Devices are not decoration. They are <b>meaning machines</b>.
-          </div>
-        `
-      },
-      {
-        id: "m4",
-        title: "Module 4: Poetry and Major Aspects of a Poem",
-        subtitle: "Poetry as patterned, intensified language: voice, imagery, sound, form, theme.",
-        learn: `
-          <p><b>Poetry: what typically defines it</b></p>
-          <ul>
-            <li>Patterned arrangement of language</li>
-            <li>Rhythm (and sometimes meter)</li>
-            <li>Concentration / intensity</li>
-            <li>Emotion and idea fused</li>
-          </ul>
+const quizzes = (() => {
+  const list = [...baseQuizzes];
+  let i = 9;
+  while (list.length < 50){
+    const item = quizGen[(list.length-1) % quizGen.length]();
+    item.id = `q${i++}`;
+    list.push(item);
+  }
+  return list.slice(0,50);
+})();
 
-          <p><b>Major elements</b></p>
-          <ul>
-            <li><b>Speaker/voice</b></li>
-            <li><b>Diction & syntax</b></li>
-            <li><b>Imagery</b></li>
-            <li><b>Sound</b></li>
-            <li><b>Form</b></li>
-            <li><b>Theme</b></li>
-          </ul>
-        `
-      },
-      {
-        id: "m5",
-        title: "Module 5: Sample Poetry — “Winter” (Shakespeare)",
-        subtitle: "Close reading: seasonal imagery, sound, contrast, and social detail.",
-        learn: `
-          <p><b>Reading focus</b></p>
-          <ul>
-            <li><b>Imagery:</b> cold vs warmth; outdoor hardship vs indoor comfort.</li>
-            <li><b>Sound:</b> repeated consonants/vowels can sharpen the “bite” of winter.</li>
-            <li><b>Contrast:</b> nature’s harshness vs human shelter/community.</li>
-            <li><b>Theme:</b> how environment shapes daily life and mood.</li>
-          </ul>
+/* ===========================
+   Mind map nodes (interactive canvas)
+=========================== */
+const mindNodes = {
+  m1: {
+    label:"Literature",
+    children:[
+      {label:"Poetry", jump:"m4", children:[{label:"Sound"},{label:"Imagery"},{label:"Form"}]},
+      {label:"Drama", jump:"m6", children:[{label:"Dialogue"},{label:"Stage directions"},{label:"Conflict"}]},
+      {label:"Fiction", jump:"m8", children:[{label:"Plot"},{label:"Character"},{label:"Setting"},{label:"POV"}]}
+    ]
+  },
+  m2: { label:"Terms", children:[{label:"Denotation"},{label:"Connotation"},{label:"Theme"},{label:"Tone"},{label:"Simile"},{label:"Metaphor"}] },
+  m3: { label:"Devices", children:[{label:"Alliteration"},{label:"Assonance"},{label:"Consonance"},{label:"Symbol"},{label:"Irony"}] },
+  m4: { label:"Poetry", children:[{label:"Speaker"},{label:"Stanza"},{label:"Meter"},{label:"Form"},{label:"Theme"}] },
+  m5: { label:"Close Reading", children:[{label:"Patterns"},{label:"Effect"},{label:"Theme"}] },
+  m6: { label:"Drama", children:[{label:"Dialogue"},{label:"Stage directions"},{label:"Conflict"}] },
+  m7: { label:"Trifles", children:[{label:"Details as evidence"},{label:"Inference"},{label:"Subtext"}] },
+  m8: { label:"Fiction", children:[{label:"Plot"},{label:"Character"},{label:"Setting"},{label:"POV"},{label:"Theme"}] },
+  m9: { label:"Austen", children:[{label:"Irony"},{label:"Class"},{label:"Marriage economy"}] },
+  review:{ label:"Mastery", children:[{label:"Recall"},{label:"Fix wrong answers"},{label:"Frameworks"}] }
+};
 
-          <div class="note">
-            Don’t summarize. Identify <b>patterns</b> → infer <b>effect</b> → argue <b>theme</b>.
-          </div>
-        `
-      },
-      {
-        id: "m6",
-        title: "Module 6: Drama and Major Aspects of a Play",
-        subtitle: "Drama as performance text: dialogue, action, stage directions, structure.",
-        learn: `
-          <p><b>Drama is built for performance</b></p>
-          <ul>
-            <li><b>Dialogue</b> carries conflict and character.</li>
-            <li><b>Stage directions</b> shape space, movement, and pacing.</li>
-          </ul>
+/* ===========================
+   STATE / STORAGE
+=========================== */
+const STORE = "ENGL280_INTERACTIVE_V1";
+const defaultState = {
+  lastModule:"home",
+  bookmarks:[],
+  xp:0,
+  cardLevel: Object.fromEntries(flashcards.map(c=>[c.id,0])),
+  quizCorrect: Object.fromEntries(quizzes.map(q=>[q.id,false])),
+  mapsVisited: {},
+  lastActiveDate:null,
+  streak:0,
 
-          <p><b>Classical structure (overview)</b></p>
-          <ul>
-            <li>Prologue → Episodes → Stasimon → Exodos.</li>
-          </ul>
-        `
-      },
-      {
-        id: "m7",
-        title: "Module 7: Sample Play — Trifles (Susan Glaspell)",
-        subtitle: "Inference and evidence: how details reveal power, gender, and justice.",
-        learn: `
-          <p><b>Why it matters</b></p>
-          <ul>
-            <li>Meaning comes from <b>small details</b> and what they imply.</li>
-            <li>Competing interpretations of evidence: official vs overlooked.</li>
-            <li>Theme cluster: gendered labor, empathy, justice, authority.</li>
-          </ul>
+  // flashcards view state
+  deckIndexByModule: {},
 
-          <div class="note">
-            What counts as “evidence” is often a <b>power decision</b>.
-          </div>
-        `
-      },
-      {
-        id: "m8",
-        title: "Module 8: Fiction and Major Aspects of Fiction",
-        subtitle: "Narrative craft: plot, character, setting, POV, theme, and genre by length.",
-        learn: `
-          <p><b>Fiction: definition</b></p>
-          <ul>
-            <li>Invented narrative arranged for meaning and effect.</li>
-          </ul>
+  // quiz session
+  lastQuizSet: []
+};
 
-          <p><b>By length</b></p>
-          <ul>
-            <li><b>Novel:</b> usually 40,000+ words.</li>
-            <li><b>Novella:</b> ~10,000–40,000 words.</li>
-            <li><b>Short story:</b> ~1,000–10,000 words.</li>
-          </ul>
+let state = load();
 
-          <p><b>Major elements</b></p>
-          <ul>
-            <li>Plot, character, setting, point of view, theme.</li>
-          </ul>
-        `
-      },
-      {
-        id: "m9",
-        title: "Module 9: Sample Novel — Pride & Prejudice (Jane Austen)",
-        subtitle: "Narrator, irony, social class, marriage economy, and character judgment.",
-        learn: `
-          <p><b>What to notice</b></p>
-          <ul>
-            <li><b>Opening irony:</b> social critique, not a literal fact.</li>
-            <li><b>Marriage as system:</b> desire meets economics/status.</li>
-            <li><b>Character perception:</b> first impressions distort judgment.</li>
-          </ul>
-
-          <div class="note">
-            Weak: “It’s about love.” Better: show how love is constrained by <b>class, money, reputation</b>.
-          </div>
-        `
-      },
-      {
-        id: "review",
-        title: "Review Hub",
-        subtitle: "Mastery mode: mixed flashcards, quizzes, and mind maps across all modules.",
-        learn: `
-          <p><b>Use this to finish strong</b></p>
-          <ul>
-            <li>Mixed flashcards (review-level only) until weak points shrink.</li>
-            <li>Mixed quizzes → turn wrong answers into flashcards.</li>
-            <li>Mind maps to rehearse frameworks.</li>
-          </ul>
-
-          <div class="note">
-            Recognition is not mastery. If students can’t produce answers from memory, they’re not ready.
-          </div>
-        `
-      }
-    ];
-
-    /**********************
-     * DATA: Flashcards (50)
-     **********************/
-    const baseCards = [
-      { id:"c1", module:"m1", term:"Literature", def:"Language shaped to create meaning/experience and effects beyond plain information.", level:0 },
-      { id:"c2", module:"m1", term:"Genre", def:"A category of literature with conventions (poetry, drama, fiction).", level:0 },
-      { id:"c3", module:"m1", term:"Function of literature", def:"To entertain, represent culture, question power, persuade, and intensify experience.", level:0 },
-      { id:"c4", module:"m1", term:"Interpretation", def:"Explaining how textual choices create meaning (not guessing author intent).", level:0 },
-
-      { id:"c5", module:"m2", term:"Figure of speech", def:"Non-literal language used for rhetorical/vivid effect.", level:0 },
-      { id:"c6", module:"m2", term:"Denotation", def:"Basic dictionary meaning.", level:0 },
-      { id:"c7", module:"m2", term:"Connotation", def:"Associated meanings/feelings attached to a word.", level:0 },
-      { id:"c8", module:"m2", term:"Tone", def:"Speaker’s attitude (ironic, joyful, bitter…).", level:0 },
-      { id:"c9", module:"m2", term:"Theme", def:"Central idea/claim developed by the text.", level:0 },
-      { id:"c10", module:"m2", term:"Motif", def:"Recurring element that supports theme.", level:0 },
-
-      { id:"c11", module:"m3", term:"Alliteration", def:"Repetition of initial consonant sounds.", level:0 },
-      { id:"c12", module:"m3", term:"Assonance", def:"Repetition of vowel sounds.", level:0 },
-      { id:"c13", module:"m3", term:"Consonance", def:"Repetition of consonant sounds.", level:0 },
-      { id:"c14", module:"m3", term:"Irony", def:"Contrast between expectation and reality (or words and intended meaning).", level:0 },
-      { id:"c15", module:"m3", term:"Allusion", def:"Reference to a known text/event/person that adds meaning.", level:0 },
-
-      { id:"c16", module:"m4", term:"Speaker", def:"The voice in a poem (not always the poet).", level:0 },
-      { id:"c17", module:"m4", term:"Stanza", def:"A grouped set of lines in a poem (like a paragraph).", level:0 },
-      { id:"c18", module:"m4", term:"Meter", def:"Patterned rhythm of stressed/unstressed syllables.", level:0 },
-      { id:"c19", module:"m4", term:"Form", def:"Structural pattern (stanza/line scheme) shaping pace and emphasis.", level:0 },
-
-      { id:"c20", module:"m5", term:"Close reading", def:"Detailed analysis of patterns (imagery/sound/structure) to infer meaning and effect.", level:0 },
-
-      { id:"c21", module:"m6", term:"Stage directions", def:"Instructions for movement/setting/action/tone in a play.", level:0 },
-      { id:"c22", module:"m6", term:"Conflict", def:"Central struggle driving dramatic action.", level:0 },
-
-      { id:"c23", module:"m7", term:"Inference", def:"Reasoned conclusion drawn from textual evidence (details → interpretation).", level:0 },
-      { id:"c24", module:"m7", term:"Subtext", def:"Meaning implied beneath what characters explicitly say/do.", level:0 },
-
-      { id:"c25", module:"m8", term:"Plot", def:"Event structure with causality (conflict → tension → outcome).", level:0 },
-      { id:"c26", module:"m8", term:"Point of view", def:"Who tells/sees; shapes reliability and interpretation.", level:0 },
-      { id:"c27", module:"m8", term:"Setting", def:"Time/place + social world; can shape character and symbolize theme.", level:0 },
-    ];
-
-    const generatedCardSpecs = [
-      ["m2","Simile","Comparison using 'like' or 'as'."],
-      ["m2","Metaphor","Direct comparison: one thing is another."],
-      ["m2","Analogy","Extended comparison used to explain."],
-      ["m2","Imagery","Sensory description building vivid mental scenes."],
-      ["m2","Personification","Human qualities given to non-human things/ideas."],
-      ["m2","Onomatopoeia","Words that imitate sounds (buzz, hiss, tick)."],
-
-      ["m3","Symbol","Object/action representing more than itself."],
-      ["m3","Hyperbole","Deliberate exaggeration for emphasis."],
-      ["m3","Understatement","Intentional downplaying (often ironic)."],
-      ["m3","Rhyme","Repetition of similar end sounds."],
-      ["m3","Rhythm","Patterned flow shaping pace/mood."],
-
-      ["m4","Diction","Word choice; carries tone and connotation."],
-      ["m4","Syntax","Word order; shapes emphasis and meaning."],
-      ["m4","Enjambment","Line break without punctuation; drives momentum."],
-      ["m4","End-stopped line","Line ends with punctuation; creates pause."],
-
-      ["m8","Characterization","How characters are built (actions/speech/thoughts/others’ views)."],
-      ["m8","Foreshadowing","Hints preparing for later events."],
-      ["m8","Climax","Peak moment of tension/turning point."],
-      ["m8","Resolution","Ending phase settling conflict (or leaving it open)."],
-      ["m8","Novel","Extended fictional prose narrative (often 40,000+ words)."],
-      ["m8","Novella","Between short story and novel (often 10k–40k words)."],
-      ["m8","Short story","Focused fiction often read in one sitting (often 1k–10k words)."],
-
-      ["m9","Irony (Austen)","Narration implies critique beneath polite social language."],
-      ["m9","Marriage economy","Marriage linked to money/property/social survival."],
-      ["m9","Social class","Rank/status shaping reputation and life choices."],
-
-      ["m1","Canon","Texts traditionally treated as central/important."],
-      ["review","Evidence → Claim","State a claim, cite a detail, explain the link (not summary)."],
-    ];
-
-    const flashcards = (() => {
-      const cards = [...baseCards];
-      let nextId = 28;
-      for (const [module, term, def] of generatedCardSpecs){
-        cards.push({ id:`c${nextId++}`, module, term, def, level:0 });
-      }
-      while (cards.length < 50){
-        cards.push({ id:`c${nextId++}`, module:"review", term:`Practice Prompt ${cards.length+1}`, def:"Explain how a specific detail creates an effect (tone, mood, theme).", level:0 });
-      }
-      return cards.slice(0,50);
-    })();
-
-    /**********************
-     * DATA: Quizzes (50) — same logic, shortened here for space but still 50
-     **********************/
-    const baseQuizzes = [
-      { id:"q1", module:"m1", q:"Literature is best described as…", type:"mcq",
-        opts:["Language shaped for meaning and effect","A list of historical facts","Only poetry","Only fictional stories"], ans:0,
-        why:"Literature is language crafted for meaning/experience and effect." },
-      { id:"q2", module:"m1", q:"Which is NOT a major genre?", type:"mcq",
-        opts:["Poetry","Drama","Fiction","Algebra"], ans:3, why:"Algebra is not a literary genre." },
-      { id:"q3", module:"m2", q:"A simile compares two things using…", type:"mcq",
-        opts:["like/as","a footnote","only rhyme","stage directions"], ans:0, why:"Similes use 'like' or 'as'." },
-      { id:"q4", module:"m2", q:"True/False: A metaphor uses 'like' or 'as'.", type:"tf",
-        opts:["True","False"], ans:1, why:"Metaphor is direct comparison without 'like/as'." },
-      { id:"q5", module:"m2", q:"Theme is best defined as…", type:"mcq",
-        opts:["The topic alone","A central claim/idea developed by the text","A character’s name","The number of lines"], ans:1,
-        why:"Theme is the text’s central claim/idea, not just a topic." },
-      { id:"q6", module:"m3", q:"Alliteration is…", type:"mcq",
-        opts:["Repeated initial consonant sounds","Repeated vowel sounds","A plot twist","A stage prop"], ans:0,
-        why:"Alliteration repeats initial consonant sounds." },
-      { id:"q7", module:"m3", q:"Assonance is…", type:"mcq",
-        opts:["Repeated vowel sounds","Repeated end rhyme only","A character flaw","A scene change"], ans:0,
-        why:"Assonance repeats vowel sounds." },
-      { id:"q8", module:"m4", q:"In poetry, the 'speaker' is…", type:"mcq",
-        opts:["Always the poet","The voice speaking in the poem","The rhyme scheme","The stanza count"], ans:1,
-        why:"The speaker is the poem’s voice." },
-      { id:"q9", module:"m6", q:"Stage directions primarily…", type:"mcq",
-        opts:["Describe action/setting/performance","Give dictionary definitions","Explain algebra rules","Replace dialogue"], ans:0,
-        why:"Stage directions guide performance." },
-      { id:"q10", module:"m8", q:"Point of view affects…", type:"mcq",
-        opts:["What is seen/told and how reliable it is","Only the cover design","Only the author’s biography","Only stanza length"], ans:0,
-        why:"POV shapes access and reliability." },
-    ];
-
-    const quizGenerators = [
-      () => ({module:"m2", q:"Denotation refers to…", type:"mcq",
-              opts:["Basic dictionary meaning","Emotional associations","A rhyme pattern","A plot summary"], ans:0,
-              why:"Denotation = basic meaning."}),
-      () => ({module:"m2", q:"Connotation refers to…", type:"mcq",
-              opts:["Emotional/cultural associations","Only dictionary meaning","Only meter","Only scene structure"], ans:0,
-              why:"Connotation = associations."}),
-      () => ({module:"m3", q:"True/False: Consonance repeats consonant sounds.", type:"tf",
-              opts:["True","False"], ans:0, why:"That’s the definition."}),
-      () => ({module:"m4", q:"Meter is primarily about…", type:"mcq",
-              opts:["Rhythmic stress pattern","Plot structure","Character names","Setting only"], ans:0,
-              why:"Meter = stress pattern."}),
-      () => ({module:"m6", q:"Drama differs from fiction mainly because drama is written for…", type:"mcq",
-              opts:["Performance","Silent reading only","Word counts","Rhyming"], ans:0,
-              why:"Drama is meant to be performed."}),
-      () => ({module:"m7", q:"In 'Trifles', meaning often comes from…", type:"mcq",
-              opts:["Small details treated as evidence","Only long speeches","Only the title","Random guessing"], ans:0,
-              why:"Details function as clues."}),
-      () => ({module:"m8", q:"Foreshadowing is…", type:"mcq",
-              opts:["Hints about later events","A stanza type","A stage prop","A rhyme error"], ans:0,
-              why:"Foreshadowing hints at later events."}),
-      () => ({module:"m9", q:"The opening of Pride & Prejudice is best read as…", type:"mcq",
-              opts:["Irony/social critique","A biology fact","A stage direction","A literal law"], ans:0,
-              why:"The opening signals critique."}),
-    ];
-
-    const quizzes = (() => {
-      const list = [...baseQuizzes];
-      let nextId = 11;
-      let gi = 0;
-      while (list.length < 50){
-        const item = quizGenerators[gi % quizGenerators.length]();
-        item.id = `q${nextId++}`;
-        list.push(item);
-        gi++;
-      }
-      return list.slice(0,50);
-    })();
-
-    /**********************
-     * DATA: Mind maps (25)
-     **********************/
-    const mindmapsFull = (() => {
-      const base = [
-        { id:"mm1", module:"m1", title:"Genres Overview",
-          tree: [["Literature", [["Poetry",["Sound","Imagery","Form","Speaker"]],["Drama",["Dialogue","Stage directions","Conflict"]],["Fiction",["Plot","Character","Setting","POV","Theme"]]]]],
-          jumps: [{label:"Jump to Poetry", to:"m4"},{label:"Jump to Drama", to:"m6"},{label:"Jump to Fiction", to:"m8"}]
-        },
-        { id:"mm2", module:"m2", title:"Literal vs Figurative",
-          tree: [["Literal",["Direct meaning"]],["Figurative",["Simile","Metaphor","Symbol","Personification","Irony"]]],
-          jumps: [{label:"Go to Figures & Sound", to:"m3"}]
-        },
-        { id:"mm3", module:"m3", title:"Sound Devices",
-          tree: [["Sound", [["Rhyme",["End","Internal"]],["Repetition",["Alliteration","Assonance","Consonance"]],["Rhythm/Meter",["Pace","Mood"]]]]],
-          jumps: [{label:"Go to Poetry", to:"m4"}]
-        },
-        { id:"mm4", module:"m4", title:"Poetry Elements",
-          tree: [["Poem", [["Speaker"],["Diction & Syntax"],["Imagery"],["Sound"],["Form"],["Theme"]]]],
-          jumps: [{label:"Go to Shakespeare", to:"m5"}]
-        },
-        { id:"mm5", module:"m8", title:"Fiction Elements",
-          tree: [["Fiction", [["Plot",["Conflict","Climax","Resolution"]],["Character"],["Setting"],["POV"],["Theme"]]]],
-          jumps: [{label:"Go to Austen", to:"m9"}]
-        },
-      ];
-
-      let n = 6;
-      const add = (module,title,tree)=>({id:`mm${n++}`,module,title,tree,jumps:[]});
-      const list = [...base];
-
-      const extras = [
-        add("m6","Drama Elements",[["Drama",[["Dialogue",["Conflict","Character"]],["Stage directions",["Setting","Movement"]],["Structure",["Scenes","Acts"]]]]]),
-        add("m7","Trifles: Evidence Logic",[["Details",[["Objects",["Clues","Meaning"]],["Interpretation",["Official","Overlooked"]]]]]),
-        add("m9","Austen: Social System",[["Society",[["Class"],["Marriage economy"],["Reputation"]]]]]),
-        add("review","Revision Strategy",[["Mastery",[["Recall",["Flashcards","Short answers"]],["Feedback",["Fix errors"]],["Frameworks",["Mind maps"]]]]]),
-      ];
-
-      list.push(...extras);
-
-      while (list.length < 25){
-        list.push(add("review",`Rapid Map ${list.length+1}`,[["Core",[["Genres"],["Devices"],["Elements"],["Evidence → Claim"]]]] ));
-      }
-      return list.slice(0,25);
-    })();
-
-    /**********************
-     * STATE (Progress)
-     **********************/
-    const STORE_KEY = "ENGL280_PROGRESS_V3";
-
-    const defaultProgress = {
-      cardLevel: Object.fromEntries(flashcards.map(c => [c.id, 0])),
-      quizCorrect: Object.fromEntries(quizzes.map(q => [q.id, false])),
-      mapVisited: Object.fromEntries(mindmapsFull.map(m => [m.id, false])),
-      bookmarks: [],
-      lastActiveDate: null,
-      streak: 0,
-      lastModule: "home"
+function load(){
+  try{
+    const raw = localStorage.getItem(STORE);
+    if (!raw) return structuredClone(defaultState);
+    const s = JSON.parse(raw);
+    return {
+      ...structuredClone(defaultState),
+      ...s,
+      bookmarks: Array.isArray(s.bookmarks) ? s.bookmarks : [],
+      cardLevel: { ...structuredClone(defaultState.cardLevel), ...(s.cardLevel||{}) },
+      quizCorrect: { ...structuredClone(defaultState.quizCorrect), ...(s.quizCorrect||{}) },
+      mapsVisited: { ...(s.mapsVisited||{}) },
+      deckIndexByModule: { ...(s.deckIndexByModule||{}) },
+      lastQuizSet: Array.isArray(s.lastQuizSet) ? s.lastQuizSet : []
     };
+  }catch{
+    return structuredClone(defaultState);
+  }
+}
+function save(){ localStorage.setItem(STORE, JSON.stringify(state)); renderStats(); }
 
-    function loadProgress(){
-      try{
-        const raw = localStorage.getItem(STORE_KEY);
-        if (!raw) return structuredClone(defaultProgress);
-        const parsed = JSON.parse(raw);
-        return {
-          ...structuredClone(defaultProgress),
-          ...parsed,
-          cardLevel: { ...structuredClone(defaultProgress.cardLevel), ...(parsed.cardLevel||{}) },
-          quizCorrect: { ...structuredClone(defaultProgress.quizCorrect), ...(parsed.quizCorrect||{}) },
-          mapVisited: { ...structuredClone(defaultProgress.mapVisited), ...(parsed.mapVisited||{}) },
-          bookmarks: Array.isArray(parsed.bookmarks) ? parsed.bookmarks : []
-        };
-      }catch{
-        return structuredClone(defaultProgress);
-      }
+/* XP / Level */
+function levelFromXP(xp){ return Math.max(1, Math.floor(xp/120)+1); }
+function addXP(amount, reason=""){
+  const beforeLevel = levelFromXP(state.xp);
+  state.xp += amount;
+  save();
+  const afterLevel = levelFromXP(state.xp);
+  if (afterLevel > beforeLevel){
+    confettiBurst();
+    toast(`Level up → <b>Level ${afterLevel}</b> 🎉 (+${amount} XP)`);
+  } else if (amount > 0){
+    toast(`+${amount} XP ${reason ? "— " + reason : ""}`);
+  }
+}
+
+/* streak */
+function todayISO(){
+  const d = new Date(); d.setHours(0,0,0,0);
+  return d.toISOString().slice(0,10);
+}
+function bumpStreak(){
+  const t = todayISO();
+  if (!state.lastActiveDate){
+    state.lastActiveDate = t; state.streak = 1; save(); return;
+  }
+  if (state.lastActiveDate === t) return;
+  const last = new Date(state.lastActiveDate + "T00:00:00");
+  const now = new Date(t + "T00:00:00");
+  const diff = Math.round((now-last)/(1000*60*60*24));
+  state.streak = (diff === 1) ? (state.streak+1) : 1;
+  state.lastActiveDate = t;
+  save();
+}
+
+/* ===========================
+   UI refs
+=========================== */
+const navEl = document.getElementById("nav");
+const searchInput = document.getElementById("searchInput");
+const pageTitleEl = document.getElementById("pageTitle");
+const pageSubEl = document.getElementById("pageSubtitle");
+const learnBody = document.getElementById("learnBody");
+const toolsBody = document.getElementById("toolsBody");
+const progressFill = document.getElementById("progressFill");
+
+const statXP = document.getElementById("statXP");
+const statLevel = document.getElementById("statLevel");
+const statCards = document.getElementById("statCards");
+const statQuizzes = document.getElementById("statQuizzes");
+const statMaps = document.getElementById("statMaps");
+const statStreak = document.getElementById("statStreak");
+
+const modeChips = document.getElementById("modeChips");
+const nextBtn = document.getElementById("nextBtn");
+const bookmarkBtn = document.getElementById("bookmarkBtn");
+const quickPracticeBtn = document.getElementById("quickPracticeBtn");
+const focusBtn = document.getElementById("focusBtn");
+const resetBtn = document.getElementById("resetBtn");
+
+let currentModule = state.lastModule || "home";
+let currentMode = "learn";
+
+/* ===========================
+   NAV
+=========================== */
+function moduleIcon(id){
+  if (id==="home") return "🏡";
+  if (id==="review") return "🌿";
+  return "📖";
+}
+function renderNav(){
+  const q = (searchInput.value||"").trim().toLowerCase();
+  navEl.innerHTML = "";
+  modules.forEach(m=>{
+    const hay = (m.title+" "+(m.subtitle||"")+" "+(m.learn||"")).toLowerCase();
+    if (q && !hay.includes(q)) return;
+
+    const btn = document.createElement("button");
+    btn.className = (m.id===currentModule) ? "active" : "";
+    btn.innerHTML = `<span>${moduleIcon(m.id)} ${m.title.replace(/^Module\\s+\\d+:\\s+/i,"")}</span><small>${m.id==="home"?"Start":(m.id==="review"?"Mixed mastery":"Lesson + practice")}</small>`;
+    btn.onclick = ()=>openModule(m.id,true);
+    navEl.appendChild(btn);
+  });
+}
+
+function openModule(id, fromUser=false){
+  const m = modules.find(x=>x.id===id);
+  if (!m) return;
+  currentModule = id;
+  state.lastModule = id;
+  save();
+
+  pageTitleEl.textContent = m.title;
+  pageSubEl.textContent = m.subtitle||"";
+
+  if (fromUser) currentMode="learn";
+  setActiveChip(currentMode);
+  renderMain();
+  renderTools();
+  bumpStreak();
+}
+
+function nextModuleId(){
+  const ids = modules.map(m=>m.id);
+  const i = ids.indexOf(currentModule);
+  return ids[(i+1)%ids.length];
+}
+nextBtn.onclick = ()=>openModule(nextModuleId(), true);
+
+searchInput.addEventListener("input", ()=>{ renderNav(); renderTools(); });
+
+/* Keyboard shortcuts */
+window.addEventListener("keydown",(e)=>{
+  if (e.ctrlKey && e.key === "/"){
+    e.preventDefault();
+    searchInput.focus();
+  }
+
+  // Flashcard shortcuts
+  if (currentMode === "flashcards"){
+    if (e.key === " "){ e.preventDefault(); flipCard(); }
+    if (e.key === "ArrowRight"){ e.preventDefault(); nextCard(); }
+    if (e.key === "ArrowLeft"){ e.preventDefault(); prevCard(); }
+    if (e.key === "1"){ rateCard(0); }
+    if (e.key === "2"){ rateCard(1); }
+    if (e.key === "3"){ rateCard(2); }
+  }
+});
+
+/* ===========================
+   MODE CHIPS
+=========================== */
+function setActiveChip(mode){
+  [...modeChips.querySelectorAll(".chip")].forEach(c=>{
+    c.classList.toggle("active", c.dataset.mode===mode);
+  });
+}
+modeChips.addEventListener("click",(e)=>{
+  const chip = e.target.closest(".chip");
+  if (!chip) return;
+  currentMode = chip.dataset.mode;
+  setActiveChip(currentMode);
+  renderMain();
+  renderTools();
+});
+
+/* ===========================
+   MAIN RENDER
+=========================== */
+function renderMain(){
+  const m = modules.find(x=>x.id===currentModule);
+  if (!m) return;
+
+  if (currentMode==="learn"){
+    learnBody.innerHTML = m.learn || `<p>No content yet.</p>`;
+    return;
+  }
+  if (currentMode==="flashcards"){ renderFlashcards(m); return; }
+  if (currentMode==="quiz"){ renderQuiz(m); return; }
+  if (currentMode==="match"){ renderMatching(m); return; }
+  if (currentMode==="mindmap"){ renderMindMap(m); return; }
+}
+
+/* ===========================
+   FLASHCARDS (real interaction)
+   - deck per module
+   - index preserved
+   - flip/prev/next
+   - rating buttons add XP + spaced repetition behavior
+=========================== */
+let currentDeck = [];
+let currentCardIndex = 0;
+
+function buildDeck(moduleId){
+  if (moduleId==="review") return shuffle([...flashcards]);
+  return shuffle(flashcards.filter(c=>c.module===moduleId));
+}
+
+function getSavedIndex(moduleId){
+  return state.deckIndexByModule[moduleId] ?? 0;
+}
+function setSavedIndex(moduleId, idx){
+  state.deckIndexByModule[moduleId] = idx;
+  save();
+}
+
+function renderFlashcards(m){
+  currentDeck = buildDeck(m.id);
+  if (!currentDeck.length){
+    learnBody.innerHTML = `<div class="note"><b>No flashcards for this module.</b></div>`;
+    return;
+  }
+  currentCardIndex = Math.min(getSavedIndex(m.id), currentDeck.length-1);
+
+  const card = currentDeck[currentCardIndex];
+  const lvl = state.cardLevel[card.id] ?? 0;
+
+  learnBody.innerHTML = `
+    <div class="panelRow">
+      <div class="counterPills">
+        <span class="tag">Card <b>${currentCardIndex+1}</b> / ${currentDeck.length}</span>
+        <span class="tag">Space: flip</span>
+        <span class="tag">← / →</span>
+      </div>
+      <div class="counterPills">
+        <span class="tag">Rate: 1-3</span>
+        <span class="tag">XP on honest rating</span>
+      </div>
+    </div>
+
+    <div class="flashArea">
+      <div class="flashCard" id="flashCard">
+        <div>
+          <div class="flashFace">${escapeHTML(card.term)}</div>
+          <div class="flashBack">${escapeHTML(card.def)}</div>
+        </div>
+        <div class="lvlRow">
+          <button class="lvlBtn ${lvl===0?"active":""}" data-lvl="0">1 Review</button>
+          <button class="lvlBtn ${lvl===1?"active":""}" data-lvl="1">2 Known</button>
+          <button class="lvlBtn ${lvl===2?"active":""}" data-lvl="2">3 Mastered</button>
+        </div>
+      </div>
+
+      <div class="panelRow">
+        <button class="btn" id="prevCardBtn">← Prev</button>
+        <button class="btn primary" id="flipBtn">Flip</button>
+        <button class="btn" id="nextCardBtn">Next →</button>
+      </div>
+
+      <div class="note">
+        <b>Don’t lie to yourself.</b> If you flipped it, it’s not “Mastered.”
+      </div>
+    </div>
+  `;
+
+  const flashEl = document.getElementById("flashCard");
+  flashEl.onclick = (e)=>{
+    if (e.target.closest(".lvlBtn")) return;
+    flipCard();
+  };
+
+  document.getElementById("flipBtn").onclick = ()=>flipCard();
+  document.getElementById("prevCardBtn").onclick = ()=>prevCard();
+  document.getElementById("nextCardBtn").onclick = ()=>nextCard();
+
+  [...document.querySelectorAll(".lvlBtn")].forEach(btn=>{
+    btn.onclick = (e)=>{
+      e.stopPropagation();
+      rateCard(parseInt(btn.dataset.lvl,10));
+    };
+  });
+}
+
+function flipCard(){
+  const el = document.getElementById("flashCard");
+  if (!el) return;
+  el.classList.toggle("revealed");
+  bumpStreak();
+  // micro XP for engagement
+  addXP(1, "card flip");
+}
+
+function rateCard(level){
+  const m = modules.find(x=>x.id===currentModule);
+  const card = currentDeck[currentCardIndex];
+  if (!card) return;
+
+  const before = state.cardLevel[card.id] ?? 0;
+  state.cardLevel[card.id] = level;
+
+  // XP rule: reward improvement, not spamming
+  if (level > before) addXP(8 + level*2, "card rating");
+  else addXP(2, "card rating");
+
+  save();
+  bumpStreak();
+
+  // auto-advance if mastered/known to keep pace
+  if (level >= 1) nextCard();
+  else renderFlashcards(m);
+}
+
+function nextCard(){
+  const m = modules.find(x=>x.id===currentModule);
+  currentCardIndex = Math.min(currentDeck.length-1, currentCardIndex+1);
+  setSavedIndex(m.id, currentCardIndex);
+  renderFlashcards(m);
+}
+function prevCard(){
+  const m = modules.find(x=>x.id===currentModule);
+  currentCardIndex = Math.max(0, currentCardIndex-1);
+  setSavedIndex(m.id, currentCardIndex);
+  renderFlashcards(m);
+}
+
+/* ===========================
+   QUIZ (timed + session score + confetti)
+=========================== */
+let quizTimer = null;
+let quizTimeLeft = 0;
+let quizSession = [];
+
+function renderQuiz(m){
+  // build a session set
+  const pool = (m.id==="review") ? quizzes : quizzes.filter(q=>q.module===m.id);
+  if (!pool.length){
+    learnBody.innerHTML = `<div class="note"><b>No quizzes for this module.</b></div>`;
+    return;
+  }
+  quizSession = shuffle([...pool]).slice(0, 6);
+  state.lastQuizSet = quizSession.map(x=>x.id);
+  save();
+
+  quizTimeLeft = 75; // seconds
+  clearInterval(quizTimer);
+  quizTimer = setInterval(()=>{
+    quizTimeLeft--;
+    const tEl = document.getElementById("timer");
+    if (tEl) tEl.textContent = quizTimeLeft + "s";
+    if (quizTimeLeft <= 0){
+      clearInterval(quizTimer);
+      gradeQuiz(true);
     }
-    function saveProgress(){
-      localStorage.setItem(STORE_KEY, JSON.stringify(progress));
-      renderProgress();
+  }, 1000);
+
+  learnBody.innerHTML = `
+    <div class="panelRow">
+      <div class="counterPills">
+        <span class="tag">Timed set</span>
+        <span class="tag">Timer: <b id="timer">${quizTimeLeft}s</b></span>
+        <span class="tag">6 questions</span>
+      </div>
+      <div class="counterPills">
+        <button class="btn" id="newSetBtn">New Set</button>
+        <button class="btn primary" id="gradeBtn">Grade</button>
+      </div>
+    </div>
+
+    <div id="quizList"></div>
+
+    <div class="note">
+      <b>Hard truth:</b> if you can’t answer under time pressure, you don’t know it yet.
+    </div>
+  `;
+
+  const listEl = document.getElementById("quizList");
+  quizSession.forEach((q, idx)=>{
+    const already = !!state.quizCorrect[q.id];
+    const box = document.createElement("div");
+    box.className = "quizBox";
+    box.innerHTML = `
+      <div class="quizTop">
+        <h4>${idx+1}. ${escapeHTML(q.q)}</h4>
+        <div class="quizMeta">${escapeHTML(q.module.toUpperCase())} · ${already ? "✅ solved" : "new"}</div>
+      </div>
+      <div class="qOpts">
+        ${q.opts.map((opt,i)=>`
+          <label class="opt">
+            <input type="radio" name="qq_${q.id}" value="${i}">
+            <span>${escapeHTML(opt)}</span>
+          </label>
+        `).join("")}
+      </div>
+      <div class="feedback" id="fb_${q.id}"></div>
+    `;
+    listEl.appendChild(box);
+  });
+
+  document.getElementById("newSetBtn").onclick = ()=>renderQuiz(m);
+  document.getElementById("gradeBtn").onclick = ()=>gradeQuiz(false);
+}
+
+function gradeQuiz(fromTimeout){
+  clearInterval(quizTimer);
+
+  let correctCount = 0;
+  quizSession.forEach(q=>{
+    const checked = document.querySelector(`input[name="qq_${q.id}"]:checked`);
+    const user = checked ? parseInt(checked.value,10) : null;
+    const ok = (user !== null && user === q.ans);
+    const fb = document.getElementById(`fb_${q.id}`);
+    if (ok){
+      correctCount++;
+      fb.className = "feedback good";
+      fb.innerHTML = `✅ <b>Correct.</b> ${escapeHTML(q.why)}`;
+      state.quizCorrect[q.id] = true;
+    } else {
+      fb.className = "feedback bad";
+      fb.innerHTML = `❌ <b>Wrong.</b> ${escapeHTML(q.why)}`;
     }
+  });
 
-    let progress = loadProgress();
+  save();
+  bumpStreak();
 
-    function todayISO(){
-      const d = new Date();
-      d.setHours(0,0,0,0);
-      return d.toISOString().slice(0,10);
-    }
+  // XP scoring
+  const base = correctCount * 12;
+  const speedBonus = fromTimeout ? 0 : Math.max(0, Math.floor(quizTimeLeft/5));
+  addXP(base + speedBonus, `quiz: ${correctCount}/6`);
 
-    function updateStreak(){
-      const t = todayISO();
-      if (!progress.lastActiveDate){
-        progress.lastActiveDate = t;
-        progress.streak = 1;
-        saveProgress();
-        return;
-      }
-      if (progress.lastActiveDate === t) return;
+  if (correctCount === 6){
+    confettiBurst();
+    toast(`<b>Perfect.</b> 6/6 ✅`);
+  } else {
+    toast(`Score: <b>${correctCount}/6</b>. Fix wrong ones now.`);
+  }
+}
 
-      const last = new Date(progress.lastActiveDate + "T00:00:00");
-      const now = new Date(t + "T00:00:00");
-      const diffDays = Math.round((now - last) / (1000*60*60*24));
+/* ===========================
+   MATCHING GAME (drag-drop)
+=========================== */
+function renderMatching(m){
+  const pool = (m.id==="review") ? flashcards : flashcards.filter(c=>c.module===m.id);
+  if (pool.length < 4){
+    learnBody.innerHTML = `<div class="note"><b>Not enough cards for matching.</b> Use Review mode or add more terms.</div>`;
+    return;
+  }
+  const set = shuffle([...pool]).slice(0, 6);
+  const terms = shuffle(set.map(x=>({id:x.id, text:x.term})));
+  const defs = shuffle(set.map(x=>({id:x.id, text:x.def})));
 
-      if (diffDays === 1) progress.streak = (progress.streak || 0) + 1;
-      else progress.streak = 1;
+  learnBody.innerHTML = `
+    <div class="panelRow">
+      <div class="counterPills">
+        <span class="tag">Drag terms → drop on correct definition</span>
+        <span class="tag">Instant validation</span>
+      </div>
+      <div class="counterPills">
+        <button class="btn" id="newMatchBtn">New Match</button>
+      </div>
+    </div>
 
-      progress.lastActiveDate = t;
-      saveProgress();
-    }
+    <div class="matchWrap">
+      <div class="matchGrid">
+        <div class="dropZone" id="termsZone">
+          <div class="dropTitle">Terms (drag these)</div>
+          <div class="dropHint">Tip: start with easiest.</div>
+          <div style="display:grid;gap:10px;margin-top:10px;" id="termsList"></div>
+        </div>
+        <div class="dropZone" id="defsZone">
+          <div class="dropTitle">Definitions (drop here)</div>
+          <div class="dropHint">Drop a term onto its definition.</div>
+          <div style="display:grid;gap:10px;margin-top:10px;" id="defsList"></div>
+        </div>
+      </div>
 
-    /**********************
-     * UI Refs
-     **********************/
-    const navEl = document.getElementById("nav");
-    const pageTitleEl = document.getElementById("pageTitle");
-    const pageSubEl = document.getElementById("pageSubtitle");
-    const learnBody = document.getElementById("learnBody");
-    const toolsBody = document.getElementById("toolsBody");
+      <div class="note" id="matchNote">
+        Match all to earn a bonus.
+      </div>
+    </div>
+  `;
 
-    const progressFill = document.getElementById("progressFill");
-    const statCards = document.getElementById("statCards");
-    const statQuizzes = document.getElementById("statQuizzes");
-    const statMaps = document.getElementById("statMaps");
-    const statStreak = document.getElementById("statStreak");
+  document.getElementById("newMatchBtn").onclick = ()=>renderMatching(m);
 
-    const searchInput = document.getElementById("searchInput");
-    const nextBtn = document.getElementById("nextBtn");
-    const bookmarkBtn = document.getElementById("bookmarkBtn");
-    const quickPracticeBtn = document.getElementById("quickPracticeBtn");
+  const termsList = document.getElementById("termsList");
+  const defsList = document.getElementById("defsList");
 
-    const focusBtn = document.getElementById("focusBtn");
-    const musicBtn = document.getElementById("musicBtn");
-    const startMusicTopBtn = document.getElementById("startMusicTopBtn");
-    const resetBtn = document.getElementById("resetBtn");
+  let solved = 0;
 
-    const modeChips = document.getElementById("modeChips");
-
-    const modalBackdrop = document.getElementById("modalBackdrop");
-    const modalTitle = document.getElementById("modalTitle");
-    const modalBody = document.getElementById("modalBody");
-    const closeModalBtn = document.getElementById("closeModalBtn");
-    const openDashboardBtn = document.getElementById("openDashboardBtn");
-
-    let currentModuleId = progress.lastModule || "home";
-    let currentMode = "learn";
-
-    /**********************
-     * NAV + MODULE
-     **********************/
-    function moduleLabel(m){
-      if (m.id === "home") return "Home";
-      if (m.id === "review") return "Review";
-      return m.title.replace(/^Module\s+\d+:\s+/i,"").trim();
-    }
-
-    function renderNav(filterText=""){
-      navEl.innerHTML = "";
-      const q = filterText.trim().toLowerCase();
-      const items = modules.filter(m => {
-        if (!q) return true;
-        const hay = (m.title + " " + (m.subtitle||"") + " " + (m.learn||"")).toLowerCase();
-        return hay.includes(q);
-      });
-
-      for (const m of items){
-        const btn = document.createElement("button");
-        btn.className = (m.id === currentModuleId) ? "active" : "";
-        btn.innerHTML = `<span>${m.id==="home" ? "🏡" : (m.id==="review" ? "🌿" : "📖")} ${moduleLabel(m)}</span><small>${m.id==="home" ? "Start here" : (m.id==="review" ? "Mastery mode" : "Lesson + practice")}</small>`;
-        btn.onclick = () => openModule(m.id, true);
-        navEl.appendChild(btn);
-      }
-    }
-
-    function openModule(id, fromUser=false){
-      const m = modules.find(x => x.id === id);
-      if (!m) return;
-
-      currentModuleId = id;
-      progress.lastModule = id;
-      saveProgress();
-
-      renderNav(searchInput.value);
-
-      pageTitleEl.textContent = m.title;
-      pageSubEl.textContent = m.subtitle || "";
-
-      if (fromUser) currentMode = "learn";
-      setActiveChip(currentMode);
-
-      renderMain();
-      renderTools();
-      updateStreak();
-    }
-
-    function setActiveChip(mode){
-      [...modeChips.querySelectorAll(".chip")].forEach(c => {
-        c.classList.toggle("active", c.dataset.mode === mode);
-      });
-    }
-
-    modeChips.addEventListener("click", (e) => {
-      const chip = e.target.closest(".chip");
-      if (!chip) return;
-      currentMode = chip.dataset.mode;
-      setActiveChip(currentMode);
-      renderMain();
+  terms.forEach(t=>{
+    const el = document.createElement("div");
+    el.className = "draggable";
+    el.draggable = true;
+    el.dataset.id = t.id;
+    el.textContent = t.text;
+    el.addEventListener("dragstart",(e)=>{
+      e.dataTransfer.setData("text/plain", t.id);
+      addXP(1, "drag");
     });
+    termsList.appendChild(el);
+  });
 
-    function nextModuleId(){
-      const ids = modules.map(m => m.id);
-      const i = ids.indexOf(currentModuleId);
-      return ids[(i + 1) % ids.length];
-    }
-    nextBtn.onclick = () => openModule(nextModuleId(), true);
+  defs.forEach(d=>{
+    const wrap = document.createElement("div");
+    wrap.className = "draggable";
+    wrap.style.cursor = "default";
+    wrap.style.userSelect = "text";
+    wrap.dataset.id = d.id;
+    wrap.innerHTML = `<b style="display:block;margin-bottom:6px;">Definition</b>${escapeHTML(d.text)}`;
+    wrap.addEventListener("dragover",(e)=>e.preventDefault());
+    wrap.addEventListener("drop",(e)=>{
+      e.preventDefault();
+      const draggedId = e.dataTransfer.getData("text/plain");
+      if (!draggedId) return;
 
-    /**********************
-     * Search
-     **********************/
-    searchInput.addEventListener("input", () => {
-      renderNav(searchInput.value);
-      renderTools();
-    });
+      const termEl = [...termsList.querySelectorAll(".draggable")].find(x=>x.dataset.id===draggedId);
+      if (!termEl) return;
 
-    window.addEventListener("keydown", (e) => {
-      if (e.ctrlKey && e.key === "/"){
-        e.preventDefault();
-        searchInput.focus();
-      }
-      if (e.key.toLowerCase() === "g"){
-        window.__awaitingModuleKey = true;
-        setTimeout(() => window.__awaitingModuleKey = false, 900);
-      } else if (window.__awaitingModuleKey){
-        const n = parseInt(e.key,10);
-        if (n >= 1 && n <= 9){
-          openModule(`m${n}`, true);
-          window.__awaitingModuleKey = false;
+      if (draggedId === d.id){
+        wrap.style.borderColor = "rgba(22,163,74,.45)";
+        wrap.style.background = "rgba(22,163,74,.10)";
+        wrap.innerHTML = `<b style="display:block;margin-bottom:6px;">✅ Matched</b><div style="margin-bottom:8px;"><b>${escapeHTML(termEl.textContent)}</b></div>${escapeHTML(d.text)}`;
+        termEl.remove();
+
+        solved++;
+        addXP(10, "match correct");
+        bumpStreak();
+
+        if (solved === defs.length){
+          addXP(40, "matching bonus");
+          confettiBurst();
+          toast(`<b>Matching complete.</b> Bonus XP earned ✅`);
+          document.getElementById("matchNote").innerHTML = `<b>Completed.</b> Now switch to Quiz and lock it in.`;
         }
-      }
-    });
-
-    /**********************
-     * Bookmarks
-     **********************/
-    bookmarkBtn.onclick = () => {
-      const b = progress.bookmarks || [];
-      if (!b.includes(currentModuleId)) b.push(currentModuleId);
-      else b.splice(b.indexOf(currentModuleId), 1);
-      progress.bookmarks = b;
-      saveProgress();
-      renderTools();
-    };
-
-    /**********************
-     * Quick Practice
-     **********************/
-    quickPracticeBtn.onclick = () => {
-      openModule("review", true);
-      currentMode = "quiz";
-      setActiveChip(currentMode);
-      renderMain({ mixed:true, count: 6 });
-      renderTools();
-    };
-
-    /**********************
-     * MAIN RENDER
-     **********************/
-    function renderMain(opts={}){
-      const m = modules.find(x => x.id === currentModuleId);
-      if (!m) return;
-
-      if (currentMode === "learn"){ learnBody.innerHTML = m.learn || `<p>No content yet.</p>`; return; }
-      if (currentMode === "flashcards"){ renderFlashcardsView(m, opts); return; }
-      if (currentMode === "quiz"){ renderQuizView(m, opts); return; }
-      if (currentMode === "mindmap"){ renderMindmapView(m); return; }
-    }
-
-    /**********************
-     * FLASHCARDS
-     **********************/
-    function renderFlashcardsView(m, opts={}){
-      const isMixed = (m.id === "review");
-      const moduleFilter = isMixed ? null : m.id;
-      const levels = opts.levels ?? null;
-
-      const pool = flashcards.filter(c => {
-        const okModule = moduleFilter ? c.module === moduleFilter : true;
-        const okLevel = levels ? levels.includes(progress.cardLevel[c.id] ?? 0) : true;
-        return okModule && okLevel;
-      });
-
-      const chosen = (isMixed ? (pool.filter(c => (progress.cardLevel[c.id] ?? 0) === 0) || pool) : pool);
-      const use = chosen.length ? chosen : pool;
-      const card = shuffle([...use])[0];
-
-      if (!card){
-        learnBody.innerHTML = `<div class="note"><b>No flashcards found.</b></div>`;
-        return;
-      }
-
-      const lvl = progress.cardLevel[card.id] ?? 0;
-
-      learnBody.innerHTML = `
-        <div class="deckTop">
-          <div class="left">
-            <select class="select" id="cardFilter">
-              <option value="all">All levels</option>
-              <option value="0" ${isMixed ? "selected" : ""}>Review only</option>
-              <option value="1">Known only</option>
-              <option value="2">Mastered only</option>
-            </select>
-            <button class="btn primary" id="nextCardBtn">Next card</button>
-          </div>
-          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end;">
-            <span class="tag">${isMixed ? "Mixed deck" : "Module deck"}</span>
-            <span class="tag">Tap to reveal</span>
-          </div>
-        </div>
-
-        <div class="flashWrap">
-          <div class="flashCard" id="flashCard">
-            <div>
-              <div class="flashFace">${escapeHTML(card.term)}</div>
-              <div class="flashBack">${escapeHTML(card.def)}</div>
-            </div>
-            <div class="flashMeta">
-              <div>
-                <span class="tag">Module: ${escapeHTML(card.module.toUpperCase())}</span>
-              </div>
-              <div class="level">
-                <button class="lvlBtn ${lvl===0 ? "active":""}" data-lvl="0">Review</button>
-                <button class="lvlBtn ${lvl===1 ? "active":""}" data-lvl="1">Known</button>
-                <button class="lvlBtn ${lvl===2 ? "active":""}" data-lvl="2">Mastered</button>
-              </div>
-            </div>
-          </div>
-
-          <div class="note">
-            <b>Rule:</b> if you needed the back side, don’t mark “Mastered.” Be honest.
-          </div>
-        </div>
-      `;
-
-      const flashEl = document.getElementById("flashCard");
-      flashEl.addEventListener("click", (e) => {
-        if (e.target.closest(".lvlBtn")) return;
-        flashEl.classList.toggle("revealed");
-        updateStreak();
-      });
-
-      document.getElementById("nextCardBtn").onclick = () => renderFlashcardsView(m, opts);
-
-      const filterSel = document.getElementById("cardFilter");
-      filterSel.onchange = () => {
-        const v = filterSel.value;
-        if (v === "all") renderFlashcardsView(m, { levels:null });
-        else renderFlashcardsView(m, { levels:[parseInt(v,10)] });
-      };
-
-      [...document.querySelectorAll(".lvlBtn")].forEach(btn => {
-        btn.onclick = (e) => {
-          e.stopPropagation();
-          progress.cardLevel[card.id] = parseInt(btn.dataset.lvl,10);
-          saveProgress();
-          renderFlashcardsView(m, opts);
-        };
-      });
-    }
-
-    /**********************
-     * QUIZ
-     **********************/
-    function renderQuizView(m, opts={}){
-      const isMixed = (m.id === "review");
-      const moduleFilter = isMixed ? null : m.id;
-
-      let pool = quizzes.filter(q => moduleFilter ? q.module === moduleFilter : true);
-      pool = shuffle(pool).slice(0, (isMixed && opts.mixed) ? (opts.count ?? 6) : 4);
-
-      if (!pool.length){
-        learnBody.innerHTML = `<div class="note"><b>No quizzes found.</b></div>`;
-        return;
-      }
-
-      learnBody.innerHTML = `
-        <div class="deckTop">
-          <div class="left">
-            <button class="btn" id="newQuizSetBtn">New set</button>
-            <button class="btn" id="reviewWrongsBtn">Practice wrong ones</button>
-          </div>
-          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end;">
-            <span class="tag">${isMixed ? "Mixed quiz" : "Module quiz"}</span>
-            <span class="tag">Total: ${quizzes.length}</span>
-          </div>
-        </div>
-        <div id="quizList"></div>
-        <div class="note">
-          <b>Truth:</b> guessing feels like learning. It isn’t. Fix wrong items immediately.
-        </div>
-      `;
-
-      const listEl = document.getElementById("quizList");
-
-      pool.forEach(q => {
-        const alreadyCorrect = !!progress.quizCorrect[q.id];
-        const qEl = document.createElement("div");
-        qEl.className = "qBox";
-        qEl.innerHTML = `
-          <div class="qTop">
-            <h4>${escapeHTML(q.q)}</h4>
-            <div class="qMeta">${escapeHTML(q.module.toUpperCase())} · ${alreadyCorrect ? "✅ Correct before" : "Not yet"}</div>
-          </div>
-          <div class="qOpts" data-qid="${q.id}">
-            ${renderQuizOptions(q)}
-          </div>
-          <button class="btn primary" data-action="check" data-qid="${q.id}">Check</button>
-          <div class="feedback" id="fb_${q.id}" style="display:none;"></div>
-        `;
-        listEl.appendChild(qEl);
-      });
-
-      document.getElementById("newQuizSetBtn").onclick = () => renderQuizView(m, opts);
-
-      document.getElementById("reviewWrongsBtn").onclick = () => {
-        const wrongs = quizzes.filter(q => !progress.quizCorrect[q.id] && (moduleFilter ? q.module === moduleFilter : true));
-        if (!wrongs.length){
-          learnBody.innerHTML = `<div class="note"><b>No wrong questions left in this scope.</b></div>`;
-          return;
-        }
-        // Force 6 wrong ones
-        const forced = shuffle(wrongs).slice(0, Math.min(6, wrongs.length));
-        // Quick rerender with forced list
-        learnBody.querySelector("#quizList").innerHTML = "";
-        forced.forEach(q => {
-          const qEl = document.createElement("div");
-          qEl.className = "qBox";
-          qEl.innerHTML = `
-            <div class="qTop">
-              <h4>${escapeHTML(q.q)}</h4>
-              <div class="qMeta">${escapeHTML(q.module.toUpperCase())} · Not yet</div>
-            </div>
-            <div class="qOpts" data-qid="${q.id}">
-              ${renderQuizOptions(q)}
-            </div>
-            <button class="btn primary" data-action="check" data-qid="${q.id}">Check</button>
-            <div class="feedback" id="fb_${q.id}" style="display:none;"></div>
-          `;
-          learnBody.querySelector("#quizList").appendChild(qEl);
-        });
-      };
-
-      listEl.addEventListener("click", (e) => {
-        const btn = e.target.closest("button[data-action='check']");
-        if (!btn) return;
-        const qid = btn.dataset.qid;
-        const q = quizzes.find(x => x.id === qid);
-        if (!q) return;
-
-        const fb = document.getElementById(`fb_${qid}`);
-        const user = getQuizUserAnswer(qid);
-        const correct = (user !== null) && (user === q.ans);
-
-        fb.style.display = "block";
-        fb.className = "feedback " + (correct ? "good" : "bad");
-        fb.innerHTML = correct
-          ? `✅ <b>Correct.</b> ${escapeHTML(q.why)}`
-          : `❌ <b>Incorrect.</b> ${escapeHTML(q.why)}`;
-
-        if (correct){
-          progress.quizCorrect[qid] = true;
-          saveProgress();
-        }
-        updateStreak();
-      }, { once:false });
-    }
-
-    function renderQuizOptions(q){
-      return q.opts.map((opt, j) => `
-        <label class="opt">
-          <input type="radio" name="quiz_${q.id}" value="${j}">
-          <span>${escapeHTML(opt)}</span>
-        </label>
-      `).join("");
-    }
-
-    function getQuizUserAnswer(qid){
-      const checked = document.querySelector(\`input[name="quiz_\${qid}"]:checked\`);
-      if (!checked) return null;
-      return parseInt(checked.value,10);
-    }
-
-    /**********************
-     * MIND MAPS
-     **********************/
-    function renderMindmapView(m){
-      const isMixed = (m.id === "review");
-      const moduleFilter = isMixed ? null : m.id;
-
-      const pool = mindmapsFull.filter(mm => moduleFilter ? mm.module === moduleFilter : true);
-      const list = pool.length ? pool : mindmapsFull;
-
-      learnBody.innerHTML = `
-        <div class="deckTop">
-          <div class="left">
-            <button class="btn" id="openAllMapsBtn">Open all</button>
-            <button class="btn" id="markAllVisitedBtn">Mark visited</button>
-          </div>
-          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end;">
-            <span class="tag">${isMixed ? "All maps" : "Module maps"}</span>
-            <span class="tag">Total: ${mindmapsFull.length}</span>
-          </div>
-        </div>
-
-        <div class="mapList" id="mapList"></div>
-      `;
-
-      const listEl = document.getElementById("mapList");
-
-      list.forEach(mm => {
-        const visited = !!progress.mapVisited[mm.id];
-        const det = document.createElement("details");
-        det.className = "map";
-        det.innerHTML = `
-          <summary>
-            <span>${visited ? "✅" : "🧩"} ${escapeHTML(mm.title)} <span style="color:var(--muted);font-size:14px;">(${escapeHTML(mm.module.toUpperCase())})</span></span>
-            <span class="tag">${visited ? "visited" : "new"}</span>
-          </summary>
-          <div class="mapBody">
-            ${renderTree(mm.tree)}
-            ${mm.jumps?.length ? `<div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;">${mm.jumps.map(j => `<a class="jump" href="#" data-jump="${j.to}">${escapeHTML(j.label)}</a>`).join("")}</div>` : ""}
-          </div>
-        `;
-        det.addEventListener("toggle", () => {
-          if (det.open){
-            progress.mapVisited[mm.id] = true;
-            saveProgress();
-            updateStreak();
-          }
-        });
-        listEl.appendChild(det);
-      });
-
-      listEl.addEventListener("click", (e) => {
-        const a = e.target.closest("a[data-jump]");
-        if (!a) return;
-        e.preventDefault();
-        openModule(a.dataset.jump, true);
-      });
-
-      document.getElementById("openAllMapsBtn").onclick = () => {
-        [...document.querySelectorAll("details.map")].forEach(d => d.open = true);
-      };
-      document.getElementById("markAllVisitedBtn").onclick = () => {
-        list.forEach(mm => progress.mapVisited[mm.id] = true);
-        saveProgress();
-        renderMindmapView(m);
-      };
-    }
-
-    function renderTree(tree){
-      const renderNode = (node) => {
-        if (Array.isArray(node)){
-          const [label, children] = node;
-          return `<li><b>${escapeHTML(label)}</b>${children ? `<ul class="tree">${children.map(renderNode).join("")}</ul>` : ""}</li>`;
-        } else {
-          return `<li>${escapeHTML(String(node))}</li>`;
-        }
-      };
-      return `<ul class="tree">${tree.map(renderNode).join("")}</ul>`;
-    }
-
-    /**********************
-     * TOOLS
-     **********************/
-    function renderTools(){
-      const m = modules.find(x => x.id === currentModuleId);
-      const bookmarked = (progress.bookmarks || []).includes(currentModuleId);
-      const q = searchInput.value.trim().toLowerCase();
-
-      const moduleCards = flashcards.filter(c => c.module === m.id).length;
-      const moduleQuizzes = quizzes.filter(qz => qz.module === m.id).length;
-      const moduleMaps = mindmapsFull.filter(mm => mm.module === m.id).length;
-
-      toolsBody.innerHTML = `
-        <div class="chips" style="margin-bottom:12px;">
-          <div class="chip ${currentMode==="learn"?"active":""}" data-tmode="learn">Lesson</div>
-          <div class="chip ${currentMode==="flashcards"?"active":""}" data-tmode="flashcards">Flashcards</div>
-          <div class="chip ${currentMode==="quiz"?"active":""}" data-tmode="quiz">Quiz</div>
-          <div class="chip ${currentMode==="mindmap"?"active":""}" data-tmode="mindmap">Mind Map</div>
-        </div>
-
-        <div class="note" style="margin-top:0;">
-          <b>${bookmarked ? "★ Bookmarked" : "☆ Not bookmarked"}</b><br/>
-          ${m.id==="home" ? "Start here, then go module by module." : (m.id==="review" ? "Mixed mastery across the whole course." : "Lesson → Cards → Quiz → Mind map.")}<br/>
-          <span style="display:block;margin-top:8px;">
-            <b>Counts:</b> ${m.id==="home" || m.id==="review"
-              ? `Cards: 50 · Quizzes: 50 · Maps: 25`
-              : `Cards: ${moduleCards} · Quizzes: ${moduleQuizzes} · Maps: ${moduleMaps}`
-            }
-          </span>
-          <span style="display:block;margin-top:8px;">
-            <b>Music:</b> click <b>Music</b> (browser requires interaction).
-          </span>
-        </div>
-
-        <div style="display:grid;gap:10px;margin-top:12px;">
-          <button class="btn primary" id="mixedCardsBtn">Mixed flashcards (weak only)</button>
-          <button class="btn" id="mixedQuizBtn">Mixed quiz (6 questions)</button>
-          <button class="btn primary" id="musicSmallBtn">Start / Stop Music</button>
-        </div>
-
-        ${q ? `<div class="note"><b>Search active:</b> “${escapeHTML(q)}”</div>` : ""}
-      `;
-
-      toolsBody.addEventListener("click", (e) => {
-        const chip = e.target.closest(".chip[data-tmode]");
-        if (chip){
-          currentMode = chip.dataset.tmode;
-          setActiveChip(currentMode);
-          renderMain();
-          renderTools();
-        }
-      }, { once:true });
-
-      document.getElementById("mixedCardsBtn").onclick = () => {
-        openModule("review", true);
-        currentMode = "flashcards";
-        setActiveChip(currentMode);
-        renderMain({ levels:[0] });
-      };
-      document.getElementById("mixedQuizBtn").onclick = () => {
-        openModule("review", true);
-        currentMode = "quiz";
-        setActiveChip(currentMode);
-        renderMain({ mixed:true, count:6 });
-      };
-      document.getElementById("musicSmallBtn").onclick = () => toggleMusic();
-    }
-
-    /**********************
-     * PROGRESS
-     **********************/
-    function renderProgress(){
-      const mastered = Object.values(progress.cardLevel).filter(v => v === 2).length;
-      const quizOK = Object.values(progress.quizCorrect).filter(Boolean).length;
-      const maps = Object.values(progress.mapVisited).filter(Boolean).length;
-
-      statCards.textContent = mastered;
-      statQuizzes.textContent = quizOK;
-      statMaps.textContent = maps;
-      statStreak.textContent = progress.streak || 0;
-
-      const total = (50 + 50 + 25);
-      const score = mastered + quizOK + maps;
-      const pct = Math.round((score / total) * 100);
-      progressFill.style.width = pct + "%";
-    }
-
-    /**********************
-     * DASHBOARD MODAL (minimal)
-     **********************/
-    openDashboardBtn.onclick = () => {
-      modalBackdrop.style.display = "flex";
-      modalBackdrop.setAttribute("aria-hidden","false");
-      modalTitle.textContent = "Learning Dashboard";
-      modalBody.innerHTML = `<div class="note"><b>Use Review Hub</b> to drill weak flashcards and wrong quizzes until they disappear.</div>`;
-    };
-    closeModalBtn.onclick = closeModal;
-    modalBackdrop.addEventListener("click", (e) => { if (e.target === modalBackdrop) closeModal(); });
-    function closeModal(){
-      modalBackdrop.style.display = "none";
-      modalBackdrop.setAttribute("aria-hidden","true");
-    }
-
-    /**********************
-     * Focus + Reset
-     **********************/
-    focusBtn.onclick = () => {
-      const app = document.querySelector(".app");
-      const sidebar = document.querySelector(".sidebar");
-      if (!sidebar) return;
-      if (sidebar.style.display === "none"){
-        sidebar.style.display = "";
-        app.style.gridTemplateColumns = "360px 1fr";
       } else {
-        sidebar.style.display = "none";
-        app.style.gridTemplateColumns = "1fr";
+        addXP(0, "");
+        toast(`Wrong match. Stop guessing — read the definition carefully.`);
+        // small shake
+        wrap.animate([{transform:"translateX(0)"},{transform:"translateX(-8px)"},{transform:"translateX(8px)"},{transform:"translateX(0)"}], {duration:260});
       }
-    };
-
-    resetBtn.onclick = () => {
-      if (!confirm("Reset all progress? This cannot be undone.")) return;
-      localStorage.removeItem(STORE_KEY);
-      progress = loadProgress();
-      renderProgress();
-      openModule("home", true);
-    };
-
-    /**********************
-     * BACKGROUND MUSIC (WebAudio Nature Ambience)
-     * - wind (filtered noise)
-     * - soft pad (sine cluster)
-     * - bird chirps (short sine bursts with envelope)
-     **********************/
-    let audioCtx = null;
-    let musicOn = false;
-    let nodes = [];
-
-    async function ensureAudio(){
-      audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-      if (audioCtx.state === "suspended") await audioCtx.resume();
-    }
-
-    function startMusic(){
-      if (musicOn) return;
-      musicOn = true;
-
-      const ctx = audioCtx;
-      const master = ctx.createGain();
-      master.gain.value = 0.06;   // overall volume
-      master.connect(ctx.destination);
-
-      // Wind noise
-      const bufferSize = 2 * ctx.sampleRate;
-      const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-      const out = noiseBuffer.getChannelData(0);
-      for (let i=0;i<bufferSize;i++) out[i] = (Math.random()*2-1) * 0.25;
-
-      const noise = ctx.createBufferSource();
-      noise.buffer = noiseBuffer;
-      noise.loop = true;
-
-      const windFilter = ctx.createBiquadFilter();
-      windFilter.type = "lowpass";
-      windFilter.frequency.value = 500;
-
-      const windGain = ctx.createGain();
-      windGain.gain.value = 0.7;
-
-      // slow modulation for wind
-      const lfo = ctx.createOscillator();
-      lfo.type = "sine";
-      lfo.frequency.value = 0.08;
-
-      const lfoGain = ctx.createGain();
-      lfoGain.gain.value = 140;
-      lfo.connect(lfoGain);
-      lfoGain.connect(windFilter.frequency);
-
-      noise.connect(windFilter);
-      windFilter.connect(windGain);
-      windGain.connect(master);
-
-      // Soft pad
-      const padGain = ctx.createGain();
-      padGain.gain.value = 0.55;
-      padGain.connect(master);
-
-      const freqs = [196, 220, 247, 294]; // gentle chord-ish
-      const oscs = freqs.map(f => {
-        const o = ctx.createOscillator();
-        o.type = "sine";
-        o.frequency.value = f;
-        const g = ctx.createGain();
-        g.gain.value = 0.12;
-        o.connect(g);
-        g.connect(padGain);
-        return {o,g};
-      });
-
-      // Bird chirps scheduler
-      let chirpTimer = null;
-      function chirp(){
-        if (!musicOn) return;
-
-        const t = ctx.currentTime;
-        const o = ctx.createOscillator();
-        const g = ctx.createGain();
-
-        o.type = "sine";
-        o.frequency.setValueAtTime(900 + Math.random()*900, t);
-        o.frequency.exponentialRampToValueAtTime(1200 + Math.random()*1200, t + 0.09);
-
-        g.gain.setValueAtTime(0.0001, t);
-        g.gain.exponentialRampToValueAtTime(0.20, t + 0.02);
-        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.14);
-
-        const birdFilter = ctx.createBiquadFilter();
-        birdFilter.type = "highpass";
-        birdFilter.frequency.value = 600;
-
-        o.connect(birdFilter);
-        birdFilter.connect(g);
-        g.connect(master);
-
-        o.start(t);
-        o.stop(t + 0.16);
-
-        // schedule next chirp (random spacing)
-        const next = 900 + Math.random()*2200; // ms
-        chirpTimer = setTimeout(chirp, next);
-      }
-      chirp();
-
-      // Start everything
-      noise.start();
-      lfo.start();
-      oscs.forEach(x => x.o.start());
-
-      nodes = [master, noise, windFilter, windGain, lfo, lfoGain, padGain, ...oscs.map(x=>x.o)];
-      musicBtn.textContent = "Music: ON";
-      startMusicTopBtn.textContent = "Music ON";
-      nodes.__chirpTimer = () => chirpTimer;
-    }
-
-    function stopMusic(){
-      if (!musicOn) return;
-      musicOn = false;
-
-      try{
-        // stop oscillators/buffers
-        nodes.forEach(n => {
-          if (n && typeof n.stop === "function"){
-            try{ n.stop(0); }catch{}
-          }
-        });
-      }catch{}
-
-      // stop chirp timer if exists
-      const timerFn = nodes.__chirpTimer;
-      if (timerFn){
-        const t = timerFn();
-        if (t) clearTimeout(t);
-      }
-
-      nodes = [];
-      musicBtn.textContent = "Music";
-      startMusicTopBtn.textContent = "Start Music";
-    }
-
-    async function toggleMusic(){
-      await ensureAudio();
-      if (!musicOn) startMusic();
-      else stopMusic();
-      updateStreak();
-    }
-
-    musicBtn.onclick = () => toggleMusic();
-    startMusicTopBtn.onclick = () => toggleMusic();
-
-    /**********************
-     * BACKGROUND CANVAS (Bright Nature: sun + clouds + floating leaves)
-     **********************/
-    const canvas = document.getElementById("bgCanvas");
-    const ctx2 = canvas.getContext("2d");
-    let W=0,H=0, DPR=1;
-
-    function resize(){
-      DPR = devicePixelRatio || 1;
-      W = canvas.width = window.innerWidth * DPR;
-      H = canvas.height = window.innerHeight * DPR;
-      canvas.style.width = window.innerWidth+"px";
-      canvas.style.height = window.innerHeight+"px";
-    }
-    window.addEventListener("resize", resize);
-    resize();
-
-    const leaves = [];
-    const clouds = [];
-    const pollen = [];
-
-    function rand(a,b){ return a + Math.random()*(b-a); }
-
-    function initBg(){
-      leaves.length = 0;
-      clouds.length = 0;
-      pollen.length = 0;
-
-      const leafCount = Math.round(Math.min(48, Math.max(18, window.innerWidth / 26)));
-      const cloudCount = Math.round(Math.min(10, Math.max(5, window.innerWidth / 220)));
-      const pollenCount = Math.round(Math.min(90, Math.max(40, window.innerWidth / 18)));
-
-      for (let i=0;i<leafCount;i++){
-        leaves.push({
-          x: rand(0, W),
-          y: rand(0, H),
-          r: rand(10, 24) * DPR,
-          s: rand(0.35, 1.05) * DPR,
-          rot: rand(0, Math.PI*2),
-          drot: rand(-0.012, 0.012),
-          sway: rand(0.6, 2.2) * DPR,
-        });
-      }
-
-      for (let i=0;i<cloudCount;i++){
-        clouds.push({
-          x: rand(0, W),
-          y: rand(0, H*0.45),
-          w: rand(180, 320) * DPR,
-          h: rand(60, 110) * DPR,
-          vx: rand(0.04, 0.12) * DPR,
-          a: rand(0.08, 0.16)
-        });
-      }
-
-      for (let i=0;i<pollenCount;i++){
-        pollen.push({
-          x: rand(0,W),
-          y: rand(0,H),
-          r: rand(1.3, 3.2) * DPR,
-          vx: rand(-0.06, 0.06) * DPR,
-          vy: rand(-0.03, 0.10) * DPR,
-          a: rand(0.12, 0.24)
-        });
-      }
-    }
-    initBg();
-    window.addEventListener("resize", initBg);
-
-    function drawSun(){
-      const cx = W*0.78, cy = H*0.14;
-      const r1 = Math.min(W,H)*0.10;
-      const r2 = Math.min(W,H)*0.24;
-      const g = ctx2.createRadialGradient(cx,cy,r1, cx,cy,r2);
-      g.addColorStop(0, "rgba(255,209,102,0.35)");
-      g.addColorStop(1, "rgba(255,209,102,0.00)");
-      ctx2.fillStyle = g;
-      ctx2.beginPath();
-      ctx2.arc(cx,cy,r2,0,Math.PI*2);
-      ctx2.fill();
-    }
-
-    function drawCloud(c){
-      ctx2.save();
-      ctx2.translate(c.x, c.y);
-      ctx2.fillStyle = `rgba(255,255,255,${c.a})`;
-      ctx2.beginPath();
-      ctx2.ellipse(0, 0, c.w*0.32, c.h*0.35, 0, 0, Math.PI*2);
-      ctx2.ellipse(c.w*0.18, -c.h*0.10, c.w*0.28, c.h*0.30, 0, 0, Math.PI*2);
-      ctx2.ellipse(-c.w*0.18, -c.h*0.12, c.w*0.26, c.h*0.28, 0, 0, Math.PI*2);
-      ctx2.ellipse(0, -c.h*0.20, c.w*0.22, c.h*0.26, 0, 0, Math.PI*2);
-      ctx2.fill();
-      ctx2.restore();
-    }
-
-    function drawLeaf(l){
-      ctx2.save();
-      ctx2.translate(l.x, l.y);
-      ctx2.rotate(l.rot);
-
-      const grad = ctx2.createRadialGradient(0,0,1, 0,0,l.r);
-      grad.addColorStop(0, "rgba(34,197,94,0.22)");
-      grad.addColorStop(1, "rgba(0,163,255,0.06)");
-      ctx2.fillStyle = grad;
-
-      ctx2.beginPath();
-      ctx2.ellipse(0,0, l.r*0.55, l.r, 0, 0, Math.PI*2);
-      ctx2.fill();
-
-      ctx2.strokeStyle = "rgba(8,20,12,0.10)";
-      ctx2.lineWidth = 1 * DPR;
-      ctx2.beginPath();
-      ctx2.moveTo(0, -l.r*0.85);
-      ctx2.lineTo(0, l.r*0.85);
-      ctx2.stroke();
-
-      ctx2.restore();
-    }
-
-    function loop(){
-      ctx2.clearRect(0,0,W,H);
-
-      // sky haze
-      const haze = ctx2.createRadialGradient(W*0.25, H*0.10, 0, W*0.25, H*0.10, Math.min(W,H)*0.55);
-      haze.addColorStop(0, "rgba(0,163,255,0.08)");
-      haze.addColorStop(1, "rgba(0,0,0,0)");
-      ctx2.fillStyle = haze;
-      ctx2.fillRect(0,0,W,H);
-
-      drawSun();
-
-      // clouds
-      clouds.forEach(c => {
-        c.x += c.vx;
-        if (c.x > W + c.w) c.x = -c.w;
-        drawCloud(c);
-      });
-
-      // pollen
-      pollen.forEach(p => {
-        p.x += p.vx; p.y += p.vy;
-        if (p.x < -60) p.x = W+60;
-        if (p.x > W+60) p.x = -60;
-        if (p.y > H+60) p.y = -60;
-        if (p.y < -60) p.y = H+60;
-
-        ctx2.beginPath();
-        ctx2.fillStyle = `rgba(255,209,102,${p.a})`;
-        ctx2.arc(p.x, p.y, p.r, 0, Math.PI*2);
-        ctx2.fill();
-      });
-
-      // leaves
-      leaves.forEach(l => {
-        l.y += l.s;
-        l.x += Math.sin(l.y/(90*DPR)) * l.sway * 0.08;
-        l.rot += l.drot;
-        if (l.y > H + 60) { l.y = -60; l.x = rand(0,W); }
-        drawLeaf(l);
-      });
-
-      requestAnimationFrame(loop);
-    }
-    loop();
-
-    /**********************
-     * UTIL
-     **********************/
-    function shuffle(arr){
-      for (let i=arr.length-1;i>0;i--){
-        const j = Math.floor(Math.random()*(i+1));
-        [arr[i],arr[j]] = [arr[j],arr[i]];
-      }
-      return arr;
-    }
-    function escapeHTML(s){
-      return String(s)
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#39;");
-    }
-
-    /**********************
-     * PROGRESS
-     **********************/
-    function renderProgress(){
-      const mastered = Object.values(progress.cardLevel).filter(v => v === 2).length;
-      const quizOK = Object.values(progress.quizCorrect).filter(Boolean).length;
-      const maps = Object.values(progress.mapVisited).filter(Boolean).length;
-
-      statCards.textContent = mastered;
-      statQuizzes.textContent = quizOK;
-      statMaps.textContent = maps;
-      statStreak.textContent = progress.streak || 0;
-
-      const total = (50 + 50 + 25);
-      const score = mastered + quizOK + maps;
-      const pct = Math.round((score / total) * 100);
-      progressFill.style.width = pct + "%";
-    }
-
-    /**********************
-     * INIT
-     **********************/
-    function init(){
-      renderNav("");
-      renderProgress();
-      openModule(currentModuleId, false);
-
-      // Enter in search opens first match
-      searchInput.addEventListener("keydown",(e)=>{
-        if (e.key === "Enter"){
-          const first = navEl.querySelector("button");
-          if (first) first.click();
-        }
-      });
-    }
-    init();
-
-    // Keep streak up to date
-    updateStreak();
-
-    // Autoplay is blocked; but if user already clicked once, this helps resume
-    document.addEventListener("visibilitychange", async () => {
-      if (!musicOn || !audioCtx) return;
-      if (document.visibilityState === "visible") await ensureAudio();
     });
-  </script>
+    defsList.appendChild(wrap);
+  });
+}
 
-  
+/* ===========================
+   MIND MAP (interactive canvas)
+   - click nodes to expand/collapse
+   - click node with jump opens module
+=========================== */
+let mapState = { expanded: new Set() };
+
+function renderMindMap(m){
+  const key = m.id;
+  const root = mindNodes[key] || mindNodes.m1;
+
+  learnBody.innerHTML = `
+    <div class="panelRow">
+      <div class="counterPills">
+        <span class="tag">Click nodes to expand</span>
+        <span class="tag">Click blue nodes to jump modules</span>
+      </div>
+      <div class="counterPills">
+        <button class="btn" id="expandAllBtn">Expand all</button>
+        <button class="btn" id="collapseAllBtn">Collapse</button>
+      </div>
+    </div>
+
+    <div class="mapCanvasWrap">
+      <canvas id="mapCanvas"></canvas>
+      <div class="mapLegend">
+        <b>Legend:</b> Green nodes = concepts. Blue nodes = jump links. <b>Interactivity:</b> click a node.
+      </div>
+    </div>
+  `;
+
+  const canvas = document.getElementById("mapCanvas");
+  const ctx = canvas.getContext("2d");
+
+  function resize(){
+    const dpr = devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = 460 * dpr;
+    canvas.style.height = "460px";
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  resize();
+  window.addEventListener("resize", resize, { once:true });
+
+  // build layout
+  const nodes = [];
+  const edges = [];
+  const expanded = mapState.expanded;
+
+  // default: expand root only
+  if (!expanded.has(key+":root")) expanded.add(key+":root");
+
+  function walk(node, depth, parentIndex, path){
+    const id = key + ":" + path;
+    const isExpanded = expanded.has(id);
+    const index = nodes.length;
+    const jump = node.jump || null;
+
+    nodes.push({
+      id, label: node.label, depth, jump,
+      x: 0, y: 0, w: 0, h: 0
+    });
+
+    if (parentIndex !== null) edges.push([parentIndex, index]);
+
+    if (node.children && node.children.length){
+      if (depth === 0 || isExpanded){
+        node.children.forEach((ch, i)=> walk(ch, depth+1, index, path+"."+i));
+      }
+    }
+  }
+
+  function rebuild(){
+    nodes.length = 0; edges.length=0;
+    walk({label: root.label, children: root.children}, 0, null, "root");
+
+    // group by depth
+    const byDepth = new Map();
+    nodes.forEach((n,i)=>{
+      if (!byDepth.has(n.depth)) byDepth.set(n.depth, []);
+      byDepth.get(n.depth).push(i);
+    });
+
+    const w = canvas.getBoundingClientRect().width;
+    const h = 460;
+
+    const maxDepth = Math.max(...nodes.map(n=>n.depth));
+    const xGap = maxDepth ? (w-60)/maxDepth : (w-60);
+
+    byDepth.forEach((idxs, depth)=>{
+      const yGap = (h-60) / (idxs.length+1);
+      idxs.forEach((idx, j)=>{
+        nodes[idx].x = 30 + depth * xGap;
+        nodes[idx].y = 30 + (j+1) * yGap;
+      });
+    });
+
+    draw();
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    // edges
+    ctx.lineWidth = 2;
+    edges.forEach(([a,b])=>{
+      const A = nodes[a], B = nodes[b];
+      ctx.strokeStyle = "rgba(10,35,18,0.18)";
+      ctx.beginPath();
+      ctx.moveTo(A.x+140, A.y);
+      ctx.lineTo(B.x, B.y);
+      ctx.stroke();
+    });
+
+    // nodes
+    nodes.forEach(n=>{
+      const paddingX = 16;
+      ctx.font = "700 16px " + getComputedStyle(document.body).fontFamily;
+      const textW = ctx.measureText(n.label).width;
+      const boxW = Math.max(140, Math.min(260, textW + paddingX*2));
+      const boxH = 44;
+
+      n.w = boxW; n.h = boxH;
+
+      const isLink = !!n.jump;
+      ctx.fillStyle = isLink ? "rgba(0,163,255,0.14)" : "rgba(34,197,94,0.12)";
+      ctx.strokeStyle = isLink ? "rgba(0,163,255,0.35)" : "rgba(34,197,94,0.35)";
+
+      roundRect(ctx, n.x, n.y - boxH/2, boxW, boxH, 14);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "rgba(7,18,11,0.90)";
+      ctx.fillText(n.label, n.x + paddingX, n.y + 6);
+
+      // expand marker
+      const hasChildren = getNodeChildren(root, key, n.id)?.length;
+      if (hasChildren){
+        const expandedHere = expanded.has(n.id);
+        ctx.fillStyle = "rgba(7,18,11,0.55)";
+        ctx.font = "900 16px " + getComputedStyle(document.body).fontFamily;
+        ctx.fillText(expandedHere ? "–" : "+", n.x + boxW - 22, n.y + 6);
+      }
+    });
+  }
+
+  function getNodeChildren(rootNode, moduleKey, nodeId){
+    // nodeId like: module:root.0.1
+    const path = nodeId.split(":")[1];
+    const parts = path.split(".").slice(1); // remove 'root'
+    let cur = {label: root.label, children: root.children};
+    for (const p of parts){
+      const idx = parseInt(p,10);
+      if (!cur.children || !cur.children[idx]) return null;
+      cur = cur.children[idx];
+    }
+    return cur.children || null;
+  }
+
+  function hitTest(x,y){
+    // x,y in CSS pixels
+    for (let i=nodes.length-1;i>=0;i--){
+      const n = nodes[i];
+      const top = n.y - n.h/2;
+      if (x>=n.x && x<=n.x+n.w && y>=top && y<=top+n.h) return n;
+    }
+    return null;
+  }
+
+  canvas.addEventListener("click",(e)=>{
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const n = hitTest(x,y);
+    if (!n) return;
+
+    bumpStreak();
+    addXP(3, "mind map");
+
+    if (n.jump){
+      state.mapsVisited[n.id] = true;
+      save();
+      openModule(n.jump, true);
+      return;
+    }
+
+    const children = getNodeChildren(root, key, n.id);
+    if (children && children.length){
+      if (mapState.expanded.has(n.id)) mapState.expanded.delete(n.id);
+      else mapState.expanded.add(n.id);
+      state.mapsVisited[n.id] = true;
+      save();
+      rebuild();
+    }
+  });
+
+  document.getElementById("expandAllBtn").onclick = ()=>{
+    // brute expand all current reachable nodes
+    nodes.forEach(n=> mapState.expanded.add(n.id));
+    rebuild();
+    addXP(8, "expand map");
+  };
+  document.getElementById("collapseAllBtn").onclick = ()=>{
+    mapState.expanded = new Set([key+":root"]);
+    rebuild();
+  };
+
+  rebuild();
+}
+
+/* ===========================
+   TOOLS PANEL
+=========================== */
+function renderTools(){
+  const m = modules.find(x=>x.id===currentModule);
+  const bookmarked = state.bookmarks.includes(currentModule);
+
+  const moduleCards = (m.id==="home"||m.id==="review") ? 50 : flashcards.filter(c=>c.module===m.id).length;
+  const moduleQuizzes = (m.id==="home"||m.id==="review") ? 50 : quizzes.filter(q=>q.module===m.id).length;
+
+  toolsBody.innerHTML = `
+    <div class="note" style="margin-top:0;">
+      <b>${bookmarked ? "★ Bookmarked" : "☆ Not bookmarked"}</b><br/>
+      Cards: <b>${moduleCards}</b> · Quizzes: <b>${moduleQuizzes}</b><br/>
+      <span style="display:block;margin-top:6px;">Fast path: <b>Flashcards → Quiz → Matching</b></span>
+    </div>
+
+    <div class="panelRow">
+      <button class="btn primary" id="goCardsBtn">Cards</button>
+      <button class="btn primary" id="goQuizBtn">Quiz</button>
+      <button class="btn primary" id="goMatchBtn">Match</button>
+      <button class="btn" id="goMapBtn">Map</button>
+    </div>
+
+    <div class="panelRow">
+      <button class="btn" id="weakCardsBtn">Weak cards (review)</button>
+      <button class="btn" id="mixQuizBtn">Mixed quiz</button>
+    </div>
+  `;
+
+  document.getElementById("goCardsBtn").onclick = ()=>{ currentMode="flashcards"; setActiveChip(currentMode); renderMain(); };
+  document.getElementById("goQuizBtn").onclick  = ()=>{ currentMode="quiz"; setActiveChip(currentMode); renderMain(); };
+  document.getElementById("goMatchBtn").onclick = ()=>{ currentMode="match"; setActiveChip(currentMode); renderMain(); };
+  document.getElementById("goMapBtn").onclick   = ()=>{ currentMode="mindmap"; setActiveChip(currentMode); renderMain(); };
+
+  document.getElementById("weakCardsBtn").onclick = ()=>{
+    // jump to review, but keep flashcards and focus on low levels by repeatedly shuffling
+    openModule("review", true);
+    currentMode="flashcards"; setActiveChip(currentMode);
+    renderMain();
+  };
+
+  document.getElementById("mixQuizBtn").onclick = ()=>{
+    openModule("review", true);
+    currentMode="quiz"; setActiveChip(currentMode);
+    renderMain();
+  };
+}
+
+/* ===========================
+   BOOKMARK / QUICK PRACTICE / FOCUS / RESET
+=========================== */
+bookmarkBtn.onclick = ()=>{
+  const i = state.bookmarks.indexOf(currentModule);
+  if (i>=0) state.bookmarks.splice(i,1);
+  else state.bookmarks.push(currentModule);
+  save();
+  toast(state.bookmarks.includes(currentModule) ? "Bookmarked ★" : "Removed bookmark");
+  bumpStreak();
+  renderTools();
+};
+
+quickPracticeBtn.onclick = ()=>{
+  openModule("review", true);
+  currentMode="quiz"; setActiveChip(currentMode);
+  renderMain();
+};
+
+focusBtn.onclick = ()=>{
+  const sidebar = document.querySelector(".sidebar");
+  const app = document.querySelector(".app");
+  if (sidebar.style.display==="none"){
+    sidebar.style.display="";
+    app.style.gridTemplateColumns="360px 1fr";
+  } else {
+    sidebar.style.display="none";
+    app.style.gridTemplateColumns="1fr";
+  }
+};
+
+resetBtn.onclick = ()=>{
+  if (!confirm("Reset all progress?")) return;
+  localStorage.removeItem(STORE);
+  state = structuredClone(defaultState);
+  save();
+  openModule("home", true);
+  toast("Progress reset.");
+};
+
+/* ===========================
+   STATS / PROGRESS BAR
+=========================== */
+function renderStats(){
+  const mastered = Object.values(state.cardLevel).filter(v=>v===2).length;
+  const quizOK = Object.values(state.quizCorrect).filter(Boolean).length;
+
+  // mapsVisited: count nodes visited in mind map (rough)
+  const maps = Object.values(state.mapsVisited).filter(Boolean).length;
+
+  statXP.textContent = state.xp;
+  statLevel.textContent = levelFromXP(state.xp);
+  statCards.textContent = mastered;
+  statQuizzes.textContent = quizOK;
+  statMaps.textContent = Math.min(25, maps); // cap display
+  statStreak.textContent = state.streak || 0;
+
+  const total = 50+50+25;
+  const score = mastered + quizOK + Math.min(25, maps);
+  const pct = Math.round((score/total)*100);
+  progressFill.style.width = pct + "%";
+}
+
+/* ===========================
+   TOAST
+=========================== */
+const toastEl = document.getElementById("toast");
+let toastT = null;
+function toast(html){
+  toastEl.innerHTML = html;
+  toastEl.classList.add("show");
+  clearTimeout(toastT);
+  toastT = setTimeout(()=>toastEl.classList.remove("show"), 2600);
+}
+
+/* ===========================
+   CONFETTI FX
+=========================== */
+const fxCanvas = document.getElementById("fxCanvas");
+const fx = fxCanvas.getContext("2d");
+let fxW=0, fxH=0, fxDPR=1;
+function resizeFX(){
+  fxDPR = devicePixelRatio || 1;
+  fxW = fxCanvas.width = innerWidth * fxDPR;
+  fxH = fxCanvas.height = innerHeight * fxDPR;
+  fxCanvas.style.width = innerWidth + "px";
+  fxCanvas.style.height = innerHeight + "px";
+}
+window.addEventListener("resize", resizeFX);
+resizeFX();
+
+let confetti = [];
+function confettiBurst(){
+  const count = 140;
+  for (let i=0;i<count;i++){
+    confetti.push({
+      x: (innerWidth/2) * fxDPR,
+      y: (innerHeight/3) * fxDPR,
+      vx: (Math.random()*2-1) * 9 * fxDPR,
+      vy: (-Math.random()*1.2 - 1.4) * 10 * fxDPR,
+      g: (0.35 + Math.random()*0.25) * fxDPR,
+      r: (2.5 + Math.random()*5) * fxDPR,
+      a: 1,
+      rot: Math.random()*Math.PI*2,
+      vr: (Math.random()*2-1)*0.18
+    });
+  }
+}
+function fxLoop(){
+  fx.clearRect(0,0,fxW,fxH);
+  confetti = confetti.filter(p=>p.a>0.02 && p.y < fxH+80);
+  confetti.forEach(p=>{
+    p.x += p.vx;
+    p.y += p.vy;
+    p.vy += p.g;
+    p.rot += p.vr;
+    p.a *= 0.985;
+
+    fx.save();
+    fx.translate(p.x, p.y);
+    fx.rotate(p.rot);
+    fx.globalAlpha = p.a;
+    fx.fillStyle = `rgba(0,163,255,0.9)`;
+    fx.fillRect(-p.r, -p.r/2, p.r*2, p.r);
+    fx.fillStyle = `rgba(34,197,94,0.85)`;
+    fx.fillRect(-p.r/2, -p.r, p.r, p.r*2);
+    fx.restore();
+  });
+  requestAnimationFrame(fxLoop);
+}
+fxLoop();
+
+/* ===========================
+   BACKGROUND ANIMATION (nature)
+=========================== */
+const bgCanvas = document.getElementById("bgCanvas");
+const bg = bgCanvas.getContext("2d");
+let W=0,H=0,DPR=1;
+
+function resizeBG(){
+  DPR = devicePixelRatio || 1;
+  W = bgCanvas.width = innerWidth * DPR;
+  H = bgCanvas.height = innerHeight * DPR;
+  bgCanvas.style.width = innerWidth+"px";
+  bgCanvas.style.height = innerHeight+"px";
+}
+window.addEventListener("resize", resizeBG);
+resizeBG();
+
+const leaves = [];
+const clouds = [];
+const pollen = [];
+const rand = (a,b)=>a+Math.random()*(b-a);
+
+function initBG(){
+  leaves.length=0; clouds.length=0; pollen.length=0;
+  const leafCount = Math.round(Math.min(52, Math.max(20, innerWidth/25)));
+  const cloudCount = Math.round(Math.min(10, Math.max(5, innerWidth/220)));
+  const pollenCount = Math.round(Math.min(90, Math.max(40, innerWidth/18)));
+
+  for(let i=0;i<leafCount;i++){
+    leaves.push({ x:rand(0,W), y:rand(0,H), r:rand(10,24)*DPR, s:rand(0.35,1.05)*DPR, rot:rand(0,Math.PI*2), drot:rand(-0.012,0.012), sway:rand(0.6,2.2)*DPR });
+  }
+  for(let i=0;i<cloudCount;i++){
+    clouds.push({ x:rand(0,W), y:rand(0,H*0.45), w:rand(180,320)*DPR, h:rand(60,110)*DPR, vx:rand(0.04,0.12)*DPR, a:rand(0.08,0.16) });
+  }
+  for(let i=0;i<pollenCount;i++){
+    pollen.push({ x:rand(0,W), y:rand(0,H), r:rand(1.3,3.2)*DPR, vx:rand(-0.06,0.06)*DPR, vy:rand(-0.03,0.10)*DPR, a:rand(0.12,0.24) });
+  }
+}
+initBG();
+window.addEventListener("resize", initBG);
+
+function drawSun(){
+  const cx=W*0.78, cy=H*0.14;
+  const r1=Math.min(W,H)*0.10;
+  const r2=Math.min(W,H)*0.24;
+  const g=bg.createRadialGradient(cx,cy,r1,cx,cy,r2);
+  g.addColorStop(0,"rgba(255,209,102,0.36)");
+  g.addColorStop(1,"rgba(255,209,102,0.00)");
+  bg.fillStyle=g;
+  bg.beginPath(); bg.arc(cx,cy,r2,0,Math.PI*2); bg.fill();
+}
+function drawCloud(c){
+  bg.save();
+  bg.translate(c.x,c.y);
+  bg.fillStyle=`rgba(255,255,255,${c.a})`;
+  bg.beginPath();
+  bg.ellipse(0,0,c.w*0.32,c.h*0.35,0,0,Math.PI*2);
+  bg.ellipse(c.w*0.18,-c.h*0.10,c.w*0.28,c.h*0.30,0,0,Math.PI*2);
+  bg.ellipse(-c.w*0.18,-c.h*0.12,c.w*0.26,c.h*0.28,0,0,Math.PI*2);
+  bg.ellipse(0,-c.h*0.20,c.w*0.22,c.h*0.26,0,0,Math.PI*2);
+  bg.fill();
+  bg.restore();
+}
+function drawLeaf(l){
+  bg.save();
+  bg.translate(l.x,l.y);
+  bg.rotate(l.rot);
+  const grad=bg.createRadialGradient(0,0,1,0,0,l.r);
+  grad.addColorStop(0,"rgba(34,197,94,0.22)");
+  grad.addColorStop(1,"rgba(0,163,255,0.06)");
+  bg.fillStyle=grad;
+  bg.beginPath();
+  bg.ellipse(0,0,l.r*0.55,l.r,0,0,Math.PI*2);
+  bg.fill();
+  bg.strokeStyle="rgba(7,18,11,0.10)";
+  bg.lineWidth=1*DPR;
+  bg.beginPath();
+  bg.moveTo(0,-l.r*0.85);
+  bg.lineTo(0,l.r*0.85);
+  bg.stroke();
+  bg.restore();
+}
+function bgLoop(){
+  bg.clearRect(0,0,W,H);
+
+  const haze=bg.createRadialGradient(W*0.25,H*0.10,0,W*0.25,H*0.10,Math.min(W,H)*0.55);
+  haze.addColorStop(0,"rgba(0,163,255,0.08)");
+  haze.addColorStop(1,"rgba(0,0,0,0)");
+  bg.fillStyle=haze; bg.fillRect(0,0,W,H);
+
+  drawSun();
+
+  clouds.forEach(c=>{
+    c.x += c.vx;
+    if (c.x > W+c.w) c.x = -c.w;
+    drawCloud(c);
+  });
+
+  pollen.forEach(p=>{
+    p.x += p.vx; p.y += p.vy;
+    if (p.x < -60) p.x = W+60;
+    if (p.x > W+60) p.x = -60;
+    if (p.y > H+60) p.y = -60;
+    if (p.y < -60) p.y = H+60;
+    bg.beginPath();
+    bg.fillStyle = `rgba(255,209,102,${p.a})`;
+    bg.arc(p.x,p.y,p.r,0,Math.PI*2);
+    bg.fill();
+  });
+
+  leaves.forEach(l=>{
+    l.y += l.s;
+    l.x += Math.sin(l.y/(90*DPR)) * l.sway * 0.08;
+    l.rot += l.drot;
+    if (l.y > H + 60){ l.y = -60; l.x = rand(0,W); }
+    drawLeaf(l);
+  });
+
+  requestAnimationFrame(bgLoop);
+}
+bgLoop();
+
+/* ===========================
+   MUSIC (WebAudio)
+=========================== */
+let audioCtx=null;
+let musicOn=false;
+let musicNodes=[];
+const musicBtn = document.getElementById("musicBtn");
+const startMusicTopBtn = document.getElementById("startMusicTopBtn");
+
+async function ensureAudio(){
+  audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state==="suspended") await audioCtx.resume();
+}
+function startMusic(){
+  if (musicOn) return;
+  musicOn=true;
+
+  const ctx=audioCtx;
+  const master=ctx.createGain();
+  master.gain.value = 0.06;
+  master.connect(ctx.destination);
+
+  // wind
+  const bufferSize = 2*ctx.sampleRate;
+  const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  const out = noiseBuffer.getChannelData(0);
+  for (let i=0;i<bufferSize;i++) out[i]=(Math.random()*2-1)*0.25;
+  const noise = ctx.createBufferSource(); noise.buffer=noiseBuffer; noise.loop=true;
+
+  const windFilter = ctx.createBiquadFilter(); windFilter.type="lowpass"; windFilter.frequency.value=520;
+  const windGain = ctx.createGain(); windGain.gain.value=0.7;
+
+  const lfo = ctx.createOscillator(); lfo.type="sine"; lfo.frequency.value=0.08;
+  const lfoGain = ctx.createGain(); lfoGain.gain.value=150;
+  lfo.connect(lfoGain); lfoGain.connect(windFilter.frequency);
+
+  noise.connect(windFilter); windFilter.connect(windGain); windGain.connect(master);
+
+  // pad
+  const padGain = ctx.createGain(); padGain.gain.value=0.55; padGain.connect(master);
+  const freqs = [196,220,247,294];
+  const oscs = freqs.map(f=>{
+    const o=ctx.createOscillator(); o.type="sine"; o.frequency.value=f;
+    const g=ctx.createGain(); g.gain.value=0.12;
+    o.connect(g); g.connect(padGain);
+    return {o,g};
+  });
+
+  // birds
+  let chirpTimer=null;
+  function chirp(){
+    if (!musicOn) return;
+    const t=ctx.currentTime;
+    const o=ctx.createOscillator();
+    const g=ctx.createGain();
+    o.type="sine";
+    o.frequency.setValueAtTime(900+Math.random()*900,t);
+    o.frequency.exponentialRampToValueAtTime(1200+Math.random()*1200,t+0.09);
+    g.gain.setValueAtTime(0.0001,t);
+    g.gain.exponentialRampToValueAtTime(0.20,t+0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+0.14);
+    const hp=ctx.createBiquadFilter(); hp.type="highpass"; hp.frequency.value=600;
+    o.connect(hp); hp.connect(g); g.connect(master);
+    o.start(t); o.stop(t+0.16);
+    chirpTimer=setTimeout(chirp, 900+Math.random()*2200);
+  }
+  chirp();
+
+  noise.start(); lfo.start(); oscs.forEach(x=>x.o.start());
+
+  musicNodes=[master,noise,windFilter,windGain,lfo,lfoGain,padGain,...oscs.map(x=>x.o)];
+  musicNodes.__chirpTimer = ()=>chirpTimer;
+
+  musicBtn.textContent="Music: ON";
+  startMusicTopBtn.textContent="Music ON";
+  addXP(5, "music");
+}
+function stopMusic(){
+  if (!musicOn) return;
+  musicOn=false;
+  try{ musicNodes.forEach(n=>{ if (n && typeof n.stop==="function") try{n.stop(0);}catch{} }); }catch{}
+  const tfn = musicNodes.__chirpTimer;
+  if (tfn){ const t=tfn(); if (t) clearTimeout(t); }
+  musicNodes=[];
+  musicBtn.textContent="Music";
+  startMusicTopBtn.textContent="Start Music";
+}
+async function toggleMusic(){
+  await ensureAudio();
+  if (!musicOn) startMusic();
+  else stopMusic();
+  bumpStreak();
+}
+musicBtn.onclick = ()=>toggleMusic();
+startMusicTopBtn.onclick = ()=>toggleMusic();
+
+/* ===========================
+   UTIL
+=========================== */
+function shuffle(arr){
+  for (let i=arr.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]] = [arr[j],arr[i]];
+  }
+  return arr;
+}
+function escapeHTML(s){
+  return String(s)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#39;");
+}
+function roundRect(ctx, x, y, w, h, r){
+  const rr = Math.min(r, w/2, h/2);
+  ctx.beginPath();
+  ctx.moveTo(x+rr, y);
+  ctx.arcTo(x+w, y, x+w, y+h, rr);
+  ctx.arcTo(x+w, y+h, x, y+h, rr);
+  ctx.arcTo(x, y+h, x, y, rr);
+  ctx.arcTo(x, y, x+w, y, rr);
+  ctx.closePath();
+}
+
+/* ===========================
+   INIT
+=========================== */
+renderNav();
+renderStats();
+openModule(currentModule,false);
+renderTools();
+
+/* default: make it feel interactive immediately */
+toast("Tip: go Flashcards → use Space / ← / → / 1-3.");
+</script>
 </body>
 </html>
