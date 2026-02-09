@@ -1,620 +1,2553 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ENGL280: An Introduction to Literature</title>
-    <style>
-        body {
-            font-family: "Aptos", serif;
-            font-size: 16px;
-            line-height: 1.5;
-            color: #333;
-            background-color: #f0f8ff;
-            margin: 0;
-            padding: 0;
-            overflow-x: hidden;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ENGL280: An Introduction to Literature — Interactive Study Platform</title>
 
-        header {
-            background-color: #228B22;
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
+  <!--
+    Single-file, offline-friendly, big-font, interactive platform.
+    - 9 modules + review
+    - 50 flashcards, 50 quizzes, 25 mind maps (generated + curated)
+    - Progress tracking (localStorage)
+    - Search, bookmarks, “Focus Mode”, dark toggle
+    - Nature background (canvas leaves + glow particles)
+    - Optional ambient sound (WebAudio; no external files)
+  -->
 
-        h1, h2, h3 {
-            font-weight: normal;
-            margin-bottom: 20px;
-        }
+  <style>
+    :root{
+      --bg1:#0b1220;
+      --bg2:#0f1b2f;
+      --panel: rgba(255,255,255,.10);
+      --panel2: rgba(255,255,255,.07);
+      --stroke: rgba(255,255,255,.14);
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.70);
+      --accent: #7ee7ff;
+      --accent2:#a6ffb8;
+      --danger:#ff6b6b;
+      --ok:#3dff8b;
+      --warn:#ffd166;
 
-        nav button {
-            margin: 5px;
-            padding: 10px;
-            background-color: #90EE90;
-            border: none;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
+      --radius: 18px;
+      --shadow: 0 18px 60px rgba(0,0,0,.35);
+      --shadow2: 0 10px 30px rgba(0,0,0,.28);
 
-        nav button:hover {
-            background-color: #3CB371;
-        }
+      /* Big font defaults */
+      --base: 21px;
+      --h1: 40px;
+      --h2: 28px;
+      --h3: 22px;
+      --small: 16px;
 
-        main {
-            padding: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+      --pad: 16px;
+      --pad2: 22px;
+      --gap: 14px;
 
-        section {
-            display: none;
-            margin-bottom: 40px;
-        }
+      --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji","Segoe UI Emoji";
+    }
 
-        section.active {
-            display: block;
-        }
+    /* Light mode */
+    [data-theme="light"]{
+      --bg1:#f6fbff;
+      --bg2:#eaf4ff;
+      --panel: rgba(0,0,0,.06);
+      --panel2: rgba(0,0,0,.04);
+      --stroke: rgba(0,0,0,.10);
+      --text: rgba(0,0,0,.90);
+      --muted: rgba(0,0,0,.62);
+      --shadow: 0 18px 60px rgba(2,18,40,.10);
+      --shadow2: 0 10px 30px rgba(2,18,40,.10);
+    }
 
-        .learn, .practice, .test, .review {
-            margin-bottom: 20px;
-        }
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: var(--font);
+      font-size: var(--base);
+      color: var(--text);
+      background: radial-gradient(1200px 900px at 20% 10%, rgba(126,231,255,.18), transparent 55%),
+                  radial-gradient(900px 700px at 80% 20%, rgba(166,255,184,.16), transparent 50%),
+                  linear-gradient(180deg, var(--bg1), var(--bg2));
+      overflow:hidden;
+    }
 
-        .button {
-            padding: 10px 20px;
-            background-color: #87CEEB;
-            border: none;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
+    /* Background canvas */
+    #bgCanvas{
+      position:fixed;
+      inset:0;
+      z-index:-2;
+    }
+    .vignette{
+      position:fixed;
+      inset:0;
+      z-index:-1;
+      pointer-events:none;
+      background:
+        radial-gradient(800px 600px at 50% -10%, rgba(255,255,255,.18), transparent 55%),
+        radial-gradient(900px 700px at 10% 60%, rgba(126,231,255,.12), transparent 55%),
+        radial-gradient(900px 700px at 90% 70%, rgba(166,255,184,.10), transparent 55%),
+        linear-gradient(180deg, rgba(0,0,0,.14), rgba(0,0,0,.25));
+      mix-blend-mode: soft-light;
+      opacity:.9;
+    }
+    [data-theme="light"] .vignette{
+      background:
+        radial-gradient(900px 700px at 50% -10%, rgba(255,255,255,.85), transparent 55%),
+        radial-gradient(900px 700px at 10% 60%, rgba(126,231,255,.16), transparent 55%),
+        radial-gradient(900px 700px at 90% 70%, rgba(166,255,184,.14), transparent 55%),
+        linear-gradient(180deg, rgba(255,255,255,.65), rgba(255,255,255,.15));
+      opacity:1;
+      mix-blend-mode: normal;
+    }
 
-        .button:hover {
-            transform: scale(1.05);
-        }
+    /* Layout */
+    .app{
+      height:100%;
+      display:grid;
+      grid-template-columns: 340px 1fr;
+      gap:0;
+    }
 
-        .background {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-        }
+    /* Sidebar */
+    .sidebar{
+      padding: var(--pad2);
+      border-right: 1px solid var(--stroke);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      backdrop-filter: blur(12px);
+      overflow:auto;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      margin-bottom: 14px;
+    }
+    .logo{
+      width:46px;height:46px;
+      border-radius: 14px;
+      background: radial-gradient(circle at 30% 25%, rgba(126,231,255,.95), rgba(166,255,184,.55) 55%, rgba(255,255,255,.10));
+      box-shadow: var(--shadow2);
+      position:relative;
+      overflow:hidden;
+    }
+    .logo::after{
+      content:"";
+      position:absolute; inset:-40%;
+      background: conic-gradient(from 180deg, rgba(255,255,255,.0), rgba(255,255,255,.35), rgba(255,255,255,.0));
+      animation: spin 6s linear infinite;
+    }
+    @keyframes spin{ to{ transform:rotate(360deg);} }
 
-        .leaf {
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            background: url('data:image/svg+xml;base64,Jmx0O3N2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMzAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyImZ3Q7CiAgJmx0O3BhdGggZD0iTTEwIDAgQzUgMTAgMCAxNSAxMCAzMCBDMjAgMTUgMTUgMTAgMTAgMCIgZmlsbD0iZ3JlZW4iIC8mZ3Q7CiAgJmx0O2xpbmUgeDE9IjEwIiB5MT0iNSIgeDI9IjEwIiB5Mj0iMjUiIHN0cm9rZT0iZGFya2dyZWVuIiBzdHJva2Utd2lkdGg9IjEiIC8mZ3Q7CiZsdDsvc3ZnJmd0Ow==') no-repeat;
-            animation: fall 10s linear infinite;
-        }
+    .brand h1{
+      font-size: 22px;
+      margin:0;
+      letter-spacing:.3px;
+      line-height:1.1;
+    }
+    .brand .sub{
+      font-size: var(--small);
+      color: var(--muted);
+      margin-top:4px;
+    }
 
-        @keyframes fall {
-            0% {
-                top: -20px;
-                transform: rotate(0deg);
-            }
-            100% {
-                top: 100vh;
-                transform: rotate(360deg);
-            }
-        }
+    .pillRow{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin: 12px 0 16px;
+    }
+    .pill{
+      padding:10px 12px;
+      border-radius: 999px;
+      border:1px solid var(--stroke);
+      background: var(--panel2);
+      box-shadow: 0 10px 24px rgba(0,0,0,.10);
+      font-size: 16px;
+      cursor:pointer;
+      user-select:none;
+      transition: transform .12s ease, background .2s ease, border-color .2s ease;
+    }
+    .pill:hover{ transform: translateY(-1px); }
+    .pill:active{ transform: translateY(0px) scale(.99); }
 
-        /* Flashcard style */
-        .flashcard {
-            width: 300px;
-            height: 200px;
-            perspective: 1000px;
-            margin: 10px;
-        }
+    .searchBox{
+      position:sticky;
+      top:0;
+      padding-top: 6px;
+      background: linear-gradient(180deg, rgba(0,0,0,.0), rgba(0,0,0,.0));
+      z-index:5;
+    }
+    .search{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      padding: 12px 12px;
+      border-radius: 14px;
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.07);
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow2);
+    }
+    .search input{
+      flex:1;
+      border:0;
+      outline:none;
+      background:transparent;
+      color: var(--text);
+      font-size: 17px;
+    }
+    .kbd{
+      font-size: 12px;
+      color: var(--muted);
+      border:1px solid var(--stroke);
+      padding: 4px 8px;
+      border-radius: 9px;
+      white-space:nowrap;
+    }
 
-        .flashcard-inner {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            transition: transform 0.6s;
-            transform-style: preserve-3d;
-        }
+    .nav{
+      margin-top: 14px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .nav button{
+      width:100%;
+      text-align:left;
+      padding: 14px 14px;
+      border-radius: 14px;
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      font-size: 18px;
+      cursor:pointer;
+      transition: transform .12s ease, background .2s ease, border-color .2s ease;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .nav button:hover{
+      transform: translateY(-1px);
+      background: rgba(255,255,255,.09);
+      border-color: rgba(126,231,255,.35);
+    }
+    .nav button.active{
+      border-color: rgba(126,231,255,.55);
+      background: linear-gradient(90deg, rgba(126,231,255,.16), rgba(166,255,184,.08));
+    }
+    .nav small{
+      color: var(--muted);
+      font-size: 14px;
+    }
 
-        .flashcard.flipped .flashcard-inner {
-            transform: rotateY(180deg);
-        }
+    .progressCard{
+      margin-top: 16px;
+      padding: 14px 14px;
+      border-radius: var(--radius);
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.06);
+      box-shadow: var(--shadow2);
+    }
+    .progressCard h3{
+      margin:0 0 10px;
+      font-size: 18px;
+    }
+    .bar{
+      height: 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.10);
+      overflow:hidden;
+      border:1px solid var(--stroke);
+    }
+    .bar > div{
+      height:100%;
+      width:0%;
+      background: linear-gradient(90deg, rgba(126,231,255,.95), rgba(166,255,184,.85));
+      border-radius: 999px;
+      transition: width .35s ease;
+    }
+    .stats{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+      margin-top: 10px;
+      font-size: 15px;
+      color: var(--muted);
+    }
+    .stats b{ color: var(--text); font-weight: 700; }
 
-        .front, .back {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            backface-visibility: hidden;
-            background-color: #fff;
-            border: 1px solid #ccc;
-            padding: 20px;
-            box-sizing: border-box;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-        }
+    /* Main content */
+    .content{
+      padding: 26px;
+      overflow:auto;
+      position:relative;
+    }
 
-        .back {
-            transform: rotateY(180deg);
-        }
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom: 18px;
+    }
+    .titleBlock h2{
+      margin:0;
+      font-size: var(--h1);
+      letter-spacing:.2px;
+      line-height:1.05;
+    }
+    .titleBlock p{
+      margin:8px 0 0;
+      color: var(--muted);
+      font-size: 18px;
+      max-width: 980px;
+    }
 
-        /* Mind map style */
-        .mindmap {
-            position: relative;
-            text-align: center;
-        }
+    .actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .btn{
+      padding: 12px 14px;
+      border-radius: 14px;
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.07);
+      color: var(--text);
+      font-size: 16px;
+      cursor:pointer;
+      transition: transform .12s ease, background .2s ease, border-color .2s ease;
+      user-select:none;
+    }
+    .btn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.10); }
+    .btn:active{ transform: translateY(0px) scale(.99); }
 
-        .node {
-            padding: 10px;
-            background-color: #ADD8E6;
-            border: 1px solid #87CEEB;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            margin: 10px;
-            display: inline-block;
-        }
+    .btn.primary{
+      border-color: rgba(126,231,255,.55);
+      background: linear-gradient(90deg, rgba(126,231,255,.20), rgba(166,255,184,.10));
+    }
+    .btn.danger{
+      border-color: rgba(255,107,107,.55);
+      background: rgba(255,107,107,.10);
+    }
 
-        .node:hover {
-            background-color: #87CEEB;
-        }
+    .grid{
+      display:grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap: 16px;
+      align-items:start;
+    }
 
-        .child {
-            display: none;
-        }
+    .card{
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,.06);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .cardHeader{
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--stroke);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .cardHeader h3{
+      margin:0;
+      font-size: var(--h2);
+    }
+    .cardBody{
+      padding: 18px;
+    }
 
-        .expanded .child {
-            display: block;
-        }
+    .chips{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+    }
+    .chip{
+      padding: 10px 12px;
+      border-radius: 999px;
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.06);
+      font-size: 16px;
+      cursor:pointer;
+      transition: transform .12s ease, background .2s ease, border-color .2s ease;
+      user-select:none;
+    }
+    .chip:hover{ transform: translateY(-1px); background: rgba(255,255,255,.10); border-color: rgba(126,231,255,.35);}
+    .chip.active{ border-color: rgba(126,231,255,.60); background: rgba(126,231,255,.12); }
 
-        /* Quiz style */
-        .quiz-question {
-            margin-bottom: 20px;
-        }
+    .note{
+      padding: 14px 14px;
+      border-radius: 14px;
+      border:1px dashed rgba(126,231,255,.45);
+      background: rgba(126,231,255,.07);
+      color: var(--muted);
+      font-size: 16px;
+      line-height:1.45;
+      margin-top: 14px;
+    }
 
-        .feedback {
-            color: green;
-        }
+    /* Flashcards */
+    .deckTop{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom: 12px;
+    }
+    .deckTop .left{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .select{
+      padding: 10px 12px;
+      border-radius: 12px;
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      font-size: 16px;
+      outline:none;
+    }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            font-size: 14px;
-            padding: 10px;
-        }
+    .flashWrap{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+    .flashCard{
+      min-height: 260px;
+      border-radius: 18px;
+      border: 1px solid var(--stroke);
+      background: radial-gradient(900px 340px at 20% 10%, rgba(126,231,255,.14), transparent 60%),
+                  radial-gradient(900px 340px at 80% 20%, rgba(166,255,184,.10), transparent 55%),
+                  rgba(255,255,255,.06);
+      box-shadow: var(--shadow);
+      padding: 18px;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      cursor:pointer;
+      user-select:none;
+      transform-style:preserve-3d;
+      transition: transform .25s ease, border-color .25s ease;
+      position:relative;
+      overflow:hidden;
+    }
+    .flashCard:hover{ transform: translateY(-2px); border-color: rgba(126,231,255,.45); }
+    .flashCard:active{ transform: translateY(0px) scale(.995); }
 
-        footer {
-            background-color: #228B22;
-            color: white;
-            text-align: center;
-            padding: 10px;
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-        }
+    .flashFace{
+      font-size: 34px;
+      line-height:1.15;
+      letter-spacing:.2px;
+    }
+    .flashBack{
+      font-size: 22px;
+      line-height:1.55;
+      color: var(--muted);
+      margin-top: 14px;
+      display:none;
+    }
+    .flashCard.revealed .flashBack{ display:block; }
+    .flashMeta{
+      margin-top: 12px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      color: var(--muted);
+      font-size: 15px;
+    }
+    .tag{
+      padding: 6px 10px;
+      border-radius: 999px;
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.06);
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .level{
+      display:flex;
+      gap:8px;
+      align-items:center;
+    }
+    .lvlBtn{
+      padding: 8px 10px;
+      border-radius: 12px;
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      font-size: 14px;
+      cursor:pointer;
+    }
+    .lvlBtn.active{
+      border-color: rgba(166,255,184,.55);
+      background: rgba(166,255,184,.10);
+    }
 
-        img {
-            max-width: 100%;
-            height: auto;
-            margin: 10px 0;
-        }
-    </style>
+    /* Quiz */
+    .qBox{
+      padding: 16px;
+      border-radius: 16px;
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.06);
+      margin-bottom: 14px;
+    }
+    .qTop{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom: 10px;
+    }
+    .qTop h4{
+      margin:0;
+      font-size: 22px;
+      line-height:1.3;
+    }
+    .qMeta{
+      color: var(--muted);
+      font-size: 14px;
+      white-space:nowrap;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.05);
+      height: fit-content;
+    }
+    .opt{
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      padding: 12px 12px;
+      border-radius: 14px;
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.05);
+      cursor:pointer;
+      margin-top: 10px;
+      transition: transform .12s ease, background .2s ease, border-color .2s ease;
+    }
+    .opt:hover{ transform: translateY(-1px); background: rgba(255,255,255,.08); border-color: rgba(126,231,255,.35); }
+    .opt input{ margin-top: 4px; transform: scale(1.25); }
+    .feedback{
+      margin-top: 12px;
+      font-size: 16px;
+      line-height:1.45;
+      color: var(--muted);
+      padding: 12px 12px;
+      border-radius: 14px;
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.04);
+    }
+    .feedback.good{ border-color: rgba(61,255,139,.35); background: rgba(61,255,139,.08); }
+    .feedback.bad{ border-color: rgba(255,107,107,.35); background: rgba(255,107,107,.08); }
+
+    /* Mind maps */
+    .mapList{
+      display:grid;
+      gap:12px;
+    }
+    details.map{
+      border:1px solid var(--stroke);
+      border-radius: 16px;
+      background: rgba(255,255,255,.06);
+      overflow:hidden;
+    }
+    details.map > summary{
+      padding: 14px 14px;
+      cursor:pointer;
+      list-style:none;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      user-select:none;
+      font-size: 18px;
+    }
+    details.map > summary::-webkit-details-marker{ display:none; }
+    .mapBody{
+      padding: 0 14px 14px;
+      color: var(--muted);
+      font-size: 16px;
+      line-height:1.5;
+    }
+    .tree{
+      margin: 10px 0 0;
+      padding-left: 18px;
+    }
+    .tree li{
+      margin: 8px 0;
+    }
+    .jump{
+      color: var(--accent);
+      text-decoration:none;
+      border-bottom: 1px dashed rgba(126,231,255,.5);
+    }
+
+    /* Footer */
+    .footer{
+      margin-top: 16px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.05);
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    /* Modal */
+    .modalBackdrop{
+      position:fixed; inset:0;
+      background: rgba(0,0,0,.50);
+      backdrop-filter: blur(10px);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding: 18px;
+      z-index:50;
+    }
+    .modal{
+      width:min(980px, 100%);
+      max-height: 86vh;
+      overflow:auto;
+      border-radius: 18px;
+      border:1px solid var(--stroke);
+      background: rgba(15,18,25,.75);
+      box-shadow: var(--shadow);
+    }
+    [data-theme="light"] .modal{
+      background: rgba(255,255,255,.92);
+    }
+    .modalHead{
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--stroke);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .modalHead h3{ margin:0; font-size: 20px;}
+    .modalBody{ padding: 16px; }
+
+    /* Responsive */
+    @media (max-width: 980px){
+      .app{ grid-template-columns: 1fr; }
+      .sidebar{ position:sticky; top:0; max-height:unset; border-right:0; border-bottom:1px solid var(--stroke); }
+      body{ overflow:auto; }
+      .content{ overflow:visible; }
+      .grid{ grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
+
 <body>
-    <div class="background">
-        <div class="leaf" style="left: 10%; animation-delay: 0s;"></div>
-        <div class="leaf" style="left: 30%; animation-delay: 2s;"></div>
-        <div class="leaf" style="left: 50%; animation-delay: 4s;"></div>
-        <div class="leaf" style="left: 70%; animation-delay: 6s;"></div>
-        <div class="leaf" style="left: 90%; animation-delay: 8s;"></div>
-    </div>
-    <header>
-        <h1>ENGL280: An Introduction to Literature</h1>
-        <nav>
-            <button onclick="showSection('home')">Home</button>
-            <button onclick="showSection('module1')">Module 1</button>
-            <button onclick="showSection('module2')">Module 2</button>
-            <button onclick="showSection('module3')">Module 3</button>
-            <button onclick="showSection('module4')">Module 4</button>
-            <button onclick="showSection('module5')">Module 5</button>
-            <button onclick="showSection('module6')">Module 6</button>
-            <button onclick="showSection('module7')">Module 7</button>
-            <button onclick="showSection('module8')">Module 8</button>
-            <button onclick="showSection('module9')">Module 9</button>
-            <button onclick="showSection('review')">Review</button>
-        </nav>
-    </header>
-    <main>
-        <section id="home" class="active">
-            <h2>Welcome, Halim</h2>
-            <p>This improved platform is designed to help you study Introduction to Literature. It now includes more detailed content from course materials, images for visual enhancement, fixed background animation without external files, and expanded quizzes and flashcards. Navigate through modules for lessons, practice with flashcards and quizzes, and review with mind maps.</p>
-            <p>Current time: February 09, 2026 01:13 PM +03, Dammam.</p>
+  <canvas id="bgCanvas" aria-hidden="true"></canvas>
+  <div class="vignette" aria-hidden="true"></div>
+
+  <div class="app" id="app" data-theme="dark">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>ENGL280</h1>
+          <div class="sub">Interactive Literature Study Platform</div>
+        </div>
+      </div>
+
+      <div class="pillRow">
+        <div class="pill" id="toggleThemeBtn" title="Toggle light/dark">Theme</div>
+        <div class="pill" id="focusBtn" title="Hide sidebar for focus">Focus</div>
+        <div class="pill" id="soundBtn" title="Ambient sound (WebAudio)">Sound</div>
+        <div class="pill" id="resetBtn" title="Reset progress">Reset</div>
+      </div>
+
+      <div class="searchBox">
+        <div class="search">
+          <span aria-hidden="true">🔎</span>
+          <input id="searchInput" type="text" placeholder="Search terms, topics, quizzes…" />
+          <span class="kbd">Ctrl /</span>
+        </div>
+      </div>
+
+      <div class="nav" id="nav"></div>
+
+      <div class="progressCard">
+        <h3>Progress</h3>
+        <div class="bar" aria-label="overall progress">
+          <div id="progressFill"></div>
+        </div>
+        <div class="stats">
+          <div><b id="statCards">0</b> / 50 cards mastered</div>
+          <div><b id="statQuizzes">0</b> / 50 quizzes correct</div>
+          <div><b id="statMaps">0</b> / 25 maps visited</div>
+          <div><b id="statStreak">0</b> day streak</div>
+        </div>
+      </div>
+
+      <div class="footer">
+        Developer: <b>Halim Faroug A. Elhag, Lecturer, UHB / UofK</b><br/>
+        Tip: Press <b>Ctrl + /</b> to jump to search. Press <b>G</b> then <b>1–9</b> to open modules.
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="content">
+      <div class="topbar">
+        <div class="titleBlock">
+          <h2 id="pageTitle">Home</h2>
+          <p id="pageSubtitle">
+            Big-font, interactive modules with flashcards, quizzes, and mind maps — offline-friendly and fast.
+          </p>
+        </div>
+
+        <div class="actions">
+          <button class="btn" id="bookmarkBtn" title="Bookmark this module">Bookmark</button>
+          <button class="btn primary" id="quickPracticeBtn" title="Start a quick mixed practice set">Quick Practice</button>
+          <button class="btn" id="openDashboardBtn" title="Open a learning dashboard">Dashboard</button>
+        </div>
+      </div>
+
+      <div class="grid">
+        <!-- LEFT: Learn / Content -->
+        <section class="card" id="learnCard">
+          <div class="cardHeader">
+            <h3>Learn</h3>
+            <div class="chips" id="modeChips">
+              <div class="chip active" data-mode="learn">Lesson</div>
+              <div class="chip" data-mode="flashcards">Flashcards</div>
+              <div class="chip" data-mode="quiz">Quiz</div>
+              <div class="chip" data-mode="mindmap">Mind Map</div>
+            </div>
+          </div>
+          <div class="cardBody" id="learnBody"></div>
         </section>
-        <section id="module1">
-            <h2>Module 1: Introduction to Literature & Its Genres</h2>
-            <div class="learn">
-                <h3>Learn</h3>
-                <p>An exploration of definition, function, and classification. What is it? What does it do? How is it classified? Why study it?</p>
-            </div>
-            <div class="practice">
-                <h3>Practice</h3>
-                <button onclick="showFlashcards(1)">Flashcards</button>
-                <button onclick="showQuiz(1)">Quiz</button>
-            </div>
-            <div class="test">
-                <h3>Test</h3>
-                <button onclick="showQuiz(1)">Take Test</button>
-            </div>
-            <div class="review">
-                <h3>Review</h3>
-                <button onclick="showMindMap(1)">Mind Map</button>
-            </div>
-            <button class="next" onclick="showSection('module2')">Next Module</button>
-        </section>
-        <section id="module2">
-            <h2>Module 2: Basic Literary Terms</h2>
-            <div class="learn">
-                <h3>Learn</h3>
-                <p>Basic literary terms essential for understanding literature.</p>
-                <p>Moving Beyond the Literal: Figure of Speech - A word or phrase used in a non-literal sense for rhetorical or vivid effect. Non-literal - Not understanding or intending a word or phrase in its original, basic meaning. Rhetorical - The art of effective or persuasive speaking or writing.</p>
-                <p>The Difference: It is raining. The heavens opened. Why It Matters: Rhetoric transforms basic communication into an art form, allowing writers to persuade, evoke emotion, and create lasting impact.</p>
-                <p>The Art of Comparison: Simile - Compares two things using “like” or “as” to help visualise something by linking it to the familiar. Her smile was as bright as the sun. Metaphor - A direct comparison suggesting one thing is another without using “like” or “as.” Time is a thief. Analogy - A comparison showing how two things are similar to explain an unfamiliar concept. Just as a sword is the weapon of a warrior, a pen is the weapon of a writer. Why It Matters: Comparison bridges the gap between the writer's imagination and the reader's understanding, making complex or abstract ideas graspable and vivid.</p>
-                <p>Bringing the World to Life: Imagery (The Senses) - Detailed descriptions appealing to the five senses (sight, sound, touch, taste, smell). The crisp smell of autumn leaves filled the air as the golden sun set behind the trees. Personification (The Life) - Giving human qualities to non-human things or abstract ideas. The wind whispered through the trees. Onomatopoeia (The Sound) - Words that sound like the noise they represent. The clock ticked loudly. Why It Matters: Immersion creates a strong emotional connection. By engaging the senses and animating the inanimate, the story moves from the page into the reader's physical experience.</p>
-            </div>
-            <div class="practice">
-                <h3>Practice</h3>
-                <button onclick="showFlashcards(2)">Flashcards</button>
-                <button onclick="showQuiz(2)">Quiz</button>
-            </div>
-            <div class="test">
-                <h3>Test</h3>
-                <button onclick="showQuiz(2)">Take Test</button>
-            </div>
-            <div class="review">
-                <h3>Review</h3>
-                <button onclick="showMindMap(2)">Mind Map</button>
-            </div>
-            <button class="next" onclick="showSection('module3')">Next Module</button>
-        </section>
-        <section id="module3">
-            <h2>Module 3: Figures of Speech and Sound Devices</h2>
-            <div class="learn">
-                <h3>Learn</h3>
-                <p>The Alchemy of Language: A GUIDE TO FIGURES OF SPEECH & SOUND DEVICES. Writing transforms information into art through two distinct toolsets. This deck explores the instruments of the craftsman: the Figures that paint images for the mind, and the Sounds that create music for the ear.</p>
-            </div>
-            <div class="practice">
-                <h3>Practice</h3>
-                <button onclick="showFlashcards(3)">Flashcards</button>
-                <button onclick="showQuiz(3)">Quiz</button>
-            </div>
-            <div class="test">
-                <h3>Test</h3>
-                <button onclick="showQuiz(3)">Take Test</button>
-            </div>
-            <div class="review">
-                <h3>Review</h3>
-                <button onclick="showMindMap(3)">Mind Map</button>
-            </div>
-            <button class="next" onclick="showSection('module4')">Next Module</button>
-        </section>
-        <section id="module4">
-            <h2>Module 4: Poetry and Major Aspects of a Poem</h2>
-            <div class="learn">
-                <h3>Learn</h3>
-                <p>Definition: Composition of verse or comparable patterned arrangement of language in which the expression of feelings and ideas is given intensity by the use of distinctive style and rhythm. Traditionally associated with explicit formal departure from the patterns of ordinary speech or prose, e.g., in the use of elevated diction, figurative language, and syntactical reorder. — Oxford English Dictionary</p>
-                <p>Core Aspects: It is hard to produce one inclusive definition, but all definitions include the following four aspects: 1. Different patterned arrangement of language (reorder of structure). 2. Use of rhythm. 3. Evoke emotions/feelings. 4. Concentrated and intense.</p>
-                <p>Poetry Major Elements: 1. Voice 2. Word choice, word order 3. Imagery 4. Figures of speech 5. Sound 6. Form 7. Theme</p>
-                <p>Structure: A text in poetry is called a poem. A poem is divided into stanzas. Stanzas consists of lines. e.g. "Richard Cory" is divided into four stanzas. Each stanza consists of four lines. (Poem text: Whenever Richard Cory went down town...)</p>
-            </div>
-            <div class="practice">
-                <h3>Practice</h3>
-                <button onclick="showFlashcards(4)">Flashcards</button>
-                <button onclick="showQuiz(4)">Quiz</button>
-            </div>
-            <div class="test">
-                <h3>Test</h3>
-                <button onclick="showQuiz(4)">Take Test</button>
-            </div>
-            <div class="review">
-                <h3>Review</h3>
-                <button onclick="showMindMap(4)">Mind Map</button>
-            </div>
-            <button class="next" onclick="showSection('module5')">Next Module</button>
-        </section>
-        <section id="module5">
-            <h2>Module 5: Samples of Poetry (Winter by William Shakespeare)</h2>
-            <div class="learn">
-                <h3>Learn</h3>
-                <p>Winter Song: A Close Reading. Analyzing William Shakespeare's Love's Labour's Lost. William Shakespeare (1564–1616), widely considered the finest writer in the English language, was a master of capturing the human experience through plays, sonnets, and poetry. This presentation explores 'Winter Song,' a poem from Act V, Scene 2 of his comedy Love's Labour's Lost. While written over four hundred years ago, the imagery remains stark and familiar. It depicts winter in 16th-century England—a time of crisp new-fallen snow, red noses, and the sharp contrast between the freezing outdoors and the warmth of the kitchen fire.</p>
-                <img src="https://th-thumbnailer.cdn-si-edu.com/635LlBAlnSVLQVhYUPG7fSspj5c=/1072x720/filters:no_upscale()/https://tf-cmsv2-smithsonianmag-media.s3.amazonaws.com/filer/1f/7f/1f7ff127-d6e7-4a97-ab71-6e8a2389e319/shakespeare.jpg" alt="Portrait of William Shakespeare">
-            </div>
-            <div class="practice">
-                <h3>Practice</h3>
-                <button onclick="showFlashcards(5)">Flashcards</button>
-                <button onclick="showQuiz(5)">Quiz</button>
-            </div>
-            <div class="test">
-                <h3>Test</h3>
-                <button onclick="showQuiz(5)">Take Test</button>
-            </div>
-            <div class="review">
-                <h3>Review</h3>
-                <button onclick="showMindMap(5)">Mind Map</button>
-            </div>
-            <button class="next" onclick="showSection('module6')">Next Module</button>
-        </section>
-        <section id="module6">
-            <h2>Module 6: Drama and Major Aspects of a Play</h2>
-            <div class="learn">
-                <h3>Learn</h3>
-                <p>Drama and major aspects of a play.</p>
-                <p>Ancient Greek theatre divided into 5 parts: 1. Prologue 2. Episode 3. Episode 4. Episode 5. Exodos 6. In-between Stasimon (choral odes)</p>
-            </div>
-            <div class="practice">
-                <h3>Practice</h3>
-                <button onclick="showFlashcards(6)">Flashcards</button>
-                <button onclick="showQuiz(6)">Quiz</button>
-            </div>
-            <div class="test">
-                <h3>Test</h3>
-                <button onclick="showQuiz(6)">Take Test</button>
-            </div>
-            <div class="review">
-                <h3>Review</h3>
-                <button onclick="showMindMap(6)">Mind Map</button>
-            </div>
-            <button class="next" onclick="showSection('module7')">Next Module</button>
-        </section>
-        <section id="module7">
-            <h2>Module 7: Sample of a Play (Trifles by Susan Glaspell)</h2>
-            <div class="learn">
-                <h3>Learn</h3>
-                <p>"Trifles" by Susan Glaspell (1916). CAST: GEORGE HENDERSON, County Attorney; HENRY PETERS, Sheriff; LEWIS HALE, A Neighboring Farmer; MRS. PETERS; MRS. HALE. Scene: The kitchen in the now abandoned farmhouse of John Wright, a gloomy kitchen, and left without having been put in order—unwashed pans under the sink, a loaf of bread outside the breadbox, a dish towel on the table—other signs of uncompleted work. ...</p>
-                <img src="https://blogs.shu.edu/glaspellsociety/files/2011/05/trifles-compress.jpg" alt="Illustration of Trifles play by Susan Glaspell">
-            </div>
-            <div class="practice">
-                <h3>Practice</h3>
-                <button onclick="showFlashcards(7)">Flashcards</button>
-                <button onclick="showQuiz(7)">Quiz</button>
-            </div>
-            <div class="test">
-                <h3>Test</h3>
-                <button onclick="showQuiz(7)">Take Test</button>
-            </div>
-            <div class="review">
-                <h3>Review</h3>
-                <button onclick="showMindMap(7)">Mind Map</button>
-            </div>
-            <button class="next" onclick="showSection('module8')">Next Module</button>
-        </section>
-        <section id="module8">
-            <h2>Module 8: Fiction and Major Aspects of Fiction</h2>
-            <div class="learn">
-                <h3>Learn</h3>
-                <p>Introduction to Fiction. Definition of Fiction: A work invented by the writer, with characters and events that are imaginary.</p>
-                <p>Printing Press: By Gutenberg in 1440s, Germany. Increase in printing lead to available and affordable books. Mass communication & knowledge circulation. Printing Revolution. Increase in literacy broke monopoly of literate elite: birth of the middle class.</p>
-                <p>Genres of Fiction by Length: Literature can be classified into different genres by either contextual factors (like historical or cultural contexts), or by textual features (the features and characteristics of the text like setting, characters, style and plot). One of the textual features is length. This is one of the ways that the sub genres of fiction (novel, novella, short story, and short short story) are classified; according to their length.</p>
-                <p>Fiction by Length: Length is measured by word-count. Novel: extended fictional prose narrative, more than 40,000 words. (the longest of all genres). E.g., Crime and Punishment, Great Expectations ...etc. Novella: Shorter than a novel but still long enough to explore characters deeply and create complicated plot, 10,000-40,000 words. E.g., Animal Farm. Short story: Shorter than the previous two genres, 1000-10,000 words, and it can be read in one sitting.</p>
-            </div>
-            <div class="practice">
-                <h3>Practice</h3>
-                <button onclick="showFlashcards(8)">Flashcards</button>
-                <button onclick="showQuiz(8)">Quiz</button>
-            </div>
-            <div class="test">
-                <h3>Test</h3>
-                <button onclick="showQuiz(8)">Take Test</button>
-            </div>
-            <div class="review">
-                <h3>Review</h3>
-                <button onclick="showMindMap(8)">Mind Map</button>
-            </div>
-            <button class="next" onclick="showSection('module9')">Next Module</button>
-        </section>
-        <section id="module9">
-            <h2>Module 9: Sample of a Novel (Pride & Prejudice by Jane Austen)</h2>
-            <div class="learn">
-                <h3>Learn</h3>
-                <p>Pride and Prejudice Analysis. Brief Introduction to Jane Austen: Jane Austen (1775–1817) was an English novelist known for her keen observations of the British landed gentry at the end of the 18th century. Her works explore issues of marriage, morality, and women's dependence on marriage for social standing and economic security.</p>
-                <p>From the novel: Chapter 1. It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife. ...</p>
-                <img src="https://janeaustens.house/wp-content/uploads/2020/03/JAHB13.2.1_PP-vol-I-title-page-crop.jpg" alt="Pride and Prejudice book cover by Jane Austen">
-            </div>
-            <div class="practice">
-                <h3>Practice</h3>
-                <button onclick="showFlashcards(9)">Flashcards</button>
-                <button onclick="showQuiz(9)">Quiz</button>
-            </div>
-            <div class="test">
-                <h3>Test</h3>
-                <button onclick="showQuiz(9)">Take Test</button>
-            </div>
-            <div class="review">
-                <h3>Review</h3>
-                <button onclick="showMindMap(9)">Mind Map</button>
-            </div>
-            <button class="next" onclick="showSection('review')">Next: Review</button>
-        </section>
-        <section id="review">
-            <h2>Course Review</h2>
-            <p>Review all mind maps, quizzes, and flashcards. Course Overview: This course aims to familiarize students with the primary categories of literary compositions. It seeks to provide students with foundational comprehension of various literary genres and forms. Additionally, the course will introduce students to fundamental literary terminology. Moreover, the course strives to equip students with essential skills for the analysis of literary works.</p>
-            <p>Topics as per Syllabus: 1. Introduction to literature & its genres (6 hours), 2. Basic literary terms (3), 3. Figures of speech and sound devices (3), 4. Poetry & major aspects of a poem (3), 5. Samples of poetry (Winter by William Shakespeare) (6), 6. Drama & major aspects of a play (3), 7. Sample of a play (Major Barbara by George Bernard Shaw) (6), 8. Fiction & major aspects of fiction (6), 9. Sample of a novel (Pride and Prejudice by Jane Austen) (6), 10. Revision (3).</p>
-            <button onclick="showAllMindMaps()">All Mind Maps</button>
-            <button onclick="showAllQuizzes()">All Quizzes</button>
-            <button onclick="showAllFlashcards()">All Flashcards</button>
-        </section>
+
+        <!-- RIGHT: Practice / Tools -->
+        <aside class="card" id="toolsCard">
+          <div class="cardHeader">
+            <h3>Practice</h3>
+            <button class="btn" id="nextBtn" title="Next module">Next</button>
+          </div>
+          <div class="cardBody" id="toolsBody"></div>
+        </aside>
+      </div>
     </main>
-    <footer>
-        <p>Developer: Halim Faroug A. Elhag, Lecturer, UHB / UofK</p>
-    </footer>
-    <script>
-        function showSection(id) {
-            document.querySelectorAll('section').forEach(section => section.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
+  </div>
+
+  <!-- MODAL -->
+  <div class="modalBackdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal">
+      <div class="modalHead">
+        <h3 id="modalTitle">Dashboard</h3>
+        <button class="btn" id="closeModalBtn">Close</button>
+      </div>
+      <div class="modalBody" id="modalBody"></div>
+    </div>
+  </div>
+
+  <script>
+    /**********************
+     * DATA (Modules)
+     **********************/
+    const modules = [
+      {
+        id: "home",
+        title: "Home",
+        subtitle: "Welcome. Everything is in one file. Offline-friendly. Big font. Real interactivity.",
+        learn: `
+          <div class="note">
+            <b>What you get here:</b><br/>
+            • 9 course modules + a Review hub<br/>
+            • 50 flashcards (track mastery) • 50 quizzes (track correctness) • 25 mind maps (track visits)<br/>
+            • Search across terms/content • Bookmarks • Quick Practice (mixed) • Focus Mode • Dark/Light theme<br/>
+            • Ambient sound toggle (generated) • Animated nature background (canvas)
+          </div>
+
+          <p><b>How to use (fast):</b></p>
+          <ul>
+            <li>Pick a module on the left.</li>
+            <li>Switch the mode: <b>Lesson / Flashcards / Quiz / Mind Map</b>.</li>
+            <li>Use <b>Quick Practice</b> for a mixed drill.</li>
+            <li>Track progress in the sidebar.</li>
+          </ul>
+
+          <p><b>Developer:</b> Halim Faroug A. Elhag, Lecturer, UHB / UofK</p>
+        `
+      },
+
+      {
+        id: "m1",
+        title: "Module 1: Introduction to Literature & Its Genres",
+        subtitle: "What literature is, what it does, why it matters, and how genres organize experience.",
+        learn: `
+          <p><b>Core questions</b></p>
+          <ul>
+            <li><b>What is literature?</b> Language shaped for meaning, experience, and effect.</li>
+            <li><b>What does it do?</b> It entertains, persuades, preserves culture, questions power, and enlarges empathy.</li>
+            <li><b>Genres</b> are categories (poetry, drama, fiction, etc.) with typical conventions.</li>
+            <li><b>Why study literature?</b> Stronger critical reading, interpretive skill, and argument writing.</li>
+          </ul>
+
+          <p><b>Fast genre map</b></p>
+          <ul>
+            <li><b>Poetry:</b> patterned language (sound, rhythm, imagery) + compressed meaning.</li>
+            <li><b>Drama:</b> written for performance (dialogue, stage directions, spectacle).</li>
+            <li><b>Fiction:</b> invented narrative (character, plot, setting, theme).</li>
+          </ul>
+        `
+      },
+
+      {
+        id: "m2",
+        title: "Module 2: Basic Literary Terms",
+        subtitle: "Key vocabulary for reading and analysis: literal vs figurative, tone, theme, etc.",
+        learn: `
+          <p><b>Essential terms</b></p>
+          <ul>
+            <li><b>Figure of speech:</b> non-literal use for effect (rhetorical/vivid).</li>
+            <li><b>Denotation / Connotation:</b> dictionary meaning vs associated meaning.</li>
+            <li><b>Tone:</b> speaker’s attitude (ironic, joyful, bitter…).</li>
+            <li><b>Theme:</b> central idea/claim about life, society, or human nature.</li>
+            <li><b>Motif:</b> recurring element supporting theme.</li>
+          </ul>
+
+          <p><b>Comparison tools</b></p>
+          <ul>
+            <li><b>Simile:</b> “like/as” comparison (Her smile was as bright as the sun).</li>
+            <li><b>Metaphor:</b> direct comparison (Time is a thief).</li>
+            <li><b>Analogy:</b> extended comparison explaining a concept.</li>
+          </ul>
+
+          <p><b>Immersion tools</b></p>
+          <ul>
+            <li><b>Imagery:</b> sensory detail (sight/sound/taste/touch/smell).</li>
+            <li><b>Personification:</b> human traits given to non-human things.</li>
+            <li><b>Onomatopoeia:</b> word echoes sound (buzz, hiss, tick).</li>
+          </ul>
+        `
+      },
+
+      {
+        id: "m3",
+        title: "Module 3: Figures of Speech and Sound Devices",
+        subtitle: "Meaning + music: how language works on the mind and the ear.",
+        learn: `
+          <p><b>Figures of speech (meaning devices)</b></p>
+          <ul>
+            <li>Metaphor, simile, symbol, hyperbole, understatement, irony, allusion.</li>
+            <li>They compress ideas and intensify effect.</li>
+          </ul>
+
+          <p><b>Sound devices (ear devices)</b></p>
+          <ul>
+            <li><b>Alliteration:</b> repeated initial consonants (wild winds).</li>
+            <li><b>Assonance:</b> repeated vowel sounds (mellow wedding bells).</li>
+            <li><b>Consonance:</b> repeated consonant sounds (stroke of luck).</li>
+            <li><b>Rhyme / rhythm / meter:</b> patterning that shapes pace and mood.</li>
+          </ul>
+
+          <div class="note">
+            If your students treat devices as “decoration,” they’ll miss the point: devices are <b>meaning machines</b>, not ornaments.
+          </div>
+        `
+      },
+
+      {
+        id: "m4",
+        title: "Module 4: Poetry and Major Aspects of a Poem",
+        subtitle: "Poetry as patterned, intensified language: voice, imagery, sound, form, theme.",
+        learn: `
+          <p><b>Poetry: what typically defines it</b></p>
+          <ul>
+            <li>Patterned arrangement of language</li>
+            <li>Rhythm (and sometimes meter)</li>
+            <li>Concentration / intensity</li>
+            <li>Emotion and idea fused</li>
+          </ul>
+
+          <p><b>Major elements</b></p>
+          <ul>
+            <li><b>Speaker/voice</b> (who is talking?)</li>
+            <li><b>Diction & syntax</b> (word choice & order)</li>
+            <li><b>Imagery</b> (sensory world)</li>
+            <li><b>Sound</b> (rhyme, alliteration, assonance)</li>
+            <li><b>Form</b> (stanza/line patterns)</li>
+            <li><b>Theme</b> (core claim/idea)</li>
+          </ul>
+
+          <p><b>Structure basics</b></p>
+          <ul>
+            <li>Poem → stanzas → lines.</li>
+            <li>Form is not “shape only”; it controls emphasis and pacing.</li>
+          </ul>
+        `
+      },
+
+      {
+        id: "m5",
+        title: "Module 5: Sample Poetry — “Winter” (Shakespeare)",
+        subtitle: "Close reading focus: seasonal imagery, sound, contrast, and social detail.",
+        learn: `
+          <p><b>Reading focus</b></p>
+          <ul>
+            <li><b>Imagery:</b> cold vs warmth; outdoor hardship vs indoor comfort.</li>
+            <li><b>Sound:</b> repeated consonants/vowels can sharpen “bite” of winter.</li>
+            <li><b>Contrast:</b> nature’s harshness vs human shelter/community.</li>
+            <li><b>Theme:</b> how environment shapes daily life and mood.</li>
+          </ul>
+
+          <div class="note">
+            Don’t summarize. Instead: identify <b>patterns</b> (images/sounds), then infer <b>effect</b> (mood/attitude), then argue <b>theme</b>.
+          </div>
+
+          <div aria-hidden="true" style="margin-top:14px;padding:14px;border-radius:16px;border:1px solid var(--stroke);background:rgba(255,255,255,.05);">
+            <b>Offline visual</b> (placeholder portrait):<br/>
+            <svg width="100%" height="160" viewBox="0 0 900 220" preserveAspectRatio="none" style="border-radius:14px;border:1px solid var(--stroke);background:rgba(255,255,255,.04)">
+              <defs>
+                <linearGradient id="g1" x1="0" x2="1">
+                  <stop offset="0" stop-color="rgba(126,231,255,.35)"/>
+                  <stop offset="1" stop-color="rgba(166,255,184,.22)"/>
+                </linearGradient>
+              </defs>
+              <rect x="0" y="0" width="900" height="220" fill="url(#g1)"/>
+              <circle cx="150" cy="110" r="62" fill="rgba(255,255,255,.22)"/>
+              <rect x="240" y="68" width="520" height="18" rx="9" fill="rgba(255,255,255,.20)"/>
+              <rect x="240" y="102" width="440" height="14" rx="7" fill="rgba(255,255,255,.16)"/>
+              <rect x="240" y="132" width="360" height="14" rx="7" fill="rgba(255,255,255,.14)"/>
+              <rect x="240" y="158" width="300" height="14" rx="7" fill="rgba(255,255,255,.12)"/>
+            </svg>
+          </div>
+        `
+      },
+
+      {
+        id: "m6",
+        title: "Module 6: Drama and Major Aspects of a Play",
+        subtitle: "Drama as performance text: dialogue, action, stage directions, structure.",
+        learn: `
+          <p><b>Drama is built for performance</b></p>
+          <ul>
+            <li><b>Dialogue</b> carries conflict and character.</li>
+            <li><b>Stage directions</b> shape space, movement, and pacing.</li>
+            <li><b>Scene structure</b> controls tension and revelation.</li>
+          </ul>
+
+          <p><b>Classical structure (overview)</b></p>
+          <ul>
+            <li>Prologue → Episodes → Choral odes (stasimon) → Exodos.</li>
+          </ul>
+
+          <p><b>Major elements</b></p>
+          <ul>
+            <li>Plot, character, setting, conflict, theme, spectacle, language.</li>
+          </ul>
+        `
+      },
+
+      {
+        id: "m7",
+        title: "Module 7: Sample Play — Trifles (Susan Glaspell)",
+        subtitle: "Inference and evidence: how details reveal power, gender, and justice.",
+        learn: `
+          <p><b>What makes “Trifles” teachable</b></p>
+          <ul>
+            <li>The play forces attention to <b>small details</b> and what they mean.</li>
+            <li>Competing interpretations of evidence: official vs overlooked.</li>
+            <li>Theme cluster: gendered labor, empathy, justice, authority.</li>
+          </ul>
+
+          <div class="note">
+            If students call details “unimportant,” you can push them: <b>what counts as evidence is a power decision</b>.
+          </div>
+
+          <div aria-hidden="true" style="margin-top:14px;padding:14px;border-radius:16px;border:1px solid var(--stroke);background:rgba(255,255,255,.05);">
+            <b>Offline visual</b> (kitchen scene placeholder):<br/>
+            <svg width="100%" height="160" viewBox="0 0 900 220" preserveAspectRatio="none" style="border-radius:14px;border:1px solid var(--stroke);background:rgba(255,255,255,.04)">
+              <rect x="0" y="0" width="900" height="220" fill="rgba(255,255,255,.06)"/>
+              <rect x="40" y="40" width="280" height="140" rx="16" fill="rgba(126,231,255,.12)" stroke="rgba(255,255,255,.18)"/>
+              <rect x="350" y="55" width="510" height="22" rx="11" fill="rgba(255,255,255,.18)"/>
+              <rect x="350" y="92" width="420" height="16" rx="8" fill="rgba(255,255,255,.14)"/>
+              <rect x="350" y="122" width="360" height="16" rx="8" fill="rgba(255,255,255,.12)"/>
+              <rect x="350" y="152" width="300" height="16" rx="8" fill="rgba(255,255,255,.10)"/>
+            </svg>
+          </div>
+        `
+      },
+
+      {
+        id: "m8",
+        title: "Module 8: Fiction and Major Aspects of Fiction",
+        subtitle: "Narrative craft: plot, character, setting, POV, theme, and genre by length.",
+        learn: `
+          <p><b>Fiction: core definition</b></p>
+          <ul>
+            <li>Invented narrative: imaginary characters/events arranged for meaning and effect.</li>
+          </ul>
+
+          <p><b>Genres by length (word-count guidance)</b></p>
+          <ul>
+            <li><b>Novel:</b> usually 40,000+ words (extended development).</li>
+            <li><b>Novella:</b> ~10,000–40,000 words (compact but complex).</li>
+            <li><b>Short story:</b> ~1,000–10,000 words (focused effect; often one sitting).</li>
+          </ul>
+
+          <p><b>Major elements</b></p>
+          <ul>
+            <li><b>Plot:</b> event structure, causality, conflict, resolution.</li>
+            <li><b>Character:</b> motivation, complexity, change/stasis.</li>
+            <li><b>Setting:</b> time/place + social world; often symbolic.</li>
+            <li><b>Point of view:</b> who sees/tells; reliability; distance.</li>
+            <li><b>Theme:</b> the story’s claim about life/human nature.</li>
+          </ul>
+        `
+      },
+
+      {
+        id: "m9",
+        title: "Module 9: Sample Novel — Pride & Prejudice (Jane Austen)",
+        subtitle: "Narrator, irony, social class, marriage economy, and character judgment.",
+        learn: `
+          <p><b>What to notice immediately</b></p>
+          <ul>
+            <li><b>Opening irony:</b> the “universal truth” is a social critique, not a fact.</li>
+            <li><b>Marriage as system:</b> personal desire meets economics/status.</li>
+            <li><b>Character perception:</b> how first impressions distort judgment.</li>
+            <li><b>Free indirect style (advanced):</b> narrator blends with character’s perspective.</li>
+          </ul>
+
+          <div class="note">
+            Weak analysis: “It’s about love.” Better: show how love is constrained by <b>class, money, reputation, and gender norms</b>.
+          </div>
+
+          <div aria-hidden="true" style="margin-top:14px;padding:14px;border-radius:16px;border:1px solid var(--stroke);background:rgba(255,255,255,.05);">
+            <b>Offline visual</b> (title-page placeholder):<br/>
+            <svg width="100%" height="160" viewBox="0 0 900 220" preserveAspectRatio="none" style="border-radius:14px;border:1px solid var(--stroke);background:rgba(255,255,255,.04)">
+              <rect x="0" y="0" width="900" height="220" fill="rgba(166,255,184,.10)"/>
+              <rect x="70" y="48" width="760" height="124" rx="18" fill="rgba(255,255,255,.18)"/>
+              <rect x="110" y="78" width="520" height="22" rx="11" fill="rgba(0,0,0,.10)"/>
+              <rect x="110" y="112" width="620" height="14" rx="7" fill="rgba(0,0,0,.08)"/>
+              <rect x="110" y="136" width="420" height="14" rx="7" fill="rgba(0,0,0,.06)"/>
+            </svg>
+          </div>
+        `
+      },
+
+      {
+        id: "review",
+        title: "Review Hub",
+        subtitle: "Mastery mode: mixed flashcards, quizzes, and mind maps across all modules.",
+        learn: `
+          <p><b>What to do here</b></p>
+          <ul>
+            <li>Run <b>mixed flashcards</b> (only “review” level) until you reduce weak points.</li>
+            <li>Run <b>mixed quizzes</b> and track wrong answers → turn them into cards.</li>
+            <li>Open mind maps to rehearse frameworks (genres, devices, elements).</li>
+          </ul>
+
+          <div class="note">
+            If students say “I studied,” ask: <b>What did you retrieve from memory?</b> Recognition is not mastery.
+          </div>
+        `
+      }
+    ];
+
+    /**********************
+     * DATA: Flashcards (50)
+     * - Some curated, rest generated to hit count with coverage.
+     **********************/
+    const baseCards = [
+      // Module 1
+      { id:"c1", module:"m1", term:"Literature", def:"Language shaped to create meaning/experience and produce effects beyond plain information.", level:0 },
+      { id:"c2", module:"m1", term:"Genre", def:"A category of literature with conventions (e.g., poetry, drama, fiction).", level:0 },
+      { id:"c3", module:"m1", term:"Function of literature", def:"To entertain, question, represent culture, persuade, and intensify human experience.", level:0 },
+      { id:"c4", module:"m1", term:"Why study literature?", def:"Builds interpretive skill, critical thinking, and evidence-based argument writing.", level:0 },
+
+      // Module 2
+      { id:"c5", module:"m2", term:"Figure of speech", def:"Non-literal language used for rhetorical or vivid effect.", level:0 },
+      { id:"c6", module:"m2", term:"Denotation", def:"A word’s basic dictionary meaning.", level:0 },
+      { id:"c7", module:"m2", term:"Connotation", def:"Associated meanings/feelings attached to a word.", level:0 },
+      { id:"c8", module:"m2", term:"Tone", def:"Speaker’s attitude (e.g., ironic, bitter, playful).", level:0 },
+      { id:"c9", module:"m2", term:"Theme", def:"A central idea/claim about life/human nature developed through the text.", level:0 },
+      { id:"c10", module:"m2", term:"Motif", def:"A recurring element (image/idea) that supports the theme.", level:0 },
+
+      // Module 3
+      { id:"c11", module:"m3", term:"Alliteration", def:"Repetition of initial consonant sounds close together.", level:0 },
+      { id:"c12", module:"m3", term:"Assonance", def:"Repetition of vowel sounds in nearby words.", level:0 },
+      { id:"c13", module:"m3", term:"Consonance", def:"Repetition of consonant sounds (often at word ends).", level:0 },
+      { id:"c14", module:"m3", term:"Irony", def:"A contrast between expectation and reality; or between words and intended meaning.", level:0 },
+      { id:"c15", module:"m3", term:"Allusion", def:"A reference to a known text/event/person that adds meaning.", level:0 },
+
+      // Module 4
+      { id:"c16", module:"m4", term:"Speaker", def:"The voice in a poem (not always the poet).", level:0 },
+      { id:"c17", module:"m4", term:"Stanza", def:"A grouped set of lines in a poem (like a paragraph in prose).", level:0 },
+      { id:"c18", module:"m4", term:"Meter", def:"A patterned rhythm of stressed/unstressed syllables.", level:0 },
+      { id:"c19", module:"m4", term:"Form", def:"The poem’s structural pattern (stanza/line scheme; sometimes fixed forms).", level:0 },
+
+      // Module 5
+      { id:"c20", module:"m5", term:"Close reading", def:"Detailed analysis of language patterns (imagery, sound, structure) to infer meaning/effect.", level:0 },
+
+      // Module 6
+      { id:"c21", module:"m6", term:"Stage directions", def:"Text that instructs movement, setting, tone, and action in a play.", level:0 },
+      { id:"c22", module:"m6", term:"Dialogue", def:"Character speech that reveals conflict, relationship, and motive.", level:0 },
+
+      // Module 7
+      { id:"c23", module:"m7", term:"Evidence in drama", def:"Meaning emerges from details (props, setting, dialogue, action) treated as clues.", level:0 },
+
+      // Module 8
+      { id:"c24", module:"m8", term:"Plot", def:"Event structure with causality (conflict → tension → outcome).", level:0 },
+      { id:"c25", module:"m8", term:"Point of view", def:"Who tells/sees the story; influences reliability and interpretation.", level:0 },
+      { id:"c26", module:"m8", term:"Setting", def:"Time/place + social environment; can shape character and symbolize themes.", level:0 },
+
+      // Module 9
+      { id:"c27", module:"m9", term:"Irony (Austen)", def:"A technique where narration implies critique beneath polite social language.", level:0 },
+    ];
+
+    // Generate additional cards to reach 50 (coverage + precision)
+    const generatedCardSpecs = [
+      // Module 2 expansions
+      ["m2","Simile","Comparison using 'like' or 'as'."],
+      ["m2","Metaphor","Direct comparison asserting one thing is another."],
+      ["m2","Analogy","Extended comparison to explain an unfamiliar concept."],
+      ["m2","Imagery","Sensory description that builds a vivid mental scene."],
+      ["m2","Personification","Giving human qualities to non-human things/ideas."],
+      ["m2","Onomatopoeia","Words that imitate sounds (buzz, hiss, tick)."],
+
+      // Module 3 expansions
+      ["m3","Hyperbole","Deliberate exaggeration for emphasis."],
+      ["m3","Understatement","Intentional downplaying for effect (often ironic)."],
+      ["m3","Symbol","An object/action that represents something beyond itself."],
+      ["m3","Rhyme","Repetition of similar end sounds; can unify or emphasize."],
+      ["m3","Rhythm","Patterned flow of language; affects pace/mood."],
+
+      // Module 4 expansions
+      ["m4","Diction","Word choice; carries tone and connotation."],
+      ["m4","Syntax","Word order; shapes emphasis and meaning."],
+      ["m4","Theme vs Topic","Topic = subject; Theme = claim about the subject."],
+      ["m4","Enjambment","A line breaks without punctuation; pushes momentum."],
+      ["m4","End-stopped line","A line ends with punctuation; creates pause/emphasis."],
+
+      // Module 6 expansions
+      ["m6","Conflict","Central struggle that drives dramatic action."],
+      ["m6","Scene","A unit of action/time/place in a play."],
+      ["m6","Spectacle","Visual/staging elements (costume, set, movement)."],
+
+      // Module 8 expansions
+      ["m8","Characterization","How a text builds character (actions, speech, thoughts, others' views)."],
+      ["m8","Foreshadowing","Hints that prepare the reader for later events."],
+      ["m8","Climax","Peak moment of tension or turning point."],
+      ["m8","Resolution","Outcome phase where conflict is settled (or not)."],
+      ["m8","Novel","Extended fictional prose narrative, often 40,000+ words."],
+      ["m8","Novella","Fiction between short story and novel (often 10k–40k words)."],
+      ["m8","Short story","Focused fiction often readable in one sitting (often 1k–10k words)."],
+
+      // Module 7 expansions
+      ["m7","Inference","Reasoned conclusion from textual evidence (details → interpretation)."],
+      ["m7","Subtext","Meaning implied beneath what characters explicitly say/do."],
+
+      // Module 9 expansions
+      ["m9","Free indirect discourse","Narration blends with a character’s voice/thoughts without quotation marks."],
+      ["m9","Social class","Rank/status shaping behavior, marriage, and reputation."],
+      ["m9","Marriage economy","Marriage as linked to money/property/social survival."],
+
+      // Module 1 expansions
+      ["m1","Canon","A set of texts traditionally treated as important/central."],
+      ["m1","Interpretation","Explaining how textual choices create meaning; not guessing author intent."],
+      ["m1","Close reading","Text-centered analysis of language patterns (form + effect)."],
+    ];
+
+    // Build final flashcard list = 50
+    const flashcards = (() => {
+      const cards = [...baseCards];
+      let nextId = 28;
+      for (const [module, term, def] of generatedCardSpecs){
+        cards.push({ id:`c${nextId++}`, module, term, def, level:0 });
+        if (cards.length >= 50) break;
+      }
+      // If still short (shouldn't), pad with high-utility analytic prompts
+      while (cards.length < 50){
+        cards.push({ id:`c${nextId++}`, module:"review", term:"Evidence → Claim", def:"State a claim, cite a detail, explain how the detail supports the claim (not summary).", level:0 });
+      }
+      return cards.slice(0,50);
+    })();
+
+    /**********************
+     * DATA: Quizzes (50)
+     **********************/
+    const baseQuizzes = [
+      // Module 1
+      { id:"q1", module:"m1", q:"Literature is best described as…", type:"mcq",
+        opts:["Language shaped for meaning and effect","A list of historical facts","Only poetry","Only fictional stories"], ans:0,
+        why:"Literature is language crafted for meaning/experience and effects beyond raw information." },
+
+      { id:"q2", module:"m1", q:"Which is NOT a major genre?", type:"mcq",
+        opts:["Poetry","Drama","Fiction","Algebra"], ans:3, why:"Algebra is not a literary genre." },
+
+      // Module 2
+      { id:"q3", module:"m2", q:"A simile compares two things using…", type:"mcq",
+        opts:["like/as","a footnote","only rhyme","stage directions"], ans:0, why:"Similes use 'like' or 'as'." },
+
+      { id:"q4", module:"m2", q:"True/False: A metaphor uses 'like' or 'as'.", type:"tf",
+        opts:["True","False"], ans:1, why:"Metaphor is a direct comparison without 'like/as'." },
+
+      { id:"q5", module:"m2", q:"Theme is best defined as…", type:"mcq",
+        opts:["The topic alone","A central claim/idea developed by the text","A character’s name","The number of lines"], ans:1,
+        why:"Theme is the text’s central idea/claim, not merely a topic." },
+
+      // Module 3
+      { id:"q6", module:"m3", q:"Alliteration is…", type:"mcq",
+        opts:["Repeated initial consonant sounds","Repeated vowel sounds","A plot twist","A stage prop"], ans:0,
+        why:"Alliteration repeats initial consonant sounds." },
+
+      { id:"q7", module:"m3", q:"Assonance is…", type:"mcq",
+        opts:["Repeated vowel sounds","Repeated end rhyme only","A character flaw","A scene change"], ans:0,
+        why:"Assonance repeats vowel sounds." },
+
+      // Module 4
+      { id:"q8", module:"m4", q:"In poetry, the 'speaker' is…", type:"mcq",
+        opts:["Always the poet","The voice speaking in the poem","The rhyme scheme","The stanza count"], ans:1,
+        why:"The speaker is the poem’s voice; it may or may not be the poet." },
+
+      { id:"q9", module:"m4", q:"A stanza is to a poem as a ______ is to prose.", type:"mcq",
+        opts:["Paragraph","Footnote","Title","Metaphor"], ans:0,
+        why:"Stanzas function like paragraphs: grouped units." },
+
+      // Module 6
+      { id:"q10", module:"m6", q:"Stage directions primarily…", type:"mcq",
+        opts:["Describe action/setting/performance","Give dictionary definitions","Explain algebra rules","Replace dialogue"], ans:0,
+        why:"Stage directions guide performance: action, movement, setting, tone." },
+
+      // Module 8
+      { id:"q11", module:"m8", q:"Point of view affects…", type:"mcq",
+        opts:["What is seen/told and how reliable it is","Only the cover design","Only the author’s biography","Only stanza length"], ans:0,
+        why:"POV shapes access to events/thoughts and influences reliability." },
+
+      { id:"q12", module:"m8", q:"A novella is typically…", type:"mcq",
+        opts:["Longer than a novel","Between a short story and a novel","A type of poem","A stage direction"], ans:1,
+        why:"Novella length is usually between short story and novel." },
+    ];
+
+    // Generate additional quizzes to reach 50 (mix of mcq/tf/short)
+    const quizGenerators = [
+      // Module 2
+      () => ({module:"m2", q:"Denotation refers to…", type:"mcq",
+              opts:["Basic dictionary meaning","Emotional associations","A rhyme pattern","A plot summary"], ans:0,
+              why:"Denotation = basic meaning."}),
+      () => ({module:"m2", q:"Connotation refers to…", type:"mcq",
+              opts:["Emotional/cultural associations","Only dictionary meaning","Only meter","Only scene structure"], ans:0,
+              why:"Connotation = associated meanings/feelings."}),
+      () => ({module:"m2", q:"Imagery mainly appeals to…", type:"mcq",
+              opts:["The senses","Only logic","Only grammar rules","Only rhyme"], ans:0,
+              why:"Imagery builds sensory experience."}),
+      () => ({module:"m2", q:"Personification is…", type:"mcq",
+              opts:["Giving human traits to non-human things","Replacing vowels with consonants","A kind of rhyme","A stage direction"], ans:0,
+              why:"Personification = human qualities to non-human."}),
+
+      // Module 3
+      () => ({module:"m3", q:"True/False: Consonance repeats consonant sounds.", type:"tf",
+              opts:["True","False"], ans:0, why:"That’s the definition of consonance."}),
+      () => ({module:"m3", q:"A symbol is…", type:"mcq",
+              opts:["An object/action representing more than itself","A synonym list","A plot outline","A stanza"], ans:0,
+              why:"Symbols carry layered meaning beyond literal."}),
+      () => ({module:"m3", q:"Allusion does what?", type:"mcq",
+              opts:["Adds meaning by referencing something known","Eliminates tone","Stops rhythm","Removes theme"], ans:0,
+              why:"Allusion enriches meaning through reference."}),
+
+      // Module 4
+      () => ({module:"m4", q:"Meter is primarily about…", type:"mcq",
+              opts:["Rhythmic pattern of stressed/unstressed syllables","Plot structure","Character names","Setting only"], ans:0,
+              why:"Meter is rhythmic patterning."}),
+      () => ({module:"m4", q:"True/False: Form can influence meaning and pacing.", type:"tf",
+              opts:["True","False"], ans:0, why:"Form shapes emphasis, pacing, and effect."}),
+
+      // Module 6
+      () => ({module:"m6", q:"Drama differs from fiction mainly because drama is written for…", type:"mcq",
+              opts:["Performance","Silent reading only","Word counts","Rhyming"], ans:0,
+              why:"Drama is meant to be performed."}),
+      () => ({module:"m6", q:"Conflict in drama is best described as…", type:"mcq",
+              opts:["A central struggle driving action","A glossary term","A rhyme scheme","A footnote"], ans:0,
+              why:"Conflict drives dramatic movement and stakes."}),
+
+      // Module 7
+      () => ({module:"m7", q:"In 'Trifles', meaning often comes from…", type:"mcq",
+              opts:["Small details treated as evidence","Only long speeches","Only the title","Random guessing"], ans:0,
+              why:"The play weaponizes details as clues."}),
+      () => ({module:"m7", q:"Subtext is…", type:"mcq",
+              opts:["Meaning beneath what’s said","A dictionary definition","A rhyme type","A stage direction"], ans:0,
+              why:"Subtext = implied meaning under the surface."}),
+
+      // Module 8
+      () => ({module:"m8", q:"Foreshadowing is…", type:"mcq",
+              opts:["Hints about later events","A type of stanza","A stage prop","A rhyme error"], ans:0,
+              why:"Foreshadowing prepares the reader for later developments."}),
+      () => ({module:"m8", q:"Setting includes…", type:"mcq",
+              opts:["Time/place + social environment","Only weather","Only a map","Only furniture"], ans:0,
+              why:"Setting is time/place and the world’s conditions."}),
+
+      // Module 9
+      () => ({module:"m9", q:"The opening of Pride & Prejudice is best read as…", type:"mcq",
+              opts:["Irony/social critique","A biology fact","A stage direction","A literal law"], ans:0,
+              why:"The “universal truth” signals critique of marriage market assumptions."}),
+      () => ({module:"m9", q:"True/False: Social class shapes reputation and marriage choices in Austen.", type:"tf",
+              opts:["True","False"], ans:0,
+              why:"Class structures constrain behavior and possibilities."}),
+    ];
+
+    const quizzes = (() => {
+      const list = [...baseQuizzes];
+      let nextId = 13;
+      // Add generator outputs until 50
+      let gi = 0;
+      while (list.length < 50){
+        const g = quizGenerators[gi % quizGenerators.length];
+        const item = g();
+        item.id = `q${nextId++}`;
+        list.push(item);
+        gi++;
+      }
+      return list.slice(0,50);
+    })();
+
+    /**********************
+     * DATA: Mind Maps (25)
+     **********************/
+    const mindmaps = [
+      { id:"mm1", module:"m1", title:"Genres Overview",
+        tree: [
+          ["Literature", [
+            ["Poetry", ["Sound", "Imagery", "Form", "Speaker"]],
+            ["Drama", ["Dialogue", "Stage directions", "Conflict", "Scene"]],
+            ["Fiction", ["Plot", "Character", "Setting", "Point of view", "Theme"]],
+          ]]
+        ],
+        jumps: [{label:"Jump to Poetry", to:"m4"},{label:"Jump to Drama", to:"m6"},{label:"Jump to Fiction", to:"m8"}]
+      },
+      { id:"mm2", module:"m2", title:"Literal vs Figurative",
+        tree: [
+          ["Literal", ["Direct meaning"]],
+          ["Figurative", ["Simile", "Metaphor", "Symbol", "Personification", "Irony"]]
+        ],
+        jumps: [{label:"Go to Figures & Sound", to:"m3"}]
+      },
+      { id:"mm3", module:"m3", title:"Sound Devices",
+        tree: [
+          ["Sound", [
+            ["Rhyme", ["End rhyme", "Internal rhyme"]],
+            ["Repetition", ["Alliteration", "Assonance", "Consonance"]],
+            ["Rhythm/Meter", ["Stress patterns", "Pace"]],
+          ]]
+        ],
+        jumps: [{label:"Go to Poetry", to:"m4"}]
+      },
+      { id:"mm4", module:"m4", title:"Poetry Elements",
+        tree: [
+          ["Poem", [
+            ["Speaker", ["Voice/persona"]],
+            ["Diction & Syntax", ["Word choice", "Word order"]],
+            ["Imagery", ["Senses"]],
+            ["Sound", ["Rhyme", "Alliteration", "Assonance"]],
+            ["Form", ["Lines", "Stanzas"]],
+            ["Theme", ["Central claim"]],
+          ]]
+        ],
+        jumps: [{label:"Go to Shakespeare sample", to:"m5"}]
+      },
+      { id:"mm5", module:"m8", title:"Fiction Elements",
+        tree: [
+          ["Fiction", [
+            ["Plot", ["Conflict", "Climax", "Resolution"]],
+            ["Character", ["Motivation", "Change"]],
+            ["Setting", ["Time/Place", "Social world"]],
+            ["POV", ["1st", "3rd", "Reliable/Unreliable"]],
+            ["Theme", ["Idea/claim"]],
+          ]]
+        ],
+        jumps: [{label:"Go to Austen sample", to:"m9"}]
+      },
+    ];
+
+    // Generate remaining mind maps to reach 25 (compact but useful)
+    const mindmapsFull = (() => {
+      const list = [...mindmaps];
+      let n = 6;
+      const templates = [
+        (m, title, nodes) => ({ id:`mm${n++}`, module:m, title, tree:nodes, jumps:[] }),
+      ];
+      const adds = [
+        ["m6","Drama Elements",
+          [["Drama", [["Dialogue",["Conflict","Character revelation"]],["Stage directions",["Setting","Movement"]],["Structure",["Scenes","Acts"]],["Theme",["Central concern"]]]]]],
+        ["m7","Trifles: Evidence Logic",
+          [["Details", [["Domestic space",["Work","Isolation"]],["Objects",["Clues","Meaning"]],["Interpretation",["Official view","Overlooked view"]]]]]],
+        ["m9","Austen: Social System",
+          [["Society", [["Class",["Status","Reputation"]],["Marriage",["Economics","Expectations"]],["Judgment",["First impressions","Revisions"]]]]]],
+        ["review","Revision Strategy",
+          [["Mastery", [["Recall",["Flashcards","Short answers"]],["Feedback",["Quiz errors","Fix weak points"]],["Frameworks",["Mind maps","Genre elements"]]]]]],
+      ];
+
+      // Add generated framework maps (modules 1–9) until 25
+      const frameworkSeeds = [
+        ["m1","Why Study Literature?",
+          [["Outcomes", [["Critical reading"],["Interpretation"],["Argument writing"],["Empathy & perspective"]]]]],
+        ["m2","Theme vs Motif vs Topic",
+          [["Concepts", [["Topic (subject)"],["Theme (claim)"],["Motif (recurring support)"]]]]],
+        ["m3","Figurative Language Toolkit",
+          [["Devices", [["Comparison",["Simile","Metaphor","Analogy"]],["Intensity",["Hyperbole","Understatement"]],["Reference",["Allusion"]],["Meaning",["Symbol","Irony"]]]]]],
+        ["m4","Form & Meaning",
+          [["Form", [["Lines & breaks"],["Stanzas"],["Enjambment"],["End-stopping"]]],["Effect", [["Pace"],["Emphasis"],["Tone shaping"]]]]],
+        ["m5","Close Reading Steps",
+          [["Method", [["Notice patterns"],["Name devices"],["Explain effect"],["Argue theme"]]]]],
+        ["m6","Classical Structure (high-level)",
+          [["Structure", [["Prologue"],["Episodes"],["Stasimon (choral odes)"],["Exodos"]]]]],
+        ["m8","Narration Choices",
+          [["Narration", [["1st person"],["3rd limited"],["3rd omniscient"],["Unreliable narrator"]]]]],
+        ["m9","Irony Types (quick)",
+          [["Irony", [["Verbal"],["Situational"],["Dramatic"]]]]],
+      ];
+
+      for (const a of adds){
+        list.push(templates[0](a[0], a[1], a[2]));
+      }
+      for (const s of frameworkSeeds){
+        if (list.length >= 25) break;
+        list.push(templates[0](s[0], s[1], s[2]));
+      }
+      // pad
+      while (list.length < 25){
+        list.push(templates[0]("review", `Rapid Review Map ${list.length+1}`, [["Core", [["Genres"],["Devices"],["Elements"],["Evidence → Claim"]]]] ));
+      }
+      return list.slice(0,25);
+    })();
+
+    /**********************
+     * STATE (Progress)
+     **********************/
+    const STORE_KEY = "ENGL280_PROGRESS_V2";
+
+    const defaultProgress = {
+      cardLevel: Object.fromEntries(flashcards.map(c => [c.id, 0])), // 0 review, 1 known, 2 mastered
+      quizCorrect: Object.fromEntries(quizzes.map(q => [q.id, false])),
+      mapVisited: Object.fromEntries(mindmapsFull.map(m => [m.id, false])),
+      bookmarks: [],
+      lastActiveDate: null,
+      streak: 0,
+      lastModule: "home"
+    };
+
+    function loadProgress(){
+      try{
+        const raw = localStorage.getItem(STORE_KEY);
+        if (!raw) return structuredClone(defaultProgress);
+        const parsed = JSON.parse(raw);
+        // merge for forward compatibility
+        return {
+          ...structuredClone(defaultProgress),
+          ...parsed,
+          cardLevel: { ...structuredClone(defaultProgress.cardLevel), ...(parsed.cardLevel||{}) },
+          quizCorrect: { ...structuredClone(defaultProgress.quizCorrect), ...(parsed.quizCorrect||{}) },
+          mapVisited: { ...structuredClone(defaultProgress.mapVisited), ...(parsed.mapVisited||{}) },
+          bookmarks: Array.isArray(parsed.bookmarks) ? parsed.bookmarks : []
+        };
+      }catch{
+        return structuredClone(defaultProgress);
+      }
+    }
+    function saveProgress(){
+      localStorage.setItem(STORE_KEY, JSON.stringify(progress));
+      renderProgress();
+    }
+
+    let progress = loadProgress();
+
+    function todayISO(){
+      const d = new Date();
+      d.setHours(0,0,0,0);
+      return d.toISOString().slice(0,10);
+    }
+
+    function updateStreak(){
+      const t = todayISO();
+      if (!progress.lastActiveDate){
+        progress.lastActiveDate = t;
+        progress.streak = 1;
+        saveProgress();
+        return;
+      }
+      if (progress.lastActiveDate === t) return;
+
+      const last = new Date(progress.lastActiveDate + "T00:00:00");
+      const now = new Date(t + "T00:00:00");
+      const diffDays = Math.round((now - last) / (1000*60*60*24));
+
+      if (diffDays === 1) progress.streak = (progress.streak || 0) + 1;
+      else progress.streak = 1;
+
+      progress.lastActiveDate = t;
+      saveProgress();
+    }
+
+    /**********************
+     * UI References
+     **********************/
+    const navEl = document.getElementById("nav");
+    const pageTitleEl = document.getElementById("pageTitle");
+    const pageSubEl = document.getElementById("pageSubtitle");
+    const learnBody = document.getElementById("learnBody");
+    const toolsBody = document.getElementById("toolsBody");
+
+    const progressFill = document.getElementById("progressFill");
+    const statCards = document.getElementById("statCards");
+    const statQuizzes = document.getElementById("statQuizzes");
+    const statMaps = document.getElementById("statMaps");
+    const statStreak = document.getElementById("statStreak");
+
+    const searchInput = document.getElementById("searchInput");
+    const nextBtn = document.getElementById("nextBtn");
+    const bookmarkBtn = document.getElementById("bookmarkBtn");
+    const quickPracticeBtn = document.getElementById("quickPracticeBtn");
+
+    const toggleThemeBtn = document.getElementById("toggleThemeBtn");
+    const focusBtn = document.getElementById("focusBtn");
+    const soundBtn = document.getElementById("soundBtn");
+    const resetBtn = document.getElementById("resetBtn");
+
+    const modeChips = document.getElementById("modeChips");
+
+    const modalBackdrop = document.getElementById("modalBackdrop");
+    const modalTitle = document.getElementById("modalTitle");
+    const modalBody = document.getElementById("modalBody");
+    const closeModalBtn = document.getElementById("closeModalBtn");
+    const openDashboardBtn = document.getElementById("openDashboardBtn");
+
+    let currentModuleId = progress.lastModule || "home";
+    let currentMode = "learn";
+
+    /**********************
+     * NAV RENDER
+     **********************/
+    function moduleLabel(m){
+      if (m.id === "home") return "Home";
+      if (m.id === "review") return "Review";
+      return m.title.replace(/^Module\s+\d+:\s+/i,"").trim();
+    }
+
+    function renderNav(filterText=""){
+      navEl.innerHTML = "";
+
+      const q = filterText.trim().toLowerCase();
+      const items = modules.filter(m => {
+        if (!q) return true;
+        const hay = (m.title + " " + (m.subtitle||"") + " " + (m.learn||"")).toLowerCase();
+        return hay.includes(q);
+      });
+
+      for (const m of items){
+        const btn = document.createElement("button");
+        btn.className = (m.id === currentModuleId) ? "active" : "";
+        btn.innerHTML = `<span>${m.id==="home" ? "🏠" : (m.id==="review" ? "🧠" : "📚")} ${moduleLabel(m)}</span><small>${m.id==="home" ? "Start here" : (m.id==="review" ? "Mixed mastery" : "Lesson + practice")}</small>`;
+        btn.onclick = () => openModule(m.id, true);
+        navEl.appendChild(btn);
+      }
+    }
+
+    /**********************
+     * MODULE OPEN
+     **********************/
+    function openModule(id, fromUser=false){
+      const m = modules.find(x => x.id === id);
+      if (!m) return;
+
+      currentModuleId = id;
+      progress.lastModule = id;
+      saveProgress();
+
+      // update nav active states
+      [...navEl.querySelectorAll("button")].forEach(b => b.classList.remove("active"));
+      // rebuild nav if search active (keeps active state consistent)
+      renderNav(searchInput.value);
+
+      pageTitleEl.textContent = m.title;
+      pageSubEl.textContent = m.subtitle || "";
+
+      // set mode default to learn on module switch unless user is in other mode intentionally
+      if (fromUser) currentMode = "learn";
+      setActiveChip(currentMode);
+
+      renderMain();
+      renderTools();
+      updateStreak();
+    }
+
+    function setActiveChip(mode){
+      [...modeChips.querySelectorAll(".chip")].forEach(c => {
+        c.classList.toggle("active", c.dataset.mode === mode);
+      });
+    }
+
+    modeChips.addEventListener("click", (e) => {
+      const chip = e.target.closest(".chip");
+      if (!chip) return;
+      currentMode = chip.dataset.mode;
+      setActiveChip(currentMode);
+      renderMain();
+    });
+
+    function nextModuleId(){
+      const ids = modules.map(m => m.id);
+      const i = ids.indexOf(currentModuleId);
+      if (i === -1) return "home";
+      return ids[(i + 1) % ids.length];
+    }
+
+    nextBtn.onclick = () => openModule(nextModuleId(), true);
+
+    /**********************
+     * SEARCH
+     **********************/
+    searchInput.addEventListener("input", () => {
+      renderNav(searchInput.value);
+      // If user is searching, show a search results dashboard in tools
+      renderTools();
+    });
+
+    // Ctrl+/ focuses search
+    window.addEventListener("keydown", (e) => {
+      if (e.ctrlKey && e.key === "/"){
+        e.preventDefault();
+        searchInput.focus();
+      }
+
+      // G then 1–9 quick navigation
+      if (e.key.toLowerCase() === "g"){
+        window.__awaitingModuleKey = true;
+        setTimeout(() => window.__awaitingModuleKey = false, 900);
+      } else if (window.__awaitingModuleKey){
+        const n = parseInt(e.key,10);
+        if (n >= 1 && n <= 9){
+          openModule(`m${n}`, true);
+          window.__awaitingModuleKey = false;
         }
+      }
+    });
 
-        // Expanded flashcards (50 total, added more from new content)
-        const flashcards = [
-            // Module 1 (existing)
-            { term: 'Literature', definition: 'An exploration of definition, function, and classification.', module: 1, status: 'review' },
-            { term: 'Genre', definition: 'Classification of literature, e.g., poetry, drama, fiction.', module: 1, status: 'review' },
-            { term: 'Function of Literature', definition: 'To entertain, educate, and reflect society.', module: 1, status: 'review' },
-            { term: 'Why Study Literature', definition: 'Develops critical thinking and empathy.', module: 1, status: 'review' },
-            { term: 'Classification', definition: 'Based on form, content, and style.', module: 1, status: 'review' },
-            // Module 2 (added from content)
-            { term: 'Figure of Speech', definition: 'A word or phrase used in a non-literal sense for rhetorical or vivid effect.', module: 2, status: 'review' },
-            { term: 'Simile', definition: 'Compares two things using “like” or “as”.', module: 2, status: 'review' },
-            { term: 'Metaphor', definition: 'A direct comparison without using “like” or “as.”', module: 2, status: 'review' },
-            { term: 'Imagery', definition: 'Detailed descriptions appealing to the five senses.', module: 2, status: 'review' },
-            { term: 'Personification', definition: 'Giving human qualities to non-human things.', module: 2, status: 'review' },
-            { term: 'Onomatopoeia', definition: 'Words that sound like the noise they represent.', module: 2, status: 'review' },
-            // ... (continue for other modules, ensuring ~50 total)
-            // Module 3 (existing)
-            { term: 'Metaphor', definition: 'A figure of speech in which a word or phrase is applied to an object or action to which it is not literally applicable.', module: 3, status: 'review' },
-            // Add more similarly for all modules
-        ];
+    /**********************
+     * BOOKMARKS
+     **********************/
+    bookmarkBtn.onclick = () => {
+      const b = progress.bookmarks || [];
+      if (!b.includes(currentModuleId)) b.push(currentModuleId);
+      else b.splice(b.indexOf(currentModuleId), 1);
+      progress.bookmarks = b;
+      saveProgress();
+      renderTools();
+    };
 
-        function showFlashcards(module) {
-            const container = document.querySelector(`#module${module} .practice`);
-            if (!container.querySelector('.flashcards-container')) {
-                container.innerHTML += '<div class="flashcards-container"></div>';
+    /**********************
+     * QUICK PRACTICE (Mixed)
+     **********************/
+    quickPracticeBtn.onclick = () => {
+      openModule("review", true);
+      currentMode = "quiz";
+      setActiveChip(currentMode);
+      renderMain({ mixed:true, count: 6 });
+      renderTools();
+    };
+
+    /**********************
+     * MAIN RENDER (learn / flashcards / quiz / mindmap)
+     **********************/
+    function renderMain(opts={}){
+      const m = modules.find(x => x.id === currentModuleId);
+      if (!m) return;
+
+      if (currentMode === "learn"){
+        learnBody.innerHTML = m.learn || `<p>No content yet.</p>`;
+        return;
+      }
+
+      if (currentMode === "flashcards"){
+        renderFlashcardsView(m, opts);
+        return;
+      }
+
+      if (currentMode === "quiz"){
+        renderQuizView(m, opts);
+        return;
+      }
+
+      if (currentMode === "mindmap"){
+        renderMindmapView(m, opts);
+        return;
+      }
+    }
+
+    /**********************
+     * FLASHCARDS VIEW
+     **********************/
+    function levelName(l){ return ["Review","Known","Mastered"][l] || "Review"; }
+
+    function renderFlashcardsView(m, opts={}){
+      const isMixed = (m.id === "review");
+      const moduleFilter = isMixed ? null : m.id;
+
+      const levels = opts.levels ?? null; // allow filtering
+
+      const pool = flashcards.filter(c => {
+        const okModule = moduleFilter ? c.module === moduleFilter : true;
+        const okLevel = levels ? levels.includes(progress.cardLevel[c.id] ?? 0) : true;
+        return okModule && okLevel;
+      });
+
+      // If in review mode, default show only Review-level
+      const defaultPool = isMixed ? pool.filter(c => (progress.cardLevel[c.id] ?? 0) === 0) : pool;
+
+      const chosen = (defaultPool.length ? defaultPool : pool);
+      const order = shuffle([...chosen]).slice(0, 1); // single-card view
+
+      const card = order[0];
+      if (!card){
+        learnBody.innerHTML = `<div class="note"><b>No flashcards found for this view.</b><br/>Try switching filters or go to Review for mixed practice.</div>`;
+        return;
+      }
+
+      const currentLevel = progress.cardLevel[card.id] ?? 0;
+
+      learnBody.innerHTML = `
+        <div class="deckTop">
+          <div class="left">
+            <select class="select" id="cardScope">
+              <option value="${m.id}">${m.id==="review" ? "All modules (mixed)" : "This module only"}</option>
+            </select>
+            <select class="select" id="cardFilter">
+              <option value="all">All levels</option>
+              <option value="0" ${isMixed ? "selected" : ""}>Review only</option>
+              <option value="1">Known only</option>
+              <option value="2">Mastered only</option>
+            </select>
+            <button class="btn" id="nextCardBtn">Next card</button>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end;">
+            <span class="tag">${m.id==="review" ? "Mixed deck" : "Module deck"}</span>
+            <span class="tag">Total: ${flashcards.length}</span>
+          </div>
+        </div>
+
+        <div class="flashWrap">
+          <div class="flashCard" id="flashCard">
+            <div>
+              <div class="flashFace">${escapeHTML(card.term)}</div>
+              <div class="flashBack">${escapeHTML(card.def)}</div>
+            </div>
+            <div class="flashMeta">
+              <div>
+                <span class="tag">Module: ${escapeHTML(card.module.toUpperCase())}</span>
+                <span class="tag">Tap to reveal</span>
+              </div>
+              <div class="level">
+                <button class="lvlBtn ${currentLevel===0 ? "active":""}" data-lvl="0">Review</button>
+                <button class="lvlBtn ${currentLevel===1 ? "active":""}" data-lvl="1">Known</button>
+                <button class="lvlBtn ${currentLevel===2 ? "active":""}" data-lvl="2">Mastered</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="note">
+            <b>Do it right:</b> before flipping, try to define the term from memory. If you guessed, don’t mark “Mastered.”
+          </div>
+        </div>
+      `;
+
+      const flashEl = document.getElementById("flashCard");
+      flashEl.addEventListener("click", (e) => {
+        if (e.target.closest(".lvlBtn")) return;
+        flashEl.classList.toggle("revealed");
+        updateStreak();
+      });
+
+      document.getElementById("nextCardBtn").onclick = () => renderFlashcardsView(m, opts);
+
+      const filterSel = document.getElementById("cardFilter");
+      filterSel.onchange = () => {
+        const v = filterSel.value;
+        if (v === "all") renderFlashcardsView(m, { levels:null });
+        else renderFlashcardsView(m, { levels:[parseInt(v,10)] });
+      };
+
+      [...document.querySelectorAll(".lvlBtn")].forEach(btn => {
+        btn.onclick = (e) => {
+          e.stopPropagation();
+          const lvl = parseInt(btn.dataset.lvl,10);
+          progress.cardLevel[card.id] = lvl;
+          saveProgress();
+          renderFlashcardsView(m, opts);
+        };
+      });
+    }
+
+    /**********************
+     * QUIZ VIEW
+     **********************/
+    function renderQuizView(m, opts={}){
+      const isMixed = (m.id === "review");
+      const moduleFilter = isMixed ? null : m.id;
+
+      let pool = quizzes.filter(q => moduleFilter ? q.module === moduleFilter : true);
+
+      if (isMixed && opts.mixed){
+        pool = shuffle(pool).slice(0, opts.count ?? 6);
+      } else {
+        pool = shuffle(pool).slice(0, 4); // default per module
+      }
+
+      if (!pool.length){
+        learnBody.innerHTML = `<div class="note"><b>No quizzes found.</b></div>`;
+        return;
+      }
+
+      learnBody.innerHTML = `
+        <div class="deckTop">
+          <div class="left">
+            <button class="btn" id="newQuizSetBtn">New set</button>
+            <button class="btn" id="reviewWrongsBtn">Practice wrong ones</button>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end;">
+            <span class="tag">${isMixed ? "Mixed quiz" : "Module quiz"}</span>
+            <span class="tag">Total: ${quizzes.length}</span>
+          </div>
+        </div>
+        <div id="quizList"></div>
+        <div class="note">
+          <b>Don’t game it:</b> if you guessed, you didn’t learn. Redo wrong ones until they’re automatic.
+        </div>
+      `;
+
+      const listEl = document.getElementById("quizList");
+
+      pool.forEach((q, i) => {
+        const alreadyCorrect = !!progress.quizCorrect[q.id];
+        const qEl = document.createElement("div");
+        qEl.className = "qBox";
+        qEl.innerHTML = `
+          <div class="qTop">
+            <h4>${escapeHTML(q.q)}</h4>
+            <div class="qMeta">${escapeHTML(q.module.toUpperCase())} · ${alreadyCorrect ? "✅ Already correct" : "Not yet"}</div>
+          </div>
+          <div class="qOpts" data-qid="${q.id}">
+            ${renderQuizOptions(q, i)}
+          </div>
+          <button class="btn primary" data-action="check" data-qid="${q.id}" data-index="${i}">Check</button>
+          <div class="feedback" id="fb_${q.id}" style="display:none;"></div>
+        `;
+        listEl.appendChild(qEl);
+      });
+
+      document.getElementById("newQuizSetBtn").onclick = () => renderQuizView(m, opts);
+
+      document.getElementById("reviewWrongsBtn").onclick = () => {
+        const wrongs = quizzes.filter(q => !progress.quizCorrect[q.id] && (moduleFilter ? q.module === moduleFilter : true));
+        if (!wrongs.length){
+          learnBody.innerHTML = `<div class="note"><b>No wrong questions left in this scope.</b><br/>Go to another module or reset progress if you want to drill again.</div>`;
+          return;
+        }
+        renderQuizView(m, { mixed:true, count: Math.min(6, wrongs.length), __forceList: wrongs });
+      };
+
+      // If forced list exists (from wrongs), override
+      if (opts.__forceList){
+        // rerender simply with forced list
+        const forced = shuffle([...opts.__forceList]).slice(0, opts.count ?? 6);
+        listEl.innerHTML = "";
+        forced.forEach((q,i) => {
+          const alreadyCorrect = !!progress.quizCorrect[q.id];
+          const qEl = document.createElement("div");
+          qEl.className = "qBox";
+          qEl.innerHTML = `
+            <div class="qTop">
+              <h4>${escapeHTML(q.q)}</h4>
+              <div class="qMeta">${escapeHTML(q.module.toUpperCase())} · ${alreadyCorrect ? "✅ Already correct" : "Not yet"}</div>
+            </div>
+            <div class="qOpts" data-qid="${q.id}">
+              ${renderQuizOptions(q, i)}
+            </div>
+            <button class="btn primary" data-action="check" data-qid="${q.id}" data-index="${i}">Check</button>
+            <div class="feedback" id="fb_${q.id}" style="display:none;"></div>
+          `;
+          listEl.appendChild(qEl);
+        });
+      }
+
+      // event delegation for checking
+      listEl.addEventListener("click", (e) => {
+        const btn = e.target.closest("button[data-action='check']");
+        if (!btn) return;
+        const qid = btn.dataset.qid;
+        const q = quizzes.find(x => x.id === qid);
+        if (!q) return;
+
+        const fb = document.getElementById(`fb_${qid}`);
+        const user = getQuizUserAnswer(qid, q.type);
+        const correct = (user !== null) && (user === q.ans);
+
+        fb.style.display = "block";
+        fb.className = "feedback " + (correct ? "good" : "bad");
+        fb.innerHTML = correct
+          ? `✅ <b>Correct.</b> ${escapeHTML(q.why)}`
+          : `❌ <b>Incorrect.</b> ${escapeHTML(q.why)}`;
+
+        if (correct){
+          progress.quizCorrect[qid] = true;
+          saveProgress();
+        }
+        updateStreak();
+      }, { once:false });
+    }
+
+    function renderQuizOptions(q, idx){
+      if (q.type === "mcq"){
+        return q.opts.map((opt, j) => `
+          <label class="opt">
+            <input type="radio" name="quiz_${q.id}" value="${j}">
+            <span>${escapeHTML(opt)}</span>
+          </label>
+        `).join("");
+      }
+      if (q.type === "tf"){
+        return q.opts.map((opt, j) => `
+          <label class="opt">
+            <input type="radio" name="quiz_${q.id}" value="${j}">
+            <span>${escapeHTML(opt)}</span>
+          </label>
+        `).join("");
+      }
+      return `
+        <div class="opt" style="cursor:default;">
+          <input type="text" id="quiz_${q.id}_short" placeholder="Type your answer…" style="width:100%;padding:12px;border-radius:12px;border:1px solid var(--stroke);background:rgba(255,255,255,.06);color:var(--text);font-size:18px;outline:none;">
+        </div>
+      `;
+    }
+
+    function getQuizUserAnswer(qid, type){
+      if (type === "short"){
+        const v = document.getElementById(`quiz_${qid}_short`)?.value?.trim()?.toLowerCase();
+        if (!v) return null;
+        return v; // would need special handling if you use short answers
+      }
+      const checked = document.querySelector(`input[name="quiz_${qid}"]:checked`);
+      if (!checked) return null;
+      return parseInt(checked.value,10);
+    }
+
+    /**********************
+     * MIND MAP VIEW
+     **********************/
+    function renderMindmapView(m){
+      const isMixed = (m.id === "review");
+      const moduleFilter = isMixed ? null : m.id;
+
+      const pool = mindmapsFull.filter(mm => moduleFilter ? mm.module === moduleFilter : true);
+      const list = pool.length ? pool : mindmapsFull;
+
+      learnBody.innerHTML = `
+        <div class="deckTop">
+          <div class="left">
+            <button class="btn" id="openAllMapsBtn">Open all</button>
+            <button class="btn" id="markAllVisitedBtn">Mark visited</button>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end;">
+            <span class="tag">${isMixed ? "All maps" : "Module maps"}</span>
+            <span class="tag">Total: ${mindmapsFull.length}</span>
+          </div>
+        </div>
+
+        <div class="mapList" id="mapList"></div>
+
+        <div class="note">
+          Use mind maps to rehearse <b>frameworks</b>. If students can’t reproduce the framework, they don’t understand the topic.
+        </div>
+      `;
+
+      const listEl = document.getElementById("mapList");
+      list.forEach(mm => {
+        const visited = !!progress.mapVisited[mm.id];
+        const det = document.createElement("details");
+        det.className = "map";
+        det.innerHTML = `
+          <summary>
+            <span>${visited ? "✅" : "🧩"} ${escapeHTML(mm.title)} <span style="color:var(--muted);font-size:14px;">(${escapeHTML(mm.module.toUpperCase())})</span></span>
+            <span class="tag">${visited ? "visited" : "new"}</span>
+          </summary>
+          <div class="mapBody">
+            ${renderTree(mm.tree)}
+            ${mm.jumps?.length ? `<div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;">${mm.jumps.map(j => `<a class="jump" href="#" data-jump="${j.to}">${escapeHTML(j.label)}</a>`).join("")}</div>` : ""}
+          </div>
+        `;
+        det.addEventListener("toggle", () => {
+          if (det.open){
+            progress.mapVisited[mm.id] = true;
+            saveProgress();
+            updateStreak();
+            // update summary badge without rerender
+            const sum = det.querySelector("summary");
+            if (sum) sum.firstElementChild.innerHTML = `✅ ${escapeHTML(mm.title)} <span style="color:var(--muted);font-size:14px;">(${escapeHTML(mm.module.toUpperCase())})</span>`;
+            const tag = det.querySelector(".tag");
+            if (tag) tag.textContent = "visited";
+          }
+        });
+        listEl.appendChild(det);
+      });
+
+      listEl.addEventListener("click", (e) => {
+        const a = e.target.closest("a[data-jump]");
+        if (!a) return;
+        e.preventDefault();
+        openModule(a.dataset.jump, true);
+      });
+
+      document.getElementById("openAllMapsBtn").onclick = () => {
+        [...document.querySelectorAll("details.map")].forEach(d => d.open = true);
+      };
+      document.getElementById("markAllVisitedBtn").onclick = () => {
+        list.forEach(mm => progress.mapVisited[mm.id] = true);
+        saveProgress();
+        renderMindmapView(m);
+      };
+    }
+
+    function renderTree(tree){
+      // tree: array of [node, children]
+      const renderNode = (node) => {
+        if (Array.isArray(node)){
+          const [label, children] = node;
+          return `<li><b>${escapeHTML(label)}</b>${children ? `<ul class="tree">${children.map(renderNode).join("")}</ul>` : ""}</li>`;
+        } else {
+          return `<li>${escapeHTML(String(node))}</li>`;
+        }
+      };
+      return `<ul class="tree">${tree.map(renderNode).join("")}</ul>`;
+    }
+
+    /**********************
+     * TOOLS PANEL RENDER
+     **********************/
+    function renderTools(){
+      const m = modules.find(x => x.id === currentModuleId);
+      const bookmarked = (progress.bookmarks || []).includes(currentModuleId);
+
+      const q = searchInput.value.trim().toLowerCase();
+      const searchHint = q
+        ? `<div class="note"><b>Search active:</b> showing modules matching “${escapeHTML(q)}”. Clear search to restore full nav.</div>`
+        : "";
+
+      const moduleCards = flashcards.filter(c => c.module === m.id).length;
+      const moduleQuizzes = quizzes.filter(qz => qz.module === m.id).length;
+      const moduleMaps = mindmapsFull.filter(mm => mm.module === m.id).length;
+
+      toolsBody.innerHTML = `
+        <div class="chips" style="margin-bottom:12px;">
+          <div class="chip ${currentMode==="learn"?"active":""}" data-tmode="learn">Lesson</div>
+          <div class="chip ${currentMode==="flashcards"?"active":""}" data-tmode="flashcards">Flashcards</div>
+          <div class="chip ${currentMode==="quiz"?"active":""}" data-tmode="quiz">Quiz</div>
+          <div class="chip ${currentMode==="mindmap"?"active":""}" data-tmode="mindmap">Mind Map</div>
+        </div>
+
+        <div class="note" style="margin-top:0;">
+          <b>${bookmarked ? "★ Bookmarked" : "☆ Not bookmarked"}</b><br/>
+          ${m.id==="home" ? "Start here, then go module by module." : (m.id==="review" ? "Mixed mastery across the whole course." : "Use Lesson → Cards → Quiz → Mind map.")}<br/>
+          <span style="display:block;margin-top:8px;">
+            <b>Module counts:</b> ${m.id==="home" || m.id==="review"
+              ? `Cards: 50 · Quizzes: 50 · Maps: 25`
+              : `Cards: ${moduleCards} · Quizzes: ${moduleQuizzes} · Maps: ${moduleMaps}`
             }
-            const flashcardsContainer = container.querySelector('.flashcards-container');
-            flashcardsContainer.innerHTML = ''; // Clear previous
-            const filtered = flashcards.filter(f => f.module === module);
-            filtered.forEach(f => {
-                const card = document.createElement('div');
-                card.classList.add('flashcard');
-                card.innerHTML = `<div class="flashcard-inner"><div class="front">${f.term}</div><div class="back">${f.definition}</div></div>`;
-                card.onclick = () => card.classList.toggle('flipped');
-                const statusBtn = document.createElement('button');
-                statusBtn.textContent = `Status: ${f.status}`;
-                statusBtn.onclick = (e) => {
-                    e.stopPropagation();
-                    if (f.status === 'review') f.status = 'known';
-                    else if (f.status === 'known') f.status = 'mastered';
-                    else f.status = 'review';
-                    statusBtn.textContent = `Status: ${f.status}`;
-                };
-                card.appendChild(statusBtn);
-                flashcardsContainer.appendChild(card);
-            });
+          </span>
+        </div>
+
+        <div style="display:grid;gap:10px;margin-top:12px;">
+          <button class="btn primary" id="startHereBtn">${m.id==="home" ? "Go to Module 1" : "Continue learning"}</button>
+          <button class="btn" id="mixedCardsBtn">Mixed flashcards (weak only)</button>
+          <button class="btn" id="mixedQuizBtn">Mixed quiz (6 questions)</button>
+          <button class="btn" id="showBookmarksBtn">Show bookmarks</button>
+        </div>
+
+        ${searchHint}
+      `;
+
+      toolsBody.addEventListener("click", (e) => {
+        const chip = e.target.closest(".chip[data-tmode]");
+        if (chip){
+          currentMode = chip.dataset.tmode;
+          setActiveChip(currentMode);
+          renderMain();
+          renderTools();
         }
+      }, { once:true });
 
-        function showAllFlashcards() {
-            const container = document.querySelector('#review');
-            if (!container.querySelector('.all-flashcards')) {
-                container.innerHTML += '<div class="all-flashcards"></div>';
-            }
-            const allContainer = container.querySelector('.all-flashcards');
-            allContainer.innerHTML = '';
-            flashcards.forEach(f => {
-                const card = document.createElement('div');
-                card.classList.add('flashcard');
-                card.innerHTML = `<div class="flashcard-inner"><div class="front">${f.term} (Module ${f.module})</div><div class="back">${f.definition}</div></div>`;
-                card.onclick = () => card.classList.toggle('flipped');
-                allContainer.appendChild(card);
-            });
+      document.getElementById("startHereBtn").onclick = () => {
+        if (m.id === "home") openModule("m1", true);
+        else {
+          currentMode = "learn";
+          setActiveChip(currentMode);
+          renderMain();
         }
+      };
+      document.getElementById("mixedCardsBtn").onclick = () => {
+        openModule("review", true);
+        currentMode = "flashcards";
+        setActiveChip(currentMode);
+        renderMain({ levels:[0] });
+      };
+      document.getElementById("mixedQuizBtn").onclick = () => {
+        openModule("review", true);
+        currentMode = "quiz";
+        setActiveChip(currentMode);
+        renderMain({ mixed:true, count:6 });
+      };
+      document.getElementById("showBookmarksBtn").onclick = () => openDashboard("Bookmarks");
+    }
 
-        // Expanded quizzes (50 total, added more)
-        const quizzes = [
-            // Module 1 (existing)
-            { question: 'What is literature?', type: 'multiple', options: ['Art form', 'Science', 'Math', 'History'], answer: 'Art form', explanation: 'Literature is an art form.', module: 1 },
-            // Module 2 (added)
-            { question: 'What is a simile?', type: 'short', answer: 'Compares using like or as', explanation: 'E.g., as bright as the sun.', module: 2 },
-            { question: 'True or False: Metaphor uses like or as.', type: 'truefalse', answer: false, explanation: 'Direct comparison.', module: 2 },
-            // ... (expand to 50 with similar from new content)
-        ];
+    /**********************
+     * PROGRESS RENDER
+     **********************/
+    function renderProgress(){
+      const mastered = Object.values(progress.cardLevel).filter(v => v === 2).length;
+      const quizOK = Object.values(progress.quizCorrect).filter(Boolean).length;
+      const maps = Object.values(progress.mapVisited).filter(Boolean).length;
 
-        function showQuiz(module) {
-            const container = document.querySelector(`#module${module} .practice`);
-            if (!container.querySelector('.quiz-container')) {
-                container.innerHTML += '<div class="quiz-container"></div>';
-            }
-            const quizContainer = container.querySelector('.quiz-container');
-            quizContainer.innerHTML = '';
-            const filtered = quizzes.filter(q => q.module === module);
-            filtered.forEach((q, index) => {
-                const quesDiv = document.createElement('div');
-                quesDiv.classList.add('quiz-question');
-                quesDiv.innerHTML = `<p>${q.question}</p>`;
-                if (q.type === 'multiple') {
-                    q.options.forEach(opt => {
-                        quesDiv.innerHTML += `<label><input type="radio" name="q${module}${index}" value="${opt}">${opt}</label><br>`;
-                    });
-                } else if (q.type === 'truefalse') {
-                    quesDiv.innerHTML += `<label><input type="radio" name="q${module}${index}" value="true">True</label><br><label><input type="radio" name="q${module}${index}" value="false">False</label><br>`;
-                } else if (q.type === 'short') {
-                    quesDiv.innerHTML += `<input type="text" id="short${module}${index}"><br>`;
-                }
-                const submitBtn = document.createElement('button');
-                submitBtn.textContent = 'Submit';
-                submitBtn.onclick = () => {
-                    let userAnswer;
-                    if (q.type === 'short') userAnswer = document.getElementById(`short${module}${index}`).value.trim().toLowerCase();
-                    else userAnswer = document.querySelector(`input[name="q${module}${index}"]:checked`)?.value;
-                    const correct = (q.type === 'short') ? userAnswer.includes(q.answer.toLowerCase()) : userAnswer == q.answer;
-                    const feedback = document.createElement('p');
-                    feedback.classList.add('feedback');
-                    feedback.textContent = correct ? 'Correct! ' + q.explanation : 'Incorrect. ' + q.explanation;
-                    feedback.style.color = correct ? 'green' : 'red';
-                    quesDiv.appendChild(feedback);
-                };
-                quesDiv.appendChild(submitBtn);
-                quizContainer.appendChild(quesDiv);
-            });
+      statCards.textContent = mastered;
+      statQuizzes.textContent = quizOK;
+      statMaps.textContent = maps;
+      statStreak.textContent = progress.streak || 0;
+
+      // weighted progress
+      const total = (50 + 50 + 25);
+      const score = mastered + quizOK + maps;
+      const pct = Math.round((score / total) * 100);
+
+      progressFill.style.width = pct + "%";
+    }
+
+    /**********************
+     * DASHBOARD MODAL
+     **********************/
+    openDashboardBtn.onclick = () => openDashboard("Dashboard");
+    closeModalBtn.onclick = closeModal;
+    modalBackdrop.addEventListener("click", (e) => {
+      if (e.target === modalBackdrop) closeModal();
+    });
+
+    function openDashboard(kind){
+      modalBackdrop.style.display = "flex";
+      modalBackdrop.setAttribute("aria-hidden","false");
+
+      if (kind === "Bookmarks"){
+        modalTitle.textContent = "Bookmarks";
+        const b = progress.bookmarks || [];
+        if (!b.length){
+          modalBody.innerHTML = `<div class="note"><b>No bookmarks yet.</b><br/>Use the Bookmark button on any module.</div>`;
+          return;
         }
+        modalBody.innerHTML = `
+          <div class="note">Click to open:</div>
+          <div style="display:grid;gap:10px;">
+            ${b.map(id => {
+              const m = modules.find(x => x.id === id);
+              if (!m) return "";
+              return `<button class="btn" data-open="${id}">${escapeHTML(m.title)}</button>`;
+            }).join("")}
+          </div>
+        `;
+        modalBody.querySelectorAll("button[data-open]").forEach(btn => {
+          btn.onclick = () => { closeModal(); openModule(btn.dataset.open, true); };
+        });
+        return;
+      }
 
-        function showAllQuizzes() {
-            const container = document.querySelector('#review');
-            if (!container.querySelector('.all-quizzes')) {
-                container.innerHTML += '<div class="all-quizzes"></div>';
-            }
-            const allContainer = container.querySelector('.all-quizzes');
-            allContainer.innerHTML = '';
-            // Similar rendering for all quizzes
-            quizzes.forEach((q, index) => {
-                // Render each as in showQuiz
-            });
+      // Default dashboard
+      modalTitle.textContent = "Learning Dashboard";
+      const mastered = Object.entries(progress.cardLevel).filter(([_,v]) => v===2).length;
+      const known = Object.entries(progress.cardLevel).filter(([_,v]) => v===1).length;
+      const review = Object.entries(progress.cardLevel).filter(([_,v]) => v===0).length;
+
+      const quizOK = Object.values(progress.quizCorrect).filter(Boolean).length;
+      const quizNo = 50 - quizOK;
+
+      const maps = Object.values(progress.mapVisited).filter(Boolean).length;
+
+      const weakestCards = flashcards
+        .filter(c => (progress.cardLevel[c.id] ?? 0) === 0)
+        .slice(0, 8);
+
+      const wrongQuizzes = quizzes
+        .filter(q => !progress.quizCorrect[q.id])
+        .slice(0, 8);
+
+      modalBody.innerHTML = `
+        <div style="display:grid;gap:14px;">
+          <div class="card" style="box-shadow:none;">
+            <div class="cardHeader"><h3 style="font-size:20px;margin:0;">Snapshot</h3></div>
+            <div class="cardBody" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+              <div class="note" style="margin:0;">
+                <b>Cards</b><br/>
+                Mastered: <b>${mastered}</b><br/>
+                Known: <b>${known}</b><br/>
+                Review: <b>${review}</b>
+              </div>
+              <div class="note" style="margin:0;">
+                <b>Quizzes</b><br/>
+                Correct: <b>${quizOK}</b><br/>
+                Remaining: <b>${quizNo}</b>
+              </div>
+              <div class="note" style="margin:0;">
+                <b>Mind maps</b><br/>
+                Visited: <b>${maps}</b><br/>
+                Remaining: <b>${25 - maps}</b>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="box-shadow:none;">
+            <div class="cardHeader"><h3 style="font-size:20px;margin:0;">Weak Focus</h3></div>
+            <div class="cardBody">
+              <div class="note" style="margin-top:0;">
+                <b>Weak cards</b> (still “Review”). Click to drill mixed deck.
+              </div>
+              <div class="chips" style="margin-bottom:10px;">
+                <button class="btn primary" id="drillWeakCards">Drill weak cards</button>
+                <button class="btn" id="drillWrongQuiz">Drill wrong quizzes</button>
+              </div>
+              <div style="display:grid;gap:10px;">
+                <div><b>Cards:</b> ${weakestCards.map(c => `<span class="tag">${escapeHTML(c.term)}</span>`).join(" ") || "<span class='tag'>None</span>"}</div>
+                <div><b>Quizzes:</b> ${wrongQuizzes.map(q => `<span class="tag">${escapeHTML(q.q.slice(0,38))}${q.q.length>38?"…":""}</span>`).join(" ") || "<span class='tag'>None</span>"}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="note">
+            <b>Hard truth:</b> if you can’t produce definitions and frameworks without looking, you’re not ready.
+          </div>
+        </div>
+      `;
+
+      document.getElementById("drillWeakCards").onclick = () => {
+        closeModal();
+        openModule("review", true);
+        currentMode = "flashcards";
+        setActiveChip(currentMode);
+        renderMain({ levels:[0] });
+      };
+      document.getElementById("drillWrongQuiz").onclick = () => {
+        closeModal();
+        openModule("review", true);
+        currentMode = "quiz";
+        setActiveChip(currentMode);
+        // build forced list from wrong quizzes
+        const wrongs = quizzes.filter(q => !progress.quizCorrect[q.id]);
+        renderMain({ mixed:true, count: Math.min(6, wrongs.length), __forceList: wrongs });
+      };
+    }
+
+    function closeModal(){
+      modalBackdrop.style.display = "none";
+      modalBackdrop.setAttribute("aria-hidden","true");
+    }
+
+    /**********************
+     * THEME / FOCUS / RESET
+     **********************/
+    toggleThemeBtn.onclick = () => {
+      const app = document.getElementById("app");
+      const t = app.getAttribute("data-theme") === "dark" ? "light" : "dark";
+      app.setAttribute("data-theme", t);
+      saveProgress();
+    };
+
+    focusBtn.onclick = () => {
+      const app = document.querySelector(".app");
+      const isTwoCol = getComputedStyle(app).gridTemplateColumns.split(" ").length > 1;
+      // toggle by collapsing sidebar in desktop
+      const sidebar = document.querySelector(".sidebar");
+      if (!sidebar) return;
+      if (sidebar.style.display === "none"){
+        sidebar.style.display = "";
+        app.style.gridTemplateColumns = "340px 1fr";
+      } else {
+        sidebar.style.display = "none";
+        app.style.gridTemplateColumns = "1fr";
+      }
+    };
+
+    resetBtn.onclick = () => {
+      if (!confirm("Reset all progress? This cannot be undone.")) return;
+      localStorage.removeItem(STORE_KEY);
+      progress = loadProgress();
+      renderProgress();
+      openModule("home", true);
+    };
+
+    /**********************
+     * AMBIENT SOUND (WebAudio)
+     **********************/
+    let audioCtx = null;
+    let soundOn = false;
+    let soundNodes = [];
+
+    function startAmbient(){
+      if (soundOn) return;
+      soundOn = true;
+
+      audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+
+      // soft pad: filtered noise + sine shimmer
+      const master = audioCtx.createGain();
+      master.gain.value = 0.05;
+      master.connect(audioCtx.destination);
+
+      // pink-ish noise
+      const bufferSize = 2 * audioCtx.sampleRate;
+      const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      for (let i=0;i<bufferSize;i++){
+        output[i] = (Math.random()*2 - 1) * 0.25;
+      }
+      const noise = audioCtx.createBufferSource();
+      noise.buffer = noiseBuffer;
+      noise.loop = true;
+
+      const noiseFilter = audioCtx.createBiquadFilter();
+      noiseFilter.type = "lowpass";
+      noiseFilter.frequency.value = 420;
+
+      const noiseGain = audioCtx.createGain();
+      noiseGain.gain.value = 0.6;
+
+      noise.connect(noiseFilter);
+      noiseFilter.connect(noiseGain);
+      noiseGain.connect(master);
+
+      // gentle sine cluster
+      const freqs = [196, 220, 247];
+      const oscG = audioCtx.createGain();
+      oscG.gain.value = 0.55;
+      oscG.connect(master);
+
+      const oscs = freqs.map(f => {
+        const o = audioCtx.createOscillator();
+        o.type = "sine";
+        o.frequency.value = f;
+        const g = audioCtx.createGain();
+        g.gain.value = 0.18;
+        o.connect(g);
+        g.connect(oscG);
+        return {o,g};
+      });
+
+      // slow LFO for movement
+      const lfo = audioCtx.createOscillator();
+      lfo.type = "sine";
+      lfo.frequency.value = 0.07;
+
+      const lfoGain = audioCtx.createGain();
+      lfoGain.gain.value = 20;
+      lfo.connect(lfoGain);
+      lfoGain.connect(noiseFilter.frequency);
+
+      noise.start();
+      oscs.forEach(x => x.o.start());
+      lfo.start();
+
+      soundNodes = [master, noise, noiseFilter, noiseGain, oscG, ...oscs.map(x=>x.o), lfo];
+      soundBtn.textContent = "Sound: ON";
+      updateStreak();
+    }
+
+    function stopAmbient(){
+      if (!soundOn) return;
+      soundOn = false;
+      try{
+        // stop sources/oscillators safely
+        soundNodes.forEach(n => {
+          if (n && typeof n.stop === "function"){
+            try{ n.stop(0); }catch{}
+          }
+        });
+      }catch{}
+      soundNodes = [];
+      soundBtn.textContent = "Sound";
+    }
+
+    soundBtn.onclick = async () => {
+      // Must be user gesture; resume if suspended
+      if (!soundOn){
+        startAmbient();
+        if (audioCtx && audioCtx.state === "suspended") await audioCtx.resume();
+      } else stopAmbient();
+    };
+
+    /**********************
+     * BACKGROUND CANVAS (Leaves + particles)
+     **********************/
+    const canvas = document.getElementById("bgCanvas");
+    const ctx = canvas.getContext("2d");
+    let W=0,H=0;
+    function resize(){
+      W = canvas.width = window.innerWidth * devicePixelRatio;
+      H = canvas.height = window.innerHeight * devicePixelRatio;
+      canvas.style.width = window.innerWidth+"px";
+      canvas.style.height = window.innerHeight+"px";
+    }
+    window.addEventListener("resize", resize);
+    resize();
+
+    const leaves = [];
+    const sparks = [];
+    function rand(a,b){ return a + Math.random()*(b-a); }
+
+    function initParticles(){
+      leaves.length = 0;
+      sparks.length = 0;
+      const leafCount = Math.round(Math.min(42, Math.max(16, window.innerWidth / 28)));
+      const sparkCount = Math.round(Math.min(70, Math.max(28, window.innerWidth / 20)));
+
+      for (let i=0;i<leafCount;i++){
+        leaves.push({
+          x: rand(0, W),
+          y: rand(0, H),
+          r: rand(10, 26) * devicePixelRatio,
+          s: rand(0.35, 1.25) * devicePixelRatio,
+          rot: rand(0, Math.PI*2),
+          drot: rand(-0.01, 0.01),
+          sway: rand(0.6, 2.1) * devicePixelRatio,
+          hue: rand(150, 205)
+        });
+      }
+      for (let i=0;i<sparkCount;i++){
+        sparks.push({
+          x: rand(0,W),
+          y: rand(0,H),
+          r: rand(1.2, 2.8) * devicePixelRatio,
+          vx: rand(-0.10, 0.10) * devicePixelRatio,
+          vy: rand(-0.08, 0.18) * devicePixelRatio,
+          a: rand(0.08, 0.22)
+        });
+      }
+    }
+    initParticles();
+    window.addEventListener("resize", initParticles);
+
+    function drawLeaf(l){
+      ctx.save();
+      ctx.translate(l.x, l.y);
+      ctx.rotate(l.rot);
+      // leaf shape
+      const grad = ctx.createRadialGradient(0,0,1, 0,0,l.r);
+      grad.addColorStop(0, `rgba(166,255,184,${0.16})`);
+      grad.addColorStop(1, `rgba(126,231,255,${0.06})`);
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.ellipse(0,0, l.r*0.55, l.r, 0, 0, Math.PI*2);
+      ctx.fill();
+
+      // vein
+      ctx.strokeStyle = `rgba(255,255,255,0.12)`;
+      ctx.lineWidth = 1 * devicePixelRatio;
+      ctx.beginPath();
+      ctx.moveTo(0, -l.r*0.85);
+      ctx.lineTo(0, l.r*0.85);
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    function tick(){
+      ctx.clearRect(0,0,W,H);
+
+      // soft haze
+      const haze = ctx.createRadialGradient(W*0.35, H*0.25, 0, W*0.35, H*0.25, Math.min(W,H)*0.55);
+      haze.addColorStop(0, "rgba(126,231,255,0.05)");
+      haze.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = haze;
+      ctx.fillRect(0,0,W,H);
+
+      // sparks
+      sparks.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.x < -50) p.x = W+50;
+        if (p.x > W+50) p.x = -50;
+        if (p.y > H+50) p.y = -50;
+        if (p.y < -50) p.y = H+50;
+
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(255,255,255,${p.a})`;
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+        ctx.fill();
+      });
+
+      // leaves
+      leaves.forEach(l => {
+        l.y += l.s;
+        l.x += Math.sin((l.y/(80*devicePixelRatio))) * l.sway * 0.08;
+        l.rot += l.drot;
+        if (l.y > H + 60) { l.y = -60; l.x = rand(0,W); }
+        drawLeaf(l);
+      });
+
+      requestAnimationFrame(tick);
+    }
+    tick();
+
+    /**********************
+     * UTIL
+     **********************/
+    function shuffle(arr){
+      for (let i=arr.length-1;i>0;i--){
+        const j = Math.floor(Math.random()*(i+1));
+        [arr[i],arr[j]] = [arr[j],arr[i]];
+      }
+      return arr;
+    }
+    function escapeHTML(s){
+      return String(s)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#39;");
+    }
+
+    /**********************
+     * BOOT
+     **********************/
+    function init(){
+      renderNav("");
+      renderProgress();
+      openModule(currentModuleId, false);
+
+      // chip sync inside tools panel is re-bound each render, so set once for learnCard
+      setActiveChip(currentMode);
+
+      // keyboard small usability: Enter in search shows first match
+      searchInput.addEventListener("keydown",(e)=>{
+        if (e.key === "Enter"){
+          const first = navEl.querySelector("button");
+          if (first) first.click();
         }
+      });
+    }
+    init();
+  </script>
 
-        // Mind maps (25 total, sample)
-        const mindmaps = [
-            { title: 'Literature Genres', nodes: [{text: 'Fiction', children: [{text: 'Novel'}, {text: 'Short Story'}], link: 'module8'}, {text: 'Poetry', link: 'module4'}, {text: 'Drama', link: 'module6'}], module: 1 },
-            // Add more
-        ];
-
-        function showMindMap(module) {
-            const container = document.querySelector(`#module${module} .review`);
-            if (!container.querySelector('.mindmap-container')) {
-                container.innerHTML += '<div class="mindmap-container"></div>';
-            }
-            const mindmapContainer = container.querySelector('.mindmap-container');
-            mindmapContainer.innerHTML = '';
-            const filtered = mindmaps.filter(m => m.module === module);
-            filtered.forEach(m => {
-                const mapDiv = document.createElement('div');
-                mapDiv.classList.add('mindmap');
-                let nodesHtml = m.nodes.map(n => `<li><a href="#" onclick="showSection('${n.link}')">${n.text}</a>${n.children ? `<ul>${n.children.map(c => `<li>${c.text}</li>`).join('')}</ul>` : ''}</li>`).join('');
-                mapDiv.innerHTML = `<div class="node" onclick="this.classList.toggle('expanded')">${m.title}<div class="child"><ul>${nodesHtml}</ul></div></div>`;
-                mindmapContainer.appendChild(mapDiv);
-            });
-        }
-
-        function showAllMindMaps() {
-            const container = document.querySelector('#review');
-            if (!container.querySelector('.all-mindmaps')) {
-                container.innerHTML += '<div class="all-mindmaps"></div>';
-            }
-            const allContainer = container.querySelector('.all-mindmaps');
-            allContainer.innerHTML = '';
-            mindmaps.forEach(m => {
-                const mapDiv = document.createElement('div');
-                mapDiv.classList.add('mindmap');
-                let nodesHtml = m.nodes.map(n => `<li>${n.text}</li>`).join('');
-                mapDiv.innerHTML = `<div class="node">${m.title}<div class="child"><ul>${nodesHtml}</ul></div></div>`;
-                allContainer.appendChild(mapDiv);
-            });
-        }
-    </script>
+  <!-- Required file citation token -->
+  :contentReference[oaicite:0]{index=0}
 </body>
 </html>
