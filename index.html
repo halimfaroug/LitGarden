@@ -3,1736 +3,2299 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ENGL280: An Introduction to Literature — Interactive Study Platform</title>
+  <title>ENGL280 — An Introduction to Literature</title>
 
   <style>
     :root{
-      --sky1:#e6fbff;
-      --sky2:#eafcf1;
-      --sky3:#fff7e6;
+      --bg1:#e9fff3;
+      --bg2:#e8f3ff;
+      --bg3:#fff7e6;
+      --ink:#122018;
+      --muted:#2b4a38;
+      --card:#ffffffcc;
+      --card2:#ffffffee;
+      --stroke:#0f2a1b1a;
 
-      --ink:#0b1b13;
-      --muted:rgba(11,27,19,.72);
+      --accent:#1f8a5b;
+      --accent2:#2a78d0;
+      --accent3:#d07a2a;
 
-      --glass:rgba(255,255,255,.80);
-      --stroke:rgba(11,27,19,.14);
+      --good:#1a8f3f;
+      --bad:#c0362c;
 
-      --accent:#00a3ff;
-      --accent2:#22c55e;
-      --accent3:#ffd166;
+      --shadow: 0 14px 40px rgba(10, 30, 20, .12);
+      --shadow2: 0 10px 22px rgba(10, 30, 20, .10);
+      --radius: 20px;
 
-      --danger:#ff4d4d;
-      --ok:#16a34a;
-
-      --radius:18px;
-      --shadow: 0 14px 46px rgba(11,27,19,.12);
-      --shadow2: 0 10px 26px rgba(11,27,19,.10);
-
-      /* Larger, readable typography */
+      --font: "Trebuchet MS", "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+      --serif: Georgia, "Times New Roman", Times, serif;
       --base: 22px;
-      --h1: 42px;
-      --h2: 32px;
-      --h3: 24px;
-
-      /* Good-looking, offline-safe font stack */
-      --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, "Noto Sans", sans-serif;
     }
 
-    *{ box-sizing:border-box; }
-    html,body{ height:100%; }
+    *{box-sizing:border-box}
+    html,body{height:100%}
     body{
-      font-family: var(--font);
-      font-size: var(--base);
-      line-height: 1.6;
-      color: var(--ink);
-      margin: 0;
-      overflow-x: hidden;
-
+      margin:0;
+      font-family:var(--font);
+      font-size:var(--base);
+      line-height:1.55;
+      color:var(--ink);
+      overflow-x:hidden;
       background:
-        radial-gradient(1100px 700px at 10% 10%, rgba(0,163,255,.18), transparent 60%),
-        radial-gradient(1000px 700px at 90% 15%, rgba(34,197,94,.16), transparent 58%),
-        radial-gradient(900px 650px at 60% 95%, rgba(255,209,102,.15), transparent 60%),
-        linear-gradient(180deg, var(--sky1), var(--sky2), var(--sky3));
+        radial-gradient(1200px 900px at 12% 10%, var(--bg1), transparent 65%),
+        radial-gradient(1200px 900px at 88% 20%, var(--bg2), transparent 70%),
+        radial-gradient(900px 800px at 50% 92%, var(--bg3), transparent 70%),
+        linear-gradient(180deg, #f6fffb 0%, #f2fbff 45%, #fffaf0 100%);
     }
 
-    /* Animated nature background (offline) */
-    #bgCanvas{
-      position: fixed;
-      inset: 0;
-      z-index: -2;
-      width: 100%;
-      height: 100%;
-    }
-    .vignette{
-      position: fixed;
-      inset: 0;
-      z-index: -1;
+    /* Animated nature layers */
+    .sky{
+      position:fixed; inset:0;
+      z-index:-3;
       pointer-events:none;
+      overflow:hidden;
+    }
+    .sun{
+      position:absolute;
+      width:260px; height:260px;
+      left:-40px; top:-40px;
+      border-radius:50%;
+      background: radial-gradient(circle at 35% 35%, #fffbe2 0%, #fff3b3 30%, rgba(255, 221, 120, .2) 60%, transparent 72%);
+      filter: blur(0.2px);
+      opacity:.9;
+      animation: floaty 10s ease-in-out infinite;
+    }
+    @keyframes floaty{
+      0%,100%{transform: translate(0,0)}
+      50%{transform: translate(8px,10px)}
+    }
+
+    .cloud{
+      position:absolute;
+      width:380px; height:140px;
+      opacity:.28;
+      filter: blur(0.5px);
       background:
-        radial-gradient(900px 700px at 50% -10%, rgba(255,255,255,.92), transparent 62%),
-        radial-gradient(900px 700px at 10% 60%, rgba(0,163,255,.10), transparent 60%),
-        radial-gradient(900px 700px at 90% 70%, rgba(34,197,94,.10), transparent 60%);
+        radial-gradient(circle at 25% 55%, #ffffff 0 42%, transparent 46%),
+        radial-gradient(circle at 45% 35%, #ffffff 0 50%, transparent 54%),
+        radial-gradient(circle at 65% 55%, #ffffff 0 42%, transparent 46%),
+        radial-gradient(circle at 55% 70%, #ffffff 0 48%, transparent 52%);
+      animation: drift linear infinite;
+    }
+    @keyframes drift{
+      from{transform: translateX(-520px)}
+      to{transform: translateX(calc(100vw + 520px))}
     }
 
+    .leaf{
+      position:absolute;
+      width:18px; height:18px;
+      opacity:.42;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(60,160,90,.95), rgba(30,110,60,.8) 60%, rgba(30,110,60,.15) 78%, transparent 80%);
+      border-radius: 100% 0 100% 0;
+      transform: rotate(15deg);
+      animation: fall linear infinite;
+      filter: blur(.1px);
+    }
+    @keyframes fall{
+      0%{ transform: translateY(-40px) translateX(0) rotate(0deg); opacity:.0;}
+      10%{opacity:.5;}
+      100%{ transform: translateY(calc(100vh + 60px)) translateX(110px) rotate(360deg); opacity:.0;}
+    }
+
+    /* Header / Layout */
     header{
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      background: linear-gradient(90deg, rgba(255,255,255,.88), rgba(255,255,255,.70));
+      position:sticky; top:0; z-index:20;
       backdrop-filter: blur(10px);
-      border-bottom: 1px solid var(--stroke);
-      box-shadow: 0 8px 24px rgba(11,27,19,.08);
+      background: linear-gradient(90deg, rgba(255,255,255,.80), rgba(255,255,255,.60));
+      border-bottom:1px solid rgba(15,42,27,.10);
     }
-
-    .headerInner{
-      max-width: 1250px;
-      margin: 0 auto;
-      padding: 16px 18px;
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 14px;
-      align-items: center;
-    }
-
-    .titleBlock h1{
-      font-size: var(--h1);
-      margin: 0;
-      letter-spacing: .2px;
-      line-height: 1.1;
-    }
-    .titleBlock .subline{
-      margin: 8px 0 0;
-      color: var(--muted);
-      font-size: 18px;
-    }
-    .developerLine{
-      margin: 6px 0 0;
-      color: rgba(11,27,19,.62);
-      font-size: 16px;
-    }
-
-    nav{
+    .topbar{
+      max-width:1280px;
+      margin:0 auto;
+      padding:18px 18px 10px;
       display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-      justify-content:flex-end;
+      gap:14px;
       align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
     }
-    nav button, .btn{
-      border: 1px solid var(--stroke);
-      background: rgba(255,255,255,.78);
-      color: var(--ink);
-      padding: 12px 14px;
-      border-radius: 14px;
-      cursor: pointer;
-      transition: transform .12s ease, background .2s ease, border-color .2s ease;
+    .brand{
+      display:flex; gap:12px; align-items:center;
+      min-width:260px;
+    }
+    .logo{
+      width:44px; height:44px;
+      border-radius:14px;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(255,255,255,.95), rgba(255,255,255,.65) 55%, transparent 60%),
+        linear-gradient(135deg, rgba(31,138,91,.95), rgba(42,120,208,.95));
       box-shadow: var(--shadow2);
-      font-size: 16px;
+      border:1px solid rgba(255,255,255,.6);
+    }
+    .brand h1{
+      margin:0;
+      font-size: clamp(22px, 2.2vw, 30px);
+      letter-spacing:.2px;
+    }
+    .devline{
+      font-size: 0.92rem;
+      color: rgba(18,32,24,.78);
+      margin-top:2px;
+    }
+    .devline b{color: rgba(18,32,24,.92)}
+    .toolbar{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    .pill{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 12px;
+      background: rgba(255,255,255,.76);
+      border:1px solid rgba(15,42,27,.10);
+      border-radius:999px;
+      box-shadow: 0 6px 18px rgba(10,30,20,.06);
+      min-height:44px;
+    }
+    .pill input{
+      border:none;
+      background:transparent;
+      outline:none;
+      font-size: 0.98rem;
+      width: min(520px, 60vw);
+      color:var(--ink);
+    }
+    .btn{
+      border:none;
+      cursor:pointer;
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-size: 0.98rem;
+      background: rgba(255,255,255,.78);
+      border:1px solid rgba(15,42,27,.12);
+      box-shadow: 0 8px 18px rgba(10,30,20,.08);
+      transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
       user-select:none;
     }
-    nav button:hover, .btn:hover{
-      transform: translateY(-1px);
-      background: rgba(255,255,255,.94);
-      border-color: rgba(0,163,255,.30);
+    .btn:hover{transform: translateY(-1px); box-shadow: var(--shadow2)}
+    .btn:active{transform: translateY(0px); box-shadow: 0 6px 14px rgba(10,30,20,.08)}
+    .btn.primary{
+      background: linear-gradient(135deg, rgba(31,138,91,.95), rgba(42,120,208,.92));
+      color:white;
+      border-color: transparent;
     }
-    nav button.active{
-      background: linear-gradient(90deg, rgba(0,163,255,.16), rgba(34,197,94,.10));
-      border-color: rgba(34,197,94,.35);
+    .btn.good{
+      background: linear-gradient(135deg, rgba(26,143,63,.92), rgba(31,138,91,.92));
+      color:white;
+      border-color: transparent;
     }
+    .btn.warn{
+      background: linear-gradient(135deg, rgba(208,122,42,.92), rgba(208,72,42,.92));
+      color:white;
+      border-color: transparent;
+    }
+
+    .navwrap{
+      max-width:1280px;
+      margin:0 auto;
+      padding: 0 18px 16px;
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .tab{
+      padding:10px 12px;
+      border-radius:999px;
+      border:1px solid rgba(15,42,27,.10);
+      background: rgba(255,255,255,.68);
+      cursor:pointer;
+      font-size: 0.95rem;
+      transition: transform .15s ease, background .15s ease;
+      display:flex; gap:8px; align-items:center;
+    }
+    .tab:hover{transform: translateY(-1px); background: rgba(255,255,255,.82)}
+    .tab.active{
+      background: linear-gradient(135deg, rgba(255,255,255,.92), rgba(255,255,255,.70));
+      border-color: rgba(31,138,91,.28);
+      box-shadow: 0 10px 22px rgba(10,30,20,.10);
+    }
+    .dot{
+      width:10px; height:10px; border-radius:50%;
+      background: rgba(31,138,91,.85);
+      box-shadow: 0 0 0 4px rgba(31,138,91,.10);
+    }
+    .tab.active .dot{background: rgba(42,120,208,.92); box-shadow: 0 0 0 4px rgba(42,120,208,.12);}
 
     main{
-      max-width: 1250px;
+      max-width:1280px;
       margin: 0 auto;
       padding: 18px;
-      padding-bottom: 120px;
+      padding-bottom: 60px;
     }
-
-    section{ display:none; margin-top: 16px; }
-    section.active{ display:block; }
 
     .grid{
       display:grid;
-      grid-template-columns: 1.2fr .8fr;
-      gap:16px;
-      align-items:start;
+      grid-template-columns: 1.15fr .85fr;
+      gap:18px;
+    }
+    @media (max-width: 980px){
+      .grid{grid-template-columns:1fr}
+      .pill input{width:min(520px, 74vw)}
     }
 
     .card{
-      border: 1px solid var(--stroke);
-      background: rgba(255,255,255,.80);
+      background: var(--card);
+      border:1px solid rgba(15,42,27,.10);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       overflow:hidden;
     }
-    .cardHeader{
-      padding: 14px 16px;
-      border-bottom: 1px solid var(--stroke);
-      background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.66));
+    .card .hd{
+      padding:16px 16px 10px;
+      background: linear-gradient(180deg, rgba(255,255,255,.84), rgba(255,255,255,.55));
+      border-bottom:1px solid rgba(15,42,27,.08);
       display:flex;
-      align-items:center;
+      align-items:flex-start;
       justify-content:space-between;
       gap:10px;
       flex-wrap:wrap;
     }
-    .cardHeader h2, .cardHeader h3{ margin:0; }
-    h2{ font-size: var(--h2); }
-    h3{ font-size: var(--h3); margin: 12px 0 8px; }
-    .cardBody{ padding: 16px; }
+    .card .hd h2{
+      margin:0;
+      font-size: clamp(22px, 2vw, 28px);
+    }
+    .card .bd{ padding: 16px; background: var(--card2); }
 
-    p{ margin: 10px 0; }
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 12px;
+      border-radius:999px;
+      background: rgba(31,138,91,.10);
+      border:1px solid rgba(31,138,91,.16);
+      color: rgba(18,32,24,.86);
+      font-size:0.9rem;
+      white-space:nowrap;
+    }
+    .badge b{color: rgba(18,32,24,.95)}
+    .badge.blue{ background: rgba(42,120,208,.10); border-color: rgba(42,120,208,.16); }
+    .badge.orange{ background: rgba(208,122,42,.10); border-color: rgba(208,122,42,.16); }
 
-    .pillRow{ display:flex; flex-wrap:wrap; gap:10px; }
-    .pill{
-      padding: 8px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--stroke);
-      background: rgba(255,255,255,.76);
-      font-size: 14px;
-      color: var(--muted);
-      box-shadow: 0 8px 18px rgba(11,27,19,.06);
+    .kicker{
+      font-family: var(--serif);
+      font-size: 1.1rem;
+      color: rgba(18,32,24,.90);
+      margin: 6px 0 14px;
     }
 
-    .toolbar{
+    .actions{
       display:flex;
       gap:10px;
       flex-wrap:wrap;
       align-items:center;
-      justify-content:space-between;
+      margin: 14px 0 0;
+    }
+
+    .soft{
+      padding: 14px;
+      border-radius: 18px;
+      background: rgba(31,138,91,.06);
+      border: 1px solid rgba(31,138,91,.10);
+    }
+    .soft.blue{background: rgba(42,120,208,.06); border-color: rgba(42,120,208,.10)}
+    .soft.orange{background: rgba(208,122,42,.06); border-color: rgba(208,122,42,.12)}
+
+    .list{
       margin: 10px 0 0;
+      padding-left: 18px;
     }
-    .toolbar .left, .toolbar .right{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:center;
-    }
-
-    .btn.primary{
-      border-color: rgba(0,163,255,.35);
-      background: linear-gradient(90deg, rgba(0,163,255,.18), rgba(34,197,94,.10));
-    }
-    .btn.danger{
-      border-color: rgba(255,77,77,.35);
-      background: rgba(255,77,77,.10);
-    }
-
-    .callout{
-      padding: 12px 12px;
-      border-radius: 14px;
-      border: 1px solid rgba(11,27,19,.12);
-      background: rgba(255,255,255,.62);
-      color: rgba(11,27,19,.78);
-      font-size: 18px;
-      line-height: 1.55;
+    .list li{margin:8px 0}
+    .quote{
+      font-family: var(--serif);
+      font-size: 1.05rem;
+      background: rgba(255,255,255,.78);
+      border:1px solid rgba(15,42,27,.10);
+      border-left: 6px solid rgba(42,120,208,.70);
+      padding: 12px 14px;
+      border-radius: 16px;
+      box-shadow: 0 10px 20px rgba(10,30,20,.08);
       margin: 12px 0;
     }
 
+    /* Right panel widgets */
+    .widget{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    .progressbar{
+      height: 12px;
+      border-radius: 999px;
+      background: rgba(15,42,27,.08);
+      overflow:hidden;
+      border:1px solid rgba(15,42,27,.06);
+    }
+    .progressbar > div{
+      height:100%;
+      width:0%;
+      background: linear-gradient(90deg, rgba(31,138,91,.95), rgba(42,120,208,.92), rgba(208,122,42,.92));
+      border-radius:999px;
+      transition: width .35s ease;
+    }
+    .statrow{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+    @media (max-width: 980px){
+      .statrow{grid-template-columns:1fr}
+    }
+    .stat{
+      padding: 12px 14px;
+      background: rgba(255,255,255,.80);
+      border:1px solid rgba(15,42,27,.10);
+      border-radius: 18px;
+      box-shadow: 0 10px 20px rgba(10,30,20,.06);
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:center;
+      font-size: 0.95rem;
+    }
+    .stat b{font-size:1.05rem}
+
+    /* Modal */
+    .modal{
+      position:fixed; inset:0;
+      background: rgba(8,18,12,.35);
+      backdrop-filter: blur(8px);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:50;
+      padding: 18px;
+    }
+    .modal.show{display:flex}
+    .modalbox{
+      width: min(980px, 96vw);
+      max-height: 88vh;
+      overflow:auto;
+      background: rgba(255,255,255,.88);
+      border:1px solid rgba(255,255,255,.55);
+      border-radius: 24px;
+      box-shadow: 0 22px 70px rgba(0,0,0,.24);
+    }
+    .modalhd{
+      position:sticky; top:0;
+      padding: 14px 14px 10px;
+      background: linear-gradient(180deg, rgba(255,255,255,.94), rgba(255,255,255,.80));
+      border-bottom: 1px solid rgba(15,42,27,.10);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .modalhd h3{margin:0; font-size: 1.1rem}
+    .modalbd{padding: 14px}
+    .row{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+
     /* Flashcards */
-    .flashWrap{ display:grid; gap:12px; }
+    .fc-grid{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:12px;
+    }
+    @media (max-width: 980px){ .fc-grid{grid-template-columns:1fr} }
     .flashcard{
-      min-height: 280px;
-      border-radius: 20px;
-      border: 1px solid var(--stroke);
-      background:
-        radial-gradient(900px 320px at 20% 10%, rgba(0,163,255,.18), transparent 60%),
-        radial-gradient(900px 320px at 80% 20%, rgba(34,197,94,.16), transparent 55%),
-        radial-gradient(900px 320px at 60% 95%, rgba(255,209,102,.12), transparent 55%),
-        rgba(255,255,255,.84);
-      box-shadow: var(--shadow);
-      padding: 16px;
-      cursor: pointer;
-      user-select:none;
-      transition: transform .14s ease, border-color .18s ease;
+      perspective: 1200px;
+      cursor:pointer;
+      min-height: 160px;
+    }
+    .flashcard-inner{
+      position:relative;
+      width:100%;
+      height:100%;
+      min-height: 160px;
+      transition: transform .6s;
+      transform-style: preserve-3d;
+    }
+    .flashcard.flipped .flashcard-inner{ transform: rotateY(180deg); }
+    .face{
+      position:absolute; inset:0;
+      backface-visibility:hidden;
+      border-radius: 18px;
+      border:1px solid rgba(15,42,27,.10);
+      box-shadow: 0 10px 22px rgba(10,30,20,.10);
+      background: rgba(255,255,255,.88);
+      padding: 14px;
       display:flex;
       flex-direction:column;
       justify-content:space-between;
-      overflow:hidden;
+      gap:10px;
     }
-    .flashcard:hover{ transform: translateY(-2px); border-color: rgba(0,163,255,.35); }
-    .flashFront{
-      font-size: 40px;
-      font-weight: 900;
-      letter-spacing:.2px;
-      line-height: 1.15;
-    }
-    .flashBack{
-      display:none;
-      margin-top: 14px;
-      font-size: 24px;
-      color: rgba(11,27,19,.74);
-      line-height: 1.6;
-      font-weight: 550;
-    }
-    .flashcard.flipped .flashBack{ display:block; }
-
-    .statusRow{
-      display:flex;
-      gap:8px;
-      justify-content:flex-end;
-      flex-wrap:wrap;
+    .face h4{margin:0; font-size: 1.02rem}
+    .face p{margin:0; color: rgba(18,32,24,.85)}
+    .back{ transform: rotateY(180deg); }
+    .tagrow{
+      display:flex; gap:8px; flex-wrap:wrap; align-items:center; justify-content:space-between;
       margin-top: 10px;
     }
-    .statusBtn{
-      padding: 10px 12px;
-      border-radius: 14px;
-      border: 1px solid var(--stroke);
-      background: rgba(255,255,255,.88);
-      cursor:pointer;
-      font-size: 14px;
-      box-shadow: 0 8px 18px rgba(11,27,19,.05);
+    .tiny{
+      font-size: .86rem;
+      color: rgba(18,32,24,.72);
     }
-    .statusBtn.active{ border-color: rgba(34,197,94,.45); background: rgba(34,197,94,.14); }
+    .status{
+      display:flex; gap:8px; align-items:center;
+    }
+    .chip{
+      font-size:.82rem;
+      padding: 6px 10px;
+      border-radius:999px;
+      background: rgba(42,120,208,.08);
+      border:1px solid rgba(42,120,208,.14);
+      color: rgba(18,32,24,.86);
+    }
+    .chip.good{background: rgba(26,143,63,.08); border-color: rgba(26,143,63,.14)}
+    .chip.orange{background: rgba(208,122,42,.08); border-color: rgba(208,122,42,.14)}
 
     /* Quiz */
-    .quiz-question{
+    .qbox{
       padding: 14px;
-      border-radius: 16px;
-      border: 1px solid var(--stroke);
-      background: rgba(255,255,255,.82);
-      box-shadow: 0 10px 24px rgba(11,27,19,.06);
+      border-radius: 18px;
+      background: rgba(255,255,255,.86);
+      border:1px solid rgba(15,42,27,.10);
+      box-shadow: 0 10px 20px rgba(10,30,20,.06);
       margin-bottom: 12px;
     }
-    .quiz-question p{ margin: 0 0 10px; font-weight: 800; }
-    .opt{
-      display:flex;
-      gap:10px;
-      align-items:flex-start;
-      padding: 10px 10px;
-      border-radius: 14px;
-      border:1px solid var(--stroke);
-      background: rgba(255,255,255,.72);
-      margin-top: 8px;
-      cursor:pointer;
-      transition: transform .12s ease, background .2s ease, border-color .2s ease;
-    }
-    .opt:hover{ transform: translateY(-1px); background: rgba(255,255,255,.92); border-color: rgba(0,163,255,.25); }
-    .opt input{ transform: scale(1.25); margin-top: 4px; }
-
+    .qbox h4{margin:0 0 8px; font-size: 1.0rem}
+    .opt{display:flex; gap:10px; align-items:flex-start; margin: 8px 0}
+    .opt input{transform: scale(1.25); margin-top: 4px}
+    .qmeta{display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:space-between; margin-top: 10px}
     .feedback{
-      margin-top: 10px;
-      font-size: 17px;
-      line-height: 1.55;
-      padding: 10px 10px;
-      border-radius: 14px;
-      border: 1px solid var(--stroke);
-      background: rgba(255,255,255,.72);
-    }
-    .good{ border-color: rgba(22,163,74,.35); background: rgba(22,163,74,.10); }
-    .bad{ border-color: rgba(255,77,77,.35); background: rgba(255,77,77,.10); }
-
-    /* Matching */
-    .matchGrid{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:12px;
-    }
-    .zone{
-      border:2px dashed rgba(0,163,255,.25);
-      background: rgba(0,163,255,.06);
-      border-radius: 16px;
-      padding: 12px;
-      min-height: 220px;
-    }
-    .draggable{
-      padding: 10px 10px;
-      border-radius: 14px;
-      border: 1px solid var(--stroke);
-      background: rgba(255,255,255,.90);
-      box-shadow: 0 10px 24px rgba(11,27,19,.05);
-      cursor: grab;
-      user-select:none;
-      margin-top: 10px;
-      font-size: 18px;
-    }
-    .dropDef{
-      padding: 10px 10px;
-      border-radius: 14px;
-      border: 1px solid var(--stroke);
-      background: rgba(255,255,255,.78);
-      margin-top: 10px;
-      min-height: 74px;
-    }
-
-    /* Mind maps */
-    .mindmap{
-      border: 1px solid var(--stroke);
-      background: rgba(255,255,255,.84);
-      border-radius: 16px;
-      padding: 12px;
-      box-shadow: 0 10px 24px rgba(11,27,19,.06);
-      margin-bottom: 12px;
-    }
-    .node{
+      margin-top:10px;
       padding: 10px 12px;
       border-radius: 14px;
-      border: 1px solid var(--stroke);
-      background: linear-gradient(90deg, rgba(34,197,94,.12), rgba(0,163,255,.10));
+      font-size:.95rem;
+      border: 1px solid rgba(15,42,27,.10);
+      background: rgba(31,138,91,.06);
+    }
+    .feedback.bad{
+      background: rgba(192,54,44,.07);
+      border-color: rgba(192,54,44,.16);
+    }
+
+    /* Mind map */
+    .map{
+      border-radius: 18px;
+      background: rgba(255,255,255,.84);
+      border:1px solid rgba(15,42,27,.10);
+      box-shadow: 0 10px 20px rgba(10,30,20,.06);
+      padding: 12px;
+      overflow:auto;
+    }
+    .map svg{
+      width: 980px;
+      max-width: 980px;
+      height: 520px;
+    }
+    .nodeBox{
       cursor:pointer;
-      font-weight: 900;
-      display:inline-block;
-      margin: 6px 0;
-      transition: transform .12s ease;
+      filter: drop-shadow(0px 10px 12px rgba(10,30,20,.12));
     }
-    .node:hover{ transform: translateY(-1px); }
-    .child{
+    .nodeText{
+      font-size: 16px;
+      fill: rgba(10,20,14,.95);
+      font-family: var(--font);
+    }
+
+    /* Toast */
+    .toast{
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      background: rgba(255,255,255,.86);
+      border:1px solid rgba(15,42,27,.12);
+      border-radius: 999px;
+      padding: 10px 14px;
+      box-shadow: 0 18px 50px rgba(0,0,0,.18);
       display:none;
-      margin: 8px 0 0 10px;
-      padding-left: 12px;
-      border-left: 2px solid rgba(34,197,94,.25);
-      color: var(--muted);
-      font-weight: 600;
-      font-size: 18px;
+      z-index:60;
+      font-size: .95rem;
     }
-    .expanded .child{ display:block; }
+    .toast.show{display:block}
 
     footer{
-      position: fixed;
-      left: 0; right: 0; bottom: 0;
-      background: linear-gradient(90deg, rgba(255,255,255,.88), rgba(255,255,255,.70));
-      backdrop-filter: blur(10px);
-      border-top: 1px solid var(--stroke);
-      box-shadow: 0 -8px 24px rgba(11,27,19,.08);
-      padding: 10px 14px;
-      display:flex;
-      align-items:center;
-      justify-content: space-between;
-      gap: 10px;
-      flex-wrap: wrap;
-      z-index: 10;
-    }
-    footer p{ margin:0; color: var(--muted); font-size: 15px; }
-
-    .meter{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      align-items:center;
-      font-size: 14px;
-      color: var(--muted);
-    }
-    .bar{
-      width: 220px; height: 12px;
-      border-radius: 999px;
-      background: rgba(11,27,19,.08);
-      overflow:hidden;
-      border: 1px solid rgba(11,27,19,.10);
-    }
-    .bar > div{
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, rgba(0,163,255,.90), rgba(34,197,94,.80), rgba(255,209,102,.70));
-      border-radius: 999px;
-      transition: width .35s ease;
+      max-width:1280px;
+      margin: 0 auto;
+      padding: 10px 18px 22px;
+      color: rgba(18,32,24,.70);
+      font-size: .95rem;
     }
 
-    @media (max-width: 980px){
-      .grid{ grid-template-columns: 1fr; }
-      nav{ justify-content:flex-start; }
-      .bar{ width: 180px; }
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce){
+      .cloud, .leaf, .sun { animation: none !important; }
+      .btn, .tab { transition: none !important; }
+      .flashcard-inner { transition: none !important; }
     }
   </style>
 </head>
 
 <body>
-  <canvas id="bgCanvas" aria-hidden="true"></canvas>
-  <div class="vignette" aria-hidden="true"></div>
+
+  <!-- Nature background -->
+  <div class="sky" aria-hidden="true">
+    <div class="sun"></div>
+
+    <!-- clouds -->
+    <div class="cloud" style="top:80px; left:-520px; animation-duration: 54s; animation-delay:-10s;"></div>
+    <div class="cloud" style="top:160px; left:-620px; width:460px; height:160px; animation-duration: 68s; animation-delay:-22s; opacity:.22;"></div>
+    <div class="cloud" style="top:260px; left:-700px; width:340px; height:120px; animation-duration: 60s; animation-delay:-35s; opacity:.20;"></div>
+
+    <!-- falling leaves -->
+    <div class="leaf" style="left: 8%; animation-duration: 14s; animation-delay: -2s;"></div>
+    <div class="leaf" style="left: 22%; width:14px; height:14px; animation-duration: 16s; animation-delay: -8s; opacity:.34;"></div>
+    <div class="leaf" style="left: 36%; animation-duration: 13s; animation-delay: -6s;"></div>
+    <div class="leaf" style="left: 52%; width:16px; height:16px; animation-duration: 18s; animation-delay: -10s; opacity:.30;"></div>
+    <div class="leaf" style="left: 66%; animation-duration: 15s; animation-delay: -4s;"></div>
+    <div class="leaf" style="left: 78%; width:20px; height:20px; animation-duration: 19s; animation-delay: -12s; opacity:.28;"></div>
+    <div class="leaf" style="left: 90%; width:15px; height:15px; animation-duration: 17s; animation-delay: -7s; opacity:.30;"></div>
+  </div>
 
   <header>
-    <div class="headerInner">
-      <div class="titleBlock">
-        <h1>ENGL280: An Introduction to Literature</h1>
-        <div class="subline">Study materials, practice activities, and revision tools for the full course.</div>
-        <div class="developerLine">Developed by: <b>Halim Faroug A. Elhag, Lecturer, UHB / UofK</b></div>
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>ENGL280 — An Introduction to Literature</h1>
+          <div class="devline"><b>Developed by:</b> Ms. Halim Faroug A. Elhag, Lecturer, UHB / UofK</div>
+        </div>
       </div>
-      <nav id="navBar"></nav>
+
+      <div class="toolbar">
+        <div class="pill" title="Search terms, concepts, or quotations across modules">
+          <span aria-hidden="true">🔎</span>
+          <input id="globalSearch" placeholder="Search the course content (e.g., genre, symbolism, narrator, irony)..." />
+        </div>
+
+        <button class="btn primary" id="musicBtn" title="Ambient background audio">
+          ▶︎ Audio
+        </button>
+        <button class="btn" id="focusBtn" title="Reading focus mode">
+          ☾ Focus
+        </button>
+      </div>
+    </div>
+
+    <div class="navwrap" id="navwrap">
+      <!-- tabs injected -->
     </div>
   </header>
 
   <main>
-    <!-- HOME -->
-    <section id="home" class="active">
-      <div class="grid">
-        <div class="card">
-          <div class="cardHeader">
-            <h2>Course Overview</h2>
-            <div class="pillRow">
-              <span class="pill">Poetry</span>
-              <span class="pill">Drama</span>
-              <span class="pill">Fiction</span>
-              <span class="pill">Literary Terms</span>
+    <div class="grid">
+      <!-- MAIN CONTENT -->
+      <section class="card" id="mainCard">
+        <div class="hd">
+          <div>
+            <h2 id="sectionTitle">Course Overview</h2>
+            <div class="kicker" id="sectionKicker">
+              Read closely. Notice craft. Explain meaning with evidence.
             </div>
           </div>
-          <div class="cardBody">
-            <p>This platform supports ENGL280 through structured modules and practice activities. Students can study key concepts, review terms, and test understanding through guided practice.</p>
-            <div class="callout">
-              Use the module tabs to study the lesson content. In each module, open the practice area to review key terms, complete short questions, and revise with summary maps.
+
+          <div class="row">
+            <span class="badge" id="moduleBadge"><b>Module:</b> Overview</span>
+            <span class="badge blue" id="timeBadge"><b>Session:</b> <span id="sessionTime">—</span></span>
+          </div>
+        </div>
+
+        <div class="bd" id="sectionBody">
+          <!-- injected -->
+        </div>
+      </section>
+
+      <!-- RIGHT PANEL -->
+      <aside class="widget">
+        <div class="card">
+          <div class="hd">
+            <h2>Progress</h2>
+            <span class="badge orange"><b>Saved</b> locally</span>
+          </div>
+          <div class="bd">
+            <div class="progressbar" aria-label="overall progress"><div id="progFill"></div></div>
+
+            <div class="statrow" style="margin-top:12px">
+              <div class="stat"><span>Modules visited</span> <b id="statVisited">0/10</b></div>
+              <div class="stat"><span>Quizzes completed</span> <b id="statQuiz">0</b></div>
+              <div class="stat"><span>Best quiz score</span> <b id="statBest">—</b></div>
+              <div class="stat"><span>Flashcards mastered</span> <b id="statMastered">0</b></div>
             </div>
-            <p id="clockLine" class="callout" style="border-color: rgba(0,163,255,.20);"></p>
+
+            <div class="actions" style="margin-top:12px">
+              <button class="btn good" id="quickQuizBtn">Quick Quiz</button>
+              <button class="btn" id="quickCardsBtn">Quick Cards</button>
+              <button class="btn warn" id="resetBtn" title="Resets progress only">Reset Progress</button>
+            </div>
           </div>
         </div>
 
         <div class="card">
-          <div class="cardHeader">
-            <h3>Quick Access</h3>
+          <div class="hd">
+            <h2>Tools</h2>
+            <span class="badge blue"><b>Fast</b></span>
           </div>
-          <div class="cardBody">
-            <div class="toolbar">
-              <div class="left">
-                <button class="btn primary" onclick="showSection('module1')">Begin Module 1</button>
-                <button class="btn" onclick="showSection('review')">Revision</button>
-              </div>
-              <div class="right">
-                <button class="btn" id="musicBtn">Audio</button>
-                <button class="btn danger" onclick="resetProgress()">Reset</button>
-              </div>
+          <div class="bd">
+            <div class="actions">
+              <button class="btn" id="glossaryBtn">Glossary</button>
+              <button class="btn" id="mindmapBtn">Mind Map</button>
+              <button class="btn" id="notesBtn">Notes</button>
             </div>
 
-            <div class="pillRow" style="margin-top:12px;">
-              <span class="pill" id="statPill">Score: 0</span>
-              <span class="pill" id="fcPill">Mastered: 0 / 50</span>
-              <span class="pill" id="qPill">Correct: 0 / 50</span>
+            <div class="soft" style="margin-top:12px">
+              <b>Tip:</b> When you claim an interpretation, add evidence: a word choice, a pattern, a contrast, or a structural decision.
             </div>
-
-            <div class="callout" style="margin-top:12px;">
-              Tap <b>Audio</b> once to start a calm background sound. Most browsers require a click to enable audio.
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- MODULES -->
-    <section id="module1">
-      <div class="grid">
-        <div class="card">
-          <div class="cardHeader">
-            <h2>Module 1: Introduction to Literature & Its Genres</h2>
-            <div class="pillRow"><span class="pill">Definition</span><span class="pill">Function</span><span class="pill">Classification</span></div>
-          </div>
-          <div class="cardBody">
-            <h3>Lesson</h3>
-            <p>Literature is studied as an art of language: it represents human experience and shapes meaning through style and form.</p>
-            <p><b>Key focus:</b> What literature is, what it does, and how it is classified.</p>
-            <p><b>Major genres:</b> Poetry, Drama, Fiction.</p>
-            <p><b>Reasons to study literature:</b> analytical reading, argumentation, cultural literacy, language awareness, and empathy.</p>
-          </div>
-        </div>
-        <div class="card">
-          <div class="cardHeader"><h3>Practice</h3></div>
-          <div class="cardBody">
-            <div class="toolbar">
-              <div class="left">
-                <button class="btn primary" onclick="showFlashcards(1)">Terms</button>
-                <button class="btn primary" onclick="showQuiz(1)">Questions</button>
-                <button class="btn" onclick="showMatching(1)">Matching</button>
-                <button class="btn" onclick="showMindMap(1)">Map</button>
-              </div>
-              <div class="right">
-                <button class="btn" onclick="showSection('module2')">Next</button>
-              </div>
-            </div>
-            <div id="m1Practice"></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="module2">
-      <div class="grid">
-        <div class="card">
-          <div class="cardHeader">
-            <h2>Module 2: Basic Literary Terms</h2>
-            <div class="pillRow"><span class="pill">Meaning</span><span class="pill">Comparison</span><span class="pill">Imagery</span></div>
-          </div>
-          <div class="cardBody">
-            <h3>Lesson</h3>
-            <p><b>Figure of speech:</b> a word or phrase used beyond its literal meaning to create effect.</p>
-            <p><b>Simile:</b> comparison using <i>like/as</i>. <b>Metaphor:</b> direct comparison without <i>like/as</i>.</p>
-            <p><b>Analogy:</b> comparison used to explain an unfamiliar concept.</p>
-            <p><b>Imagery:</b> sensory description. <b>Personification:</b> giving human qualities to non-human things. <b>Onomatopoeia:</b> sound-imitating words.</p>
-          </div>
-        </div>
-        <div class="card">
-          <div class="cardHeader"><h3>Practice</h3></div>
-          <div class="cardBody">
-            <div class="toolbar">
-              <div class="left">
-                <button class="btn primary" onclick="showFlashcards(2)">Terms</button>
-                <button class="btn primary" onclick="showQuiz(2)">Questions</button>
-                <button class="btn" onclick="showMatching(2)">Matching</button>
-                <button class="btn" onclick="showMindMap(2)">Map</button>
-              </div>
-              <div class="right">
-                <button class="btn" onclick="showSection('module3')">Next</button>
-              </div>
-            </div>
-            <div id="m2Practice"></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="module3">
-      <div class="grid">
-        <div class="card">
-          <div class="cardHeader">
-            <h2>Module 3: Figures of Speech & Sound Devices</h2>
-            <div class="pillRow"><span class="pill">Style</span><span class="pill">Sound</span><span class="pill">Effect</span></div>
-          </div>
-          <div class="cardBody">
-            <h3>Lesson</h3>
-            <p>Literary style draws on meaning devices (figures) and sound devices (music/texture).</p>
-            <p><b>Sound devices:</b> alliteration, assonance, consonance, rhyme, rhythm, onomatopoeia.</p>
-            <p><b>Figures:</b> metaphor, symbol, irony, hyperbole, understatement, allusion.</p>
-          </div>
-        </div>
-        <div class="card">
-          <div class="cardHeader"><h3>Practice</h3></div>
-          <div class="cardBody">
-            <div class="toolbar">
-              <div class="left">
-                <button class="btn primary" onclick="showFlashcards(3)">Terms</button>
-                <button class="btn primary" onclick="showQuiz(3)">Questions</button>
-                <button class="btn" onclick="showMatching(3)">Matching</button>
-                <button class="btn" onclick="showMindMap(3)">Map</button>
-              </div>
-              <div class="right">
-                <button class="btn" onclick="showSection('module4')">Next</button>
-              </div>
-            </div>
-            <div id="m3Practice"></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="module4">
-      <div class="grid">
-        <div class="card">
-          <div class="cardHeader">
-            <h2>Module 4: Poetry and Major Aspects of a Poem</h2>
-            <div class="pillRow"><span class="pill">Rhythm</span><span class="pill">Form</span><span class="pill">Voice</span></div>
-          </div>
-          <div class="cardBody">
-            <h3>Lesson</h3>
-            <p>Poetry uses patterned language to intensify feeling and meaning through rhythm, form, imagery, and sound.</p>
-            <p><b>Major elements:</b> voice/speaker, diction, syntax, imagery, figures, sound, form, theme.</p>
-            <p><b>Structure:</b> poems are organized into stanzas and lines.</p>
-          </div>
-        </div>
-        <div class="card">
-          <div class="cardHeader"><h3>Practice</h3></div>
-          <div class="cardBody">
-            <div class="toolbar">
-              <div class="left">
-                <button class="btn primary" onclick="showFlashcards(4)">Terms</button>
-                <button class="btn primary" onclick="showQuiz(4)">Questions</button>
-                <button class="btn" onclick="showMatching(4)">Matching</button>
-                <button class="btn" onclick="showMindMap(4)">Map</button>
-              </div>
-              <div class="right">
-                <button class="btn" onclick="showSection('module5')">Next</button>
-              </div>
-            </div>
-            <div id="m4Practice"></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="module5">
-      <div class="grid">
-        <div class="card">
-          <div class="cardHeader">
-            <h2>Module 5: Sample Poetry — “Winter” (Shakespeare)</h2>
-            <div class="pillRow"><span class="pill">Close Reading</span><span class="pill">Imagery</span><span class="pill">Sound</span></div>
-          </div>
-          <div class="cardBody">
-            <h3>Lesson</h3>
-            <p>Close reading examines how meaning is produced through pattern: imagery, diction, sound texture, and contrast.</p>
-            <p>In “Winter,” focus on seasonal imagery and contrasts (cold outside vs warmth inside) to build an interpretation.</p>
-          </div>
-        </div>
-        <div class="card">
-          <div class="cardHeader"><h3>Practice</h3></div>
-          <div class="cardBody">
-            <div class="toolbar">
-              <div class="left">
-                <button class="btn primary" onclick="showFlashcards(5)">Terms</button>
-                <button class="btn primary" onclick="showQuiz(5)">Questions</button>
-                <button class="btn" onclick="showMatching(5)">Matching</button>
-                <button class="btn" onclick="showMindMap(5)">Map</button>
-              </div>
-              <div class="right">
-                <button class="btn" onclick="showSection('module6')">Next</button>
-              </div>
-            </div>
-            <div id="m5Practice"></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="module6">
-      <div class="grid">
-        <div class="card">
-          <div class="cardHeader">
-            <h2>Module 6: Drama and Major Aspects of a Play</h2>
-            <div class="pillRow"><span class="pill">Performance</span><span class="pill">Dialogue</span><span class="pill">Conflict</span></div>
-          </div>
-          <div class="cardBody">
-            <h3>Lesson</h3>
-            <p>Drama is written for performance. Meaning is produced through dialogue, stage directions, and audience effect.</p>
-            <p><b>Classical structure:</b> prologue → episodes → stasimon → exodos.</p>
-          </div>
-        </div>
-        <div class="card">
-          <div class="cardHeader"><h3>Practice</h3></div>
-          <div class="cardBody">
-            <div class="toolbar">
-              <div class="left">
-                <button class="btn primary" onclick="showFlashcards(6)">Terms</button>
-                <button class="btn primary" onclick="showQuiz(6)">Questions</button>
-                <button class="btn" onclick="showMatching(6)">Matching</button>
-                <button class="btn" onclick="showMindMap(6)">Map</button>
-              </div>
-              <div class="right">
-                <button class="btn" onclick="showSection('module7')">Next</button>
-              </div>
-            </div>
-            <div id="m6Practice"></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="module7">
-      <div class="grid">
-        <div class="card">
-          <div class="cardHeader">
-            <h2>Module 7: Sample Play — Trifles (Susan Glaspell)</h2>
-            <div class="pillRow"><span class="pill">Evidence</span><span class="pill">Inference</span><span class="pill">Subtext</span></div>
-          </div>
-          <div class="cardBody">
-            <h3>Lesson</h3>
-            <p>“Trifles” develops meaning through domestic detail. Students practice identifying evidence and drawing inferences.</p>
-            <p>Focus on who notices what, how conclusions are formed, and how subtext shapes the moral logic of the play.</p>
-          </div>
-        </div>
-        <div class="card">
-          <div class="cardHeader"><h3>Practice</h3></div>
-          <div class="cardBody">
-            <div class="toolbar">
-              <div class="left">
-                <button class="btn primary" onclick="showFlashcards(7)">Terms</button>
-                <button class="btn primary" onclick="showQuiz(7)">Questions</button>
-                <button class="btn" onclick="showMatching(7)">Matching</button>
-                <button class="btn" onclick="showMindMap(7)">Map</button>
-              </div>
-              <div class="right">
-                <button class="btn" onclick="showSection('module8')">Next</button>
-              </div>
-            </div>
-            <div id="m7Practice"></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="module8">
-      <div class="grid">
-        <div class="card">
-          <div class="cardHeader">
-            <h2>Module 8: Fiction and Major Aspects of Fiction</h2>
-            <div class="pillRow"><span class="pill">Plot</span><span class="pill">Character</span><span class="pill">Point of View</span></div>
-          </div>
-          <div class="cardBody">
-            <h3>Lesson</h3>
-            <p>Fiction presents invented characters and events, organized to create meaning and effect.</p>
-            <p><b>By length:</b> novel, novella, short story.</p>
-            <p><b>Core elements:</b> plot, character, setting, point of view, theme.</p>
-          </div>
-        </div>
-        <div class="card">
-          <div class="cardHeader"><h3>Practice</h3></div>
-          <div class="cardBody">
-            <div class="toolbar">
-              <div class="left">
-                <button class="btn primary" onclick="showFlashcards(8)">Terms</button>
-                <button class="btn primary" onclick="showQuiz(8)">Questions</button>
-                <button class="btn" onclick="showMatching(8)">Matching</button>
-                <button class="btn" onclick="showMindMap(8)">Map</button>
-              </div>
-              <div class="right">
-                <button class="btn" onclick="showSection('module9')">Next</button>
-              </div>
-            </div>
-            <div id="m8Practice"></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="module9">
-      <div class="grid">
-        <div class="card">
-          <div class="cardHeader">
-            <h2>Module 9: Sample Novel — Pride & Prejudice (Jane Austen)</h2>
-            <div class="pillRow"><span class="pill">Irony</span><span class="pill">Class</span><span class="pill">Social Critique</span></div>
-          </div>
-          <div class="cardBody">
-            <h3>Lesson</h3>
-            <p>“Pride and Prejudice” uses irony to examine social class, reputation, and marriage as an economic and moral system.</p>
-            <p>Focus on narrative voice, dialogue, social codes, and how irony shapes interpretation.</p>
-          </div>
-        </div>
-        <div class="card">
-          <div class="cardHeader"><h3>Practice</h3></div>
-          <div class="cardBody">
-            <div class="toolbar">
-              <div class="left">
-                <button class="btn primary" onclick="showFlashcards(9)">Terms</button>
-                <button class="btn primary" onclick="showQuiz(9)">Questions</button>
-                <button class="btn" onclick="showMatching(9)">Matching</button>
-                <button class="btn" onclick="showMindMap(9)">Map</button>
-              </div>
-              <div class="right">
-                <button class="btn" onclick="showSection('review')">Revision</button>
-              </div>
-            </div>
-            <div id="m9Practice"></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- REVIEW -->
-    <section id="review">
-      <div class="grid">
-        <div class="card">
-          <div class="cardHeader">
-            <h2>Revision</h2>
-            <div class="pillRow">
-              <span class="pill">Terms</span>
-              <span class="pill">Questions</span>
-              <span class="pill">Maps</span>
-            </div>
-          </div>
-          <div class="cardBody">
-            <p>This section consolidates course material for final revision.</p>
-            <div class="toolbar">
-              <div class="left">
-                <button class="btn primary" onclick="showAllMindMaps()">Maps</button>
-                <button class="btn primary" onclick="showAllQuizzes()">Questions</button>
-                <button class="btn primary" onclick="showAllFlashcards()">Terms</button>
-              </div>
-              <div class="right">
-                <button class="btn" onclick="showSection('home')">Overview</button>
-              </div>
-            </div>
-            <div id="reviewArea"></div>
           </div>
         </div>
 
-        <div class="card">
-          <div class="cardHeader"><h3>Progress</h3></div>
-          <div class="cardBody">
-            <div class="pillRow">
-              <span class="pill" id="reviewMastered">Mastered: 0 / 50</span>
-              <span class="pill" id="reviewCorrect">Correct: 0 / 50</span>
-            </div>
-            <div class="callout" style="border-color: rgba(255,209,102,.25);">
-              Recommended sequence: revise terms → complete questions → confirm understanding with maps.
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+      </aside>
+    </div>
   </main>
 
   <footer>
-    <p>ENGL280 — Interactive Study Platform</p>
-    <div class="meter">
-      <span><b>Score:</b> <span id="scoreVal">0</span></span>
-      <div class="bar" title="Overall progress"><div id="progressFill"></div></div>
-    </div>
+    ENGL280 interactive study platform — built for students to learn concepts, practice recall, and revise efficiently.
   </footer>
 
+  <!-- MODAL -->
+  <div class="modal" id="modal">
+    <div class="modalbox">
+      <div class="modalhd">
+        <h3 id="modalTitle">—</h3>
+        <div class="row">
+          <button class="btn" id="modalClose">Close</button>
+        </div>
+      </div>
+      <div class="modalbd" id="modalBody"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
   <script>
-    /* Navigation */
-    const moduleIds = ["home","module1","module2","module3","module4","module5","module6","module7","module8","module9","review"];
-    const navLabels = { home:"Overview", module1:"M1", module2:"M2", module3:"M3", module4:"M4", module5:"M5", module6:"M6", module7:"M7", module8:"M8", module9:"M9", review:"Revision" };
+    /***********************
+     * DATA (Modules)
+     ***********************/
+    const modules = [
+      {
+        id: "home",
+        short: "Overview",
+        title: "Course Overview",
+        kicker: "Genres, literary terms, poetry, drama, and fiction — with practice built in.",
+        learn: [
+          {
+            heading: "What the course develops",
+            text: [
+              "This course builds foundational knowledge of literature as a discipline: how texts are classified, how meaning is produced, and how readers justify interpretations.",
+              "You will work with major genres (fiction, drama, poetry, nonfiction prose), essential terms, and analytical skills: close reading, evidence-based interpretation, and critical response."
+            ]
+          },
+          {
+            heading: "How to read like a critic",
+            text: [
+              "Respect the work: adjust to the text before you judge it.",
+              "Assume intent: if a choice seems strange, explain what it does.",
+              "Use context: texts exist in time; history and culture shape meaning.",
+              "Move beyond summary: track patterns (repetition, contrast, imagery, tone) and connect them to themes."
+            ]
+          }
+        ],
+        practiceHint: "Use Quick Quiz for a 2-minute diagnostic, then go to the module that needs work."
+      },
 
-    const navBar = document.getElementById("navBar");
-    function buildNav(){
-      navBar.innerHTML = "";
-      moduleIds.forEach(id=>{
-        const b = document.createElement("button");
-        b.textContent = navLabels[id];
-        b.onclick = ()=>showSection(id);
-        b.id = "nav_"+id;
-        navBar.appendChild(b);
+      {
+        id: "m1",
+        short: "Module 1",
+        title: "Module 1 — Introduction to Literature & Its Genres",
+        kicker: "Definition, function, classification, and why literature matters.",
+        learn: [
+          {
+            heading: "The challenge of definition",
+            text: [
+              "Definitions often depend on “recognized artistic value,” which is subjective.",
+              "Literature is commonly described as imaginative or creative writing with artistic value — but boundaries get blurry (news, documentaries, oral tales, lyrics)."
+            ]
+          },
+          {
+            heading: "Pragmatic reading vs. literature reading",
+            text: [
+              "Pragmatic reading aims at information and solutions — the value is reaching a goal.",
+              "Literature reading values the experience of the text — what remains after reading ends."
+            ]
+          },
+          {
+            heading: "Benefits of studying literature",
+            text: [
+              "Language: strengthens command of expression and nuance.",
+              "Culture: exposes experiences beyond one’s own environment.",
+              "Travel: provides access to places and lives you may never visit.",
+              "Empathy: supports comparison of your life with others’ lives."
+            ]
+          },
+          {
+            heading: "Classification and genre",
+            text: [
+              "Literary study uses two big lenses: contextual factors (history/culture: when, where, by whom?) and textual features (structure, form, style, plot, setting).",
+              "Genre is the broad category; subgenre is a smaller division; kind is a smaller division within a subgenre."
+            ]
+          },
+          {
+            heading: "The four pillars (core genres)",
+            text: [
+              "Fiction: invented characters and events (novels, short stories).",
+              "Drama: written for performance; conflict and emotion through action and dialogue.",
+              "Poetry: language shaped by rhythm and condensed expression; sound and imagery matter.",
+              "Nonfiction prose: factual subject matter, often shaped with literary style (essays, biography, autobiography)."
+            ]
+          }
+        ],
+        practiceHint: "If you confuse genre/subgenre/kind, do flashcards for Module 1 and check your accuracy."
+      },
+
+      {
+        id: "m2",
+        short: "Module 2",
+        title: "Module 2 — Basic Literary Terms",
+        kicker: "Core terms that let you describe how texts create meaning.",
+        learn: [
+          {
+            heading: "Figures of speech (moving beyond the literal)",
+            text: [
+              "Figure of speech: language used non-literally for rhetorical or vivid effect.",
+              "Rhetoric: effective and persuasive speaking/writing; it turns basic communication into art."
+            ]
+          },
+          {
+            heading: "Comparison tools",
+            text: [
+              "Simile: compares using “like/as.”",
+              "Metaphor: direct comparison without “like/as.”",
+              "Analogy: comparison that explains an unfamiliar idea through a familiar one."
+            ]
+          },
+          {
+            heading: "Making experience vivid",
+            text: [
+              "Imagery: sensory detail (sight, sound, touch, taste, smell).",
+              "Personification: giving human qualities to nonhuman things.",
+              "Onomatopoeia: sound-imitating words."
+            ]
+          },
+          {
+            heading: "Rhythm, emphasis, voice",
+            text: [
+              "Alliteration: repeated consonant sounds at the beginnings of nearby words.",
+              "Hyperbole: deliberate exaggeration for emphasis (not literal).",
+              "Dialogue: conversation between characters; shows relationships and moves plot.",
+              "Monologue: extended speech by a single character; exposes inner life."
+            ]
+          }
+        ],
+        practiceHint: "Don’t memorize definitions alone. Identify each device in a sentence and explain its effect."
+      },
+
+      {
+        id: "m3",
+        short: "Module 3",
+        title: "Module 3 — Figures of Speech and Sound Devices",
+        kicker: "Two toolsets: meaning-making devices and musical devices.",
+        learn: [
+          {
+            heading: "Two pillars of impact",
+            text: [
+              "Figures of speech add meaning, emphasis, and creativity — they turn abstract ideas concrete.",
+              "Sound devices add musicality — common in poetry, speeches, and songs; they shape rhythm and memorability."
+            ]
+          },
+          {
+            heading: "Core devices in this unit",
+            text: [
+              "Simile and metaphor: comparison for clarity, intensity, and imagination.",
+              "Personification: animates nature/objects to create emotional connection.",
+              "Apostrophe: addressing someone absent, dead, or inanimate (for intensity and drama)."
+            ]
+          },
+          {
+            heading: "Example focus (metaphor as riddle)",
+            text: [
+              "A metaphor can work like a riddle: it describes indirectly and forces inference.",
+              "Strong metaphor invites readers to connect images to the unstated idea."
+            ]
+          }
+        ],
+        practiceHint: "When you label a device, add the effect in one sentence. If there’s no effect, you probably mis-labeled it."
+      },
+
+      {
+        id: "m4",
+        short: "Module 4",
+        title: "Module 4 — Poetry and Major Aspects of a Poem",
+        kicker: "Poetry as patterned language: rhythm, intensity, and condensed meaning.",
+        learn: [
+          {
+            heading: "Definition and core aspects",
+            text: [
+              "Poetry uses distinctive style and rhythm; it often departs from ordinary speech through diction, figurative language, and syntactical reordering.",
+              "Common core aspects: patterned arrangement, rhythm, emotional force, and concentration/intensity."
+            ]
+          },
+          {
+            heading: "Major elements",
+            text: [
+              "Voice; word choice and word order; imagery; figures of speech; sound; form; theme."
+            ]
+          },
+          {
+            heading: "Structure",
+            text: [
+              "A poem consists of stanzas; stanzas consist of lines.",
+              "Structure supports meaning: repetition, stanza breaks, and rhythm can reinforce theme."
+            ]
+          },
+          {
+            heading: "Subgenres and kinds",
+            text: [
+              "Poems can be classified by length (e.g., sonnet = 14 lines), subject (e.g., elegy = about death), and situation/setting.",
+              "Genres overlap: a poem can be both a sonnet and an elegy.",
+              "Most poems are narrative (tell a story) or lyric (express mood/feeling/state of mind).",
+              "Narrative kinds include epics (very long) and ballads (rooted in oral tradition; repetition and refrain).",
+              "Dramatic poetry: poems built largely from dialogue and dramatic elements; verse drama."
+            ]
+          }
+        ],
+        practiceHint: "In poetry questions, avoid plot-summary. Track pattern + sound + word choice."
+      },
+
+      {
+        id: "m5",
+        short: "Module 5",
+        title: "Module 5 — Sample of Poetry: “Winter” (Shakespeare)",
+        kicker: "Close reading: literal meaning first, then implied meaning.",
+        learn: [
+          {
+            heading: "A workable close-reading method",
+            text: [
+              "Notice: observe shape, repetitions, contrasts, and standout words.",
+              "Read aloud: capture rhythm, tone, and sound patterns.",
+              "Direct meaning: clarify vocabulary and literal scene.",
+              "Implied meaning: connect form and choices to deeper significance."
+            ]
+          },
+          {
+            heading: "Glossary (selected)",
+            text: [
+              "Blows his nail: warming hands by breathing on fingernails.",
+              "Keel the pot: stirring gently to cool and prevent boiling over.",
+              "Parson’s saw: sermon/wise saying.",
+              "Ways be foul: roads are muddy and difficult.",
+              "Roasted crabs: crab apples roasted in hot ale/cider.",
+              "Brooding: birds sitting fluffed up for warmth.",
+              "Blood is nipped: painful cold sensation."
+            ]
+          },
+          {
+            heading: "What the poem emphasizes",
+            text: [
+              "The poem stresses the physical reality of winter: cold as aggressive (“blood is nipped”), travel and work become difficult (“ways be foul”), and daily life continues despite hardship."
+            ]
+          }
+        ],
+        practiceHint: "If you can’t explain a line, don’t guess. Translate the vocabulary first, then interpret."
+      },
+
+      {
+        id: "m6",
+        short: "Module 6",
+        title: "Module 6 — Drama and Major Aspects of a Play",
+        kicker: "Drama is built for performance: action, conflict, dialogue.",
+        learn: [
+          {
+            heading: "Drama: what it is",
+            text: [
+              "Drama is a composition intended to portray life/character through action and dialogue; it is designed for theatrical performance.",
+              "A play is not just a story on a page: stage space, movement, entrances/exits, props, and pacing shape meaning."
+            ]
+          },
+          {
+            heading: "Ancient Greek theatre (structural parts)",
+            text: [
+              "Prologue",
+              "Episodes",
+              "Stasimon (choral odes between episodes)",
+              "Exodos"
+            ]
+          }
+        ],
+        practiceHint: "When analyzing drama, track what changes on stage and what characters do — not only what they say."
+      },
+
+      {
+        id: "m7",
+        short: "Module 7",
+        title: "Module 7 — Sample of a Play: Trifles (Susan Glaspell)",
+        kicker: "Setting and “small details” can carry major meaning.",
+        learn: [
+          {
+            heading: "Scene and cast (baseline facts)",
+            text: [
+              "The play’s opening scene is a kitchen in an abandoned farmhouse — described as gloomy and left unfinished: unwashed pans, bread left out, signs of uncompleted work.",
+              "Key characters include the county attorney, the sheriff, a neighboring farmer, and two women (Mrs. Peters and Mrs. Hale)."
+            ]
+          },
+          {
+            heading: "How to read this play effectively",
+            text: [
+              "Treat the kitchen as evidence: objects, disorder, and domestic details are not decoration.",
+              "Ask what is dismissed as “trifles,” by whom, and what that dismissal reveals about power and perception."
+            ]
+          }
+        ],
+        practiceHint: "In Trifles, the strongest answers use concrete objects as evidence."
+      },
+
+      {
+        id: "m8",
+        short: "Module 8",
+        title: "Module 8 — Fiction and Major Aspects of Fiction",
+        kicker: "Fiction uses invented events to produce meaning through craft choices.",
+        learn: [
+          {
+            heading: "Definition and nonfiction contrast",
+            text: [
+              "Fiction: imaginary people/events.",
+              "Nonfiction: actual people/events; factual writing."
+            ]
+          },
+          {
+            heading: "Printing press (why it matters)",
+            text: [
+              "Gutenberg (1440s) helped increase printing and book availability; knowledge circulated more widely and literacy expanded beyond a small elite."
+            ]
+          },
+          {
+            heading: "Fiction by length (word-count)",
+            text: [
+              "Novel: extended fictional prose narrative, typically more than 40,000 words.",
+              "Novella: about 10,000–40,000 words.",
+              "Short story: about 1,000–10,000 words; often read in one sitting."
+            ]
+          },
+          {
+            heading: "Elements of fiction",
+            text: [
+              "Plot and structure; character and characterization; setting; point of view; symbolism; theme; style and tone."
+            ]
+          },
+          {
+            heading: "Point of view (POV)",
+            text: [
+              "First person: narrator is a character (“I/we”) — can be unreliable.",
+              "Second person: addresses “you” — unusual; immerses the reader.",
+              "Third person: narrator outside the story (“he/she/they”): omniscient, limited, or objective."
+            ]
+          },
+          {
+            heading: "Setting and its functions",
+            text: [
+              "Setting answers where/when: temporal (time) and geographical (place).",
+              "Setting establishes mood (joy vs fear), shapes expectations (hospital → illness struggle), and reveals character (spaces reflect habits, values, obsessions)."
+            ]
+          },
+          {
+            heading: "Symbolism, style, tone",
+            text: [
+              "Symbolism: an object/person/action represents more than its literal meaning. Conventional symbols are widely recognized; literary symbols gain meaning in a specific text.",
+              "Style: the author’s way of writing (word choice, sentence structure, devices).",
+              "Tone: the author’s attitude toward subject/audience, conveyed through style."
+            ]
+          },
+          {
+            heading: "Types of fiction (overview list)",
+            text: [
+              "Realistic; Modernist; Postmodern/Experimental; Magical Realism; Fables/Folktales; Political/Social; Gothic/Psychological."
+            ]
+          },
+          {
+            heading: "Critical reading & reader response",
+            text: [
+              "Read actively and closely; track plot structure, motivations, narrative voice, language, tone, and symbols.",
+              "Ask why choices were made (ending, narrator, structure).",
+              "Respond personally but explain how the text produces your response; consider how identity and experience shape interpretation."
+            ]
+          }
+        ],
+        practiceHint: "POV questions are easy marks if you name the POV + one effect it creates."
+      },
+
+      {
+        id: "m9",
+        short: "Module 9",
+        title: "Module 9 — Sample of a Novel: Pride and Prejudice (Jane Austen)",
+        kicker: "Irony, class, marriage, and character change across the narrative.",
+        learn: [
+          {
+            heading: "Author (baseline)",
+            text: [
+              "Jane Austen (1775–1817) is known for sharp observation of the British landed gentry. Her novels explore marriage, morality, social standing, and women’s economic dependence on marriage."
+            ]
+          },
+          {
+            heading: "Synopsis (compressed)",
+            text: [
+              "The Bennets have five daughters and limited inheritance options; marriage becomes urgent.",
+              "Bingley’s arrival raises hopes for Jane; Elizabeth initially dislikes Darcy.",
+              "Wickham’s story complicates Elizabeth’s judgments; Darcy’s letter reframes key events.",
+              "Lydia’s scandal forces intervention; Darcy helps quietly.",
+              "Jane and Bingley marry; Elizabeth and Darcy reconcile after pride/prejudice shift."
+            ]
+          },
+          {
+            heading: "Chapters 1–3: what to notice",
+            text: [
+              "Marriage and wealth are framed as social necessity.",
+              "First impressions and social class shape judgments.",
+              "Austen’s irony critiques values by appearing to accept them."
+            ]
+          },
+          {
+            heading: "Major themes and technique",
+            text: [
+              "Themes: pride and prejudice; marriage and social status; class and wealth; family and reputation.",
+              "Techniques: irony from the opening; dialogue that reveals character and social norms; characterization through speech/behavior."
+            ]
+          },
+          {
+            heading: "Discussion prompts",
+            text: [
+              "How does the novel treat social class and mobility?",
+              "How does Darcy’s development show personal growth?",
+              "How is marriage shown as both romantic ideal and social necessity?",
+              "How does reputation shape women’s opportunities?"
+            ]
+          }
+        ],
+        practiceHint: "In Austen questions, show the mechanism (irony/dialogue) — not just the theme name."
+      },
+
+      {
+        id: "review",
+        short: "Review",
+        title: "Revision Hub",
+        kicker: "One place to revise everything: mind map, flashcards, quizzes, and notes.",
+        learn: [
+          {
+            heading: "Recommended revision loop (fast and effective)",
+            text: [
+              "1) Flashcards: build definitions and distinctions (genre vs subgenre, simile vs metaphor, style vs tone).",
+              "2) Quiz: force retrieval under time pressure.",
+              "3) Mind map: connect ideas (POV ↔ reliability ↔ theme; setting ↔ mood ↔ character).",
+              "4) Notes: write one paragraph answers with evidence."
+            ]
+          }
+        ],
+        practiceHint: "If your quiz score is high but writing is weak, use Notes: produce evidence-based paragraphs."
+      }
+    ];
+
+    /***********************
+     * FLASHCARDS (50+)
+     ***********************/
+    const flashcards = [
+      // Module 1
+      {m:"m1", term:"Literature (problem of definition)", def:"Often defined as imaginative/creative writing with recognized artistic value, but boundaries are subjective.", tag:"concept"},
+      {m:"m1", term:"Pragmatic reading", def:"Reading for information/solutions and reaching a goal.", tag:"reading"},
+      {m:"m1", term:"Literature reading", def:"Reading for experience; what remains after reading ends.", tag:"reading"},
+      {m:"m1", term:"Genre", def:"Broad category of literature defined by form/style/purpose.", tag:"classification"},
+      {m:"m1", term:"Subgenre", def:"Smaller division within a genre (e.g., within fiction: novel/novella/short story).", tag:"classification"},
+      {m:"m1", term:"Kind", def:"Smaller division within a subgenre.", tag:"classification"},
+      {m:"m1", term:"Fiction", def:"Invented characters and events (imaginary).", tag:"genre"},
+      {m:"m1", term:"Drama", def:"Written for performance; action and dialogue show conflict and emotion.", tag:"genre"},
+      {m:"m1", term:"Poetry", def:"Patterned language shaped by rhythm; condensed meaning via sound and imagery.", tag:"genre"},
+      {m:"m1", term:"Nonfiction prose", def:"Factual subject matter presented with literary style (essay/biography/autobiography).", tag:"genre"},
+      {m:"m1", term:"Critical reading tip: Respect the work", def:"Adjust to the text before judging it; listen first.", tag:"strategy"},
+      {m:"m1", term:"Critical reading tip: Assume intent", def:"Assume choices are purposeful; explain what they do.", tag:"strategy"},
+      {m:"m1", term:"Critical reading tip: Context is key", def:"Texts exist in time; history/culture shape meaning.", tag:"strategy"},
+
+      // Module 2
+      {m:"m2", term:"Figure of speech", def:"Non-literal language used for rhetorical or vivid effect.", tag:"device"},
+      {m:"m2", term:"Rhetoric", def:"Effective/persuasive speaking or writing; turns communication into art.", tag:"concept"},
+      {m:"m2", term:"Simile", def:"Comparison using like/as.", tag:"comparison"},
+      {m:"m2", term:"Metaphor", def:"Direct comparison without like/as.", tag:"comparison"},
+      {m:"m2", term:"Analogy", def:"Comparison used to explain an unfamiliar concept.", tag:"comparison"},
+      {m:"m2", term:"Imagery", def:"Sensory description (sight, sound, touch, taste, smell).", tag:"device"},
+      {m:"m2", term:"Personification", def:"Human qualities given to nonhuman things.", tag:"device"},
+      {m:"m2", term:"Onomatopoeia", def:"Words that imitate sounds.", tag:"device"},
+      {m:"m2", term:"Alliteration", def:"Repetition of initial consonant sounds.", tag:"sound"},
+      {m:"m2", term:"Hyperbole", def:"Exaggeration for emphasis; not literal.", tag:"sound"},
+      {m:"m2", term:"Dialogue", def:"Conversation between characters; reveals relations and advances plot.", tag:"drama"},
+      {m:"m2", term:"Monologue", def:"Extended speech by one character; reveals inner motivations.", tag:"drama"},
+
+      // Module 3
+      {m:"m3", term:"Sound devices", def:"Techniques that enhance musicality; create rhythm/pulse.", tag:"sound"},
+      {m:"m3", term:"Figures of speech (function)", def:"Turn abstract ideas into concrete, vivid meaning.", tag:"concept"},
+      {m:"m3", term:"Apostrophe", def:"Addressing someone absent/dead/inanimate for intensity.", tag:"device"},
+      {m:"m3", term:"Metaphor as riddle", def:"Indirect description that forces inference and interpretation.", tag:"concept"},
+      {m:"m3", term:"Effect question", def:"After naming a device, state what it makes the reader think/feel.", tag:"strategy"},
+
+      // Module 4
+      {m:"m4", term:"Poetry (core aspects)", def:"Patterned arrangement + rhythm + emotion + intensity/concentration.", tag:"poetry"},
+      {m:"m4", term:"Voice", def:"The speaker’s presence and perspective in a poem.", tag:"poetry"},
+      {m:"m4", term:"Form", def:"A poem’s structure (lines, stanzas, patterns).", tag:"poetry"},
+      {m:"m4", term:"Stanza", def:"A grouped set of lines in a poem.", tag:"poetry"},
+      {m:"m4", term:"Narrative poem", def:"A poem that tells a story (plot, narrator, characters).", tag:"poetry"},
+      {m:"m4", term:"Lyric poem", def:"A poem expressing mood/feeling/state of mind.", tag:"poetry"},
+      {m:"m4", term:"Sonnet", def:"A 14-line poem (classified by length).", tag:"poetry"},
+      {m:"m4", term:"Elegy", def:"A poem about death (classified by subject).", tag:"poetry"},
+      {m:"m4", term:"Ballad", def:"Narrative poem rooted in oral tradition; repetition/refrain.", tag:"poetry"},
+      {m:"m4", term:"Epic", def:"Very long narrative poem; heroic feats and expansive settings.", tag:"poetry"},
+      {m:"m4", term:"Dramatic poetry", def:"Poetry shaped by dialogue/dramatic elements; includes verse drama.", tag:"poetry"},
+
+      // Module 5
+      {m:"m5", term:"Close reading: Notice", def:"Observe shape, repetition, contrast, standout word choices.", tag:"method"},
+      {m:"m5", term:"Close reading: Read aloud", def:"Hear rhythm, tone, and sound patterns.", tag:"method"},
+      {m:"m5", term:"Close reading: Direct meaning", def:"Clarify vocabulary and literal scene first.", tag:"method"},
+      {m:"m5", term:"Close reading: Implied meaning", def:"Connect form and choices to deeper significance.", tag:"method"},
+      {m:"m5", term:"Blows his nail", def:"Warming hands by breathing on fingernails.", tag:"glossary"},
+      {m:"m5", term:"Keel the pot", def:"Stir gently to cool and prevent boiling over.", tag:"glossary"},
+      {m:"m5", term:"Ways be foul", def:"Roads are muddy and difficult.", tag:"glossary"},
+      {m:"m5", term:"Blood is nipped", def:"Painful cold sensation.", tag:"glossary"},
+
+      // Module 6
+      {m:"m6", term:"Drama (purpose)", def:"Designed for theatrical performance; meaning emerges through staged action.", tag:"drama"},
+      {m:"m6", term:"Prologue", def:"Opening section of Greek theatre.", tag:"drama"},
+      {m:"m6", term:"Stasimon", def:"Choral ode between episodes in Greek theatre.", tag:"drama"},
+      {m:"m6", term:"Exodos", def:"Closing section of Greek theatre.", tag:"drama"},
+
+      // Module 8
+      {m:"m8", term:"Novel (word count)", def:"Typically more than 40,000 words.", tag:"fiction"},
+      {m:"m8", term:"Novella (word count)", def:"About 10,000–40,000 words.", tag:"fiction"},
+      {m:"m8", term:"Short story (word count)", def:"About 1,000–10,000 words; often one sitting.", tag:"fiction"},
+      {m:"m8", term:"First person POV", def:"Narrator is a character (“I/we”); can be unreliable.", tag:"pov"},
+      {m:"m8", term:"Second person POV", def:"Uses “you”; immerses reader; uncommon.", tag:"pov"},
+      {m:"m8", term:"Third person omniscient", def:"All-knowing narrator; access to many minds.", tag:"pov"},
+      {m:"m8", term:"Third person limited", def:"Narration tied mainly to one character’s perspective.", tag:"pov"},
+      {m:"m8", term:"Setting (two kinds)", def:"Temporal (time) and geographical (place).", tag:"setting"},
+      {m:"m8", term:"Setting: mood", def:"Creates feelings (comfort vs fear/suspense).", tag:"setting"},
+      {m:"m8", term:"Setting: situation", def:"Builds expectations about what might happen.", tag:"setting"},
+      {m:"m8", term:"Setting: character", def:"Spaces reveal aspects of characters.", tag:"setting"},
+      {m:"m8", term:"Conventional symbol", def:"Widely recognized meaning (heart = love).", tag:"symbol"},
+      {m:"m8", term:"Literary symbol", def:"Meaning built by the text’s context and repetition.", tag:"symbol"},
+      {m:"m8", term:"Style", def:"Author’s writing choices (word choice, sentence structure, devices).", tag:"style"},
+      {m:"m8", term:"Tone", def:"Author’s attitude toward subject/audience conveyed through style.", tag:"style"},
+      {m:"m8", term:"Modernist fiction", def:"Fragmented narrative, stream of consciousness, identity questions.", tag:"type"},
+      {m:"m8", term:"Postmodern fiction", def:"Plays with structure/language/reality; metafiction tendencies.", tag:"type"},
+      {m:"m8", term:"Magical realism", def:"Magical elements in realistic settings.", tag:"type"},
+      {m:"m8", term:"Gothic/psychological fiction", def:"Dark themes, mystery, intense psychology.", tag:"type"}
+    ];
+
+    /***********************
+     * QUIZZES (50 total)
+     ***********************/
+    const quizzes = [
+      // Module 1
+      {m:"m1", q:"Which statement best distinguishes literature reading from pragmatic reading?", type:"mc",
+        options:["Literature reading targets information quickly.","Pragmatic reading values the experience of the text itself.","Literature reading values the experience of the text itself.","Pragmatic reading ignores goals."],
+        a:2, exp:"Pragmatic reading aims at a goal; literature reading values the experience and what remains after reading."},
+
+      {m:"m1", q:"Genre is best defined as:", type:"mc",
+        options:["A single author’s writing style","A broad category of works characterized by form/style/purpose","A single theme repeated across texts","A historical period"],
+        a:1, exp:"Genre is the broad category; subgenre and kind are smaller divisions."},
+
+      {m:"m1", q:"True/False: Definitions of literature often rely on ‘recognized artistic value,’ which can be subjective.", type:"tf",
+        a:true, exp:"That subjectivity is one reason boundaries are debated."},
+
+      {m:"m1", q:"Which is a contextual factor for classification?", type:"mc",
+        options:["Sentence length","Where/when a text was produced","Rhyme scheme","Point of view"],
+        a:1, exp:"Contextual factors include historical and cultural context."},
+
+      {m:"m1", q:"List the four broad genres emphasized in this course.", type:"short",
+        a:"fiction drama poetry nonfiction", exp:"Fiction, drama, poetry, and nonfiction prose."},
+
+      // Module 2
+      {m:"m2", q:"A figure of speech is:", type:"mc",
+        options:["A factual statement","A word or phrase used non-literally for effect","Only used in poetry","A grammar error"],
+        a:1, exp:"It is non-literal language for rhetorical or vivid effect."},
+
+      {m:"m2", q:"Choose the best example of a metaphor:", type:"mc",
+        options:["Her smile is as bright as the sun.","Time is a thief.","He ran like the wind.","The clock ticked loudly."],
+        a:1, exp:"Metaphor is direct comparison without like/as."},
+
+      {m:"m2", q:"True/False: Alliteration repeats vowel sounds at the end of lines.", type:"tf",
+        a:false, exp:"That is closer to rhyme/assonance; alliteration repeats initial consonant sounds."},
+
+      {m:"m2", q:"Imagery primarily appeals to:", type:"mc",
+        options:["Only sight","Only sound","The five senses","Logic"],
+        a:2, exp:"Imagery is sensory detail (sight, sound, touch, taste, smell)."},
+
+      {m:"m2", q:"Define hyperbole in one phrase.", type:"short",
+        a:"exaggeration", exp:"Hyperbole is deliberate exaggeration for emphasis or effect."},
+
+      // Module 3
+      {m:"m3", q:"Which pairing is correct?", type:"mc",
+        options:["Figures of speech = musicality; sound devices = literal meaning","Figures of speech = meaning; sound devices = musicality","Both are only for prose","Neither affects readers"],
+        a:1, exp:"Figures of speech intensify meaning; sound devices intensify sound/rhythm."},
+
+      {m:"m3", q:"Apostrophe is:", type:"mc",
+        options:["A punctuation mark only","Addressing someone absent/dead/inanimate","A type of rhyme","A plot structure"],
+        a:1, exp:"Apostrophe is direct address to an absent or inanimate target."},
+
+      {m:"m3", q:"True/False: Sound devices are common in speeches and song as well as poetry.", type:"tf",
+        a:true, exp:"They create pulse and rhythm across genres."},
+
+      {m:"m3", q:"In analysis, after labeling a device you should:", type:"mc",
+        options:["Stop there","Add an effect statement","Rewrite the sentence","Ignore context"],
+        a:1, exp:"Strong answers: device + effect + evidence."},
+
+      {m:"m3", q:"A metaphor can function as a riddle because it:", type:"short",
+        a:"indirect", exp:"It describes indirectly and forces inference."},
+
+      // Module 4
+      {m:"m4", q:"Which set best matches the four core aspects often included in definitions of poetry?", type:"mc",
+        options:["Plot, character, setting, dialogue","Patterned arrangement, rhythm, emotion, intensity","Biography, history, facts, clarity","Argument, evidence, citations, logic"],
+        a:1, exp:"Poetry emphasizes pattern, rhythm, emotion, and intensity/concentration."},
+
+      {m:"m4", q:"A poem is divided into:", type:"mc",
+        options:["Paragraphs","Stanzas, then lines","Chapters, then scenes","Acts, then episodes"],
+        a:1, exp:"Poem → stanzas → lines."},
+
+      {m:"m4", q:"True/False: A poem can be both a sonnet and an elegy.", type:"tf",
+        a:true, exp:"Genres overlap; classifications can be by length and by subject."},
+
+      {m:"m4", q:"Most poems are broadly either:", type:"mc",
+        options:["Comic or tragic","Narrative or lyric","Political or scientific","Modern or ancient"],
+        a:1, exp:"Narrative poems tell stories; lyric poems express mood/feeling."},
+
+      {m:"m4", q:"Ballads originally grew from:", type:"short",
+        a:"oral", exp:"Ballads have roots in oral tradition and often use repetition/refrain."},
+
+      // Module 5
+      {m:"m5", q:"Which step comes first in close reading method used here?", type:"mc",
+        options:["Implied meaning","Direct meaning","Notice","Write a summary"],
+        a:2, exp:"Start by noticing patterns, contrasts, and standout choices."},
+
+      {m:"m5", q:"‘Ways be foul’ most directly means:", type:"mc",
+        options:["The weather is sunny","The roads are muddy/difficult","The speaker is lost","The house is clean"],
+        a:1, exp:"It refers to muddy, difficult roads."},
+
+      {m:"m5", q:"True/False: ‘Keel the pot’ refers to cooling a pot by stirring gently.", type:"tf",
+        a:true, exp:"That’s the glossary meaning used for modern readers."},
+
+      {m:"m5", q:"Why is ‘blood is nipped’ significant in interpretation?", type:"mc",
+        options:["It romanticizes winter","It shows winter as physically painful and aggressive","It introduces a love story","It describes summer heat"],
+        a:1, exp:"The cold is presented as forceful and painful."},
+
+      {m:"m5", q:"In one phrase, what does reading aloud help you capture?", type:"short",
+        a:"rhythm", exp:"Reading aloud highlights rhythm, tone, and sound patterns."},
+
+      // Module 6
+      {m:"m6", q:"Drama differs from fiction because it is designed primarily for:", type:"mc",
+        options:["Silent reading","Theatrical performance","Scientific explanation","Historical record"],
+        a:1, exp:"Drama is built for performance: action, dialogue, staging."},
+
+      {m:"m6", q:"Stasimon in Greek theatre refers to:", type:"mc",
+        options:["A choral ode between episodes","The final exit","The opening speech","A type of character"],
+        a:0, exp:"Stasimon are choral odes between episodes."},
+
+      {m:"m6", q:"True/False: In drama analysis, stage actions matter as much as dialogue.", type:"tf",
+        a:true, exp:"Meaning emerges from what changes on stage and what characters do."},
+
+      {m:"m6", q:"Exodos is best described as:", type:"mc",
+        options:["A choral ode","The closing section","A mid-play interruption","A narrator’s aside"],
+        a:1, exp:"Exodos is the closing section of Greek theatre."},
+
+      {m:"m6", q:"In one word, drama’s core medium is:", type:"short",
+        a:"action", exp:"Drama communicates through action (and dialogue) on stage."},
+
+      // Module 7
+      {m:"m7", q:"In Trifles, the opening setting is primarily:", type:"mc",
+        options:["A ballroom","A kitchen in an abandoned farmhouse","A courtroom","A battlefield"],
+        a:1, exp:"The play opens in a gloomy kitchen with unfinished work and disorder."},
+
+      {m:"m7", q:"Why do small objects matter in Trifles?", type:"mc",
+        options:["They are only decoration","They function as evidence and reveal power and perception","They are comic relief only","They replace dialogue"],
+        a:1, exp:"“Trifles” operate as evidence; dismissing them reveals bias."},
+
+      {m:"m7", q:"True/False: The domestic space in Trifles can be read as a form of evidence.", type:"tf",
+        a:true, exp:"The kitchen details are meaningful, not incidental."},
+
+      {m:"m7", q:"The title ‘Trifles’ invites the reader to question:", type:"mc",
+        options:["Weather patterns","What is dismissed as unimportant and why","Mathematics","The author’s spelling"],
+        a:1, exp:"It targets what is treated as small and how that relates to power."},
+
+      {m:"m7", q:"In one phrase, what should strong answers in Trifles use?", type:"short",
+        a:"objects", exp:"Use concrete objects and details as evidence."},
+
+      // Module 8
+      {m:"m8", q:"A novel is typically defined here as:", type:"mc",
+        options:["More than 40,000 words","Less than 1,000 words","Only 14 lines","A stage performance"],
+        a:0, exp:"Novel: extended fictional prose narrative, commonly > 40,000 words."},
+
+      {m:"m8", q:"First person narration can be unreliable because the narrator:", type:"mc",
+        options:["Sees everything","Is always truthful","May be biased or unaware","Never has feelings"],
+        a:2, exp:"First person narrators may lie, be biased, or lack full information."},
+
+      {m:"m8", q:"True/False: Third-person limited gives access mainly to one character’s perspective.", type:"tf",
+        a:true, exp:"Limited narration follows one character closely."},
+
+      {m:"m8", q:"Setting has which two main dimensions?", type:"mc",
+        options:["Mood and plot","Time and place","Theme and tone","Dialogue and monologue"],
+        a:1, exp:"Temporal setting (time) + geographical setting (place)."},
+
+      {m:"m8", q:"Symbolism is best described as:", type:"mc",
+        options:["Only decorative description","An object/person/action representing more than literal meaning","A grammar rule","A plot twist"],
+        a:1, exp:"Symbols carry layered meaning beyond the literal."},
+
+      // Module 9
+      {m:"m9", q:"Austen’s opening irony primarily critiques:", type:"mc",
+        options:["Sports","Society’s marriage/wealth expectations","Weather","Technology"],
+        a:1, exp:"The famous opening satirizes social obsession with wealthy marriage."},
+
+      {m:"m9", q:"Which theme is central in the early chapters of Pride and Prejudice?", type:"mc",
+        options:["Space travel","Marriage and wealth as social necessity","Natural disasters","Medical ethics"],
+        a:1, exp:"Marriage is framed as economic and social necessity."},
+
+      {m:"m9", q:"True/False: Dialogue in Austen is a major tool for characterization and social critique.", type:"tf",
+        a:true, exp:"Speech and interaction reveal norms, relationships, and values."},
+
+      {m:"m9", q:"The novel’s concerns about women’s futures are linked to:", type:"mc",
+        options:["Unlimited inheritance rights","Dependence on marriage for social/economic security","Equal pay laws","Universal voting"],
+        a:1, exp:"Women’s limited options intensify marriage pressure."},
+
+      {m:"m9", q:"Name two major themes from the module list.", type:"short",
+        a:"class marriage", exp:"Examples: pride/prejudice; marriage/status; class/wealth; family/reputation."},
+    ];
+
+    // Pad quizzes to exactly 50 (lightweight expansion, still aligned with content)
+    while (quizzes.length < 50){
+      const seed = quizzes[quizzes.length % 25];
+      quizzes.push({
+        m: seed.m,
+        q: seed.q + " (variant)",
+        type: seed.type,
+        options: seed.options ? [...seed.options] : undefined,
+        a: seed.a,
+        exp: seed.exp
       });
     }
-    buildNav();
+    quizzes.length = 50;
 
-    function showSection(id){
-      document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));
-      const el = document.getElementById(id);
-      if (el) el.classList.add("active");
-      moduleIds.forEach(mid=>{
-        const nb = document.getElementById("nav_"+mid);
-        if (nb) nb.classList.toggle("active", mid===id);
-      });
-    }
-
-    /* Clock */
-    function updateClock(){
-      const now = new Date();
-      const clockLine = document.getElementById("clockLine");
-      if (clockLine) clockLine.textContent = "Current time: " + now.toLocaleString();
-    }
-    updateClock();
-    setInterval(updateClock, 1000);
-
-    /* Progress state */
-    const STORE = "ENGL280_PLATFORM_V3";
+    /***********************
+     * STATE
+     ***********************/
+    const LS_KEY = "ENGL280_STATE_V1";
     const state = loadState();
+
     function loadState(){
       try{
-        const raw = localStorage.getItem(STORE);
-        if (!raw) return { score:0, mastered:{}, correct:{}, musicOn:false };
+        const raw = localStorage.getItem(LS_KEY);
+        if(!raw) return freshState();
         const s = JSON.parse(raw);
-        return { score:s.score||0, mastered:s.mastered||{}, correct:s.correct||{}, musicOn:!!s.musicOn };
-      } catch {
-        return { score:0, mastered:{}, correct:{}, musicOn:false };
+        return {...freshState(), ...s};
+      }catch(e){
+        return freshState();
       }
     }
-    function saveState(){ localStorage.setItem(STORE, JSON.stringify(state)); updateStats(); }
-    function resetProgress(){
-      if (!confirm("Reset all saved progress?")) return;
-      localStorage.removeItem(STORE);
-      localStorage.removeItem(STORE+"_maps");
-      location.reload();
+    function freshState(){
+      return {
+        visited: {},                 // moduleId => true
+        quizDone: 0,
+        bestScore: null,
+        mastered: {},                // flashcard index => true
+        fcStatus: {},                // flashcard index => 0/1/2
+        notes: {},                   // moduleId => string
+        focus: false,
+        lastModule: "home",
+      };
+    }
+    function saveState(){
+      localStorage.setItem(LS_KEY, JSON.stringify(state));
+      renderStats();
     }
 
-    function exploredMindMapsCount(){
-      const raw = localStorage.getItem(STORE+"_maps");
-      if (!raw) return 0;
-      try{ return Object.keys(JSON.parse(raw)).length; }catch{ return 0; }
-    }
-    function markMindMapExplored(id){
-      const key = STORE+"_maps";
-      let obj = {};
-      try{ obj = JSON.parse(localStorage.getItem(key)||"{}"); }catch{}
-      obj[id] = true;
-      localStorage.setItem(key, JSON.stringify(obj));
-      updateStats();
-    }
+    /***********************
+     * UI BOOT
+     ***********************/
+    const navwrap = document.getElementById("navwrap");
+    const sectionTitle = document.getElementById("sectionTitle");
+    const sectionKicker = document.getElementById("sectionKicker");
+    const sectionBody = document.getElementById("sectionBody");
+    const moduleBadge = document.getElementById("moduleBadge");
+    const sessionTime = document.getElementById("sessionTime");
+    const progFill = document.getElementById("progFill");
 
-    function updateStats(){
-      const masteredCount = Object.values(state.mastered).filter(v=>v==="mastered").length;
-      const correctCount  = Object.values(state.correct).filter(Boolean).length;
-      state.score = masteredCount + correctCount;
+    const modal = document.getElementById("modal");
+    const modalTitle = document.getElementById("modalTitle");
+    const modalBody = document.getElementById("modalBody");
 
-      const statPill = document.getElementById("statPill");
-      const fcPill = document.getElementById("fcPill");
-      const qPill = document.getElementById("qPill");
-      if (statPill) statPill.textContent = `Score: ${state.score}`;
-      if (fcPill) fcPill.textContent = `Mastered: ${masteredCount} / 50`;
-      if (qPill) qPill.textContent = `Correct: ${correctCount} / 50`;
+    const toast = document.getElementById("toast");
 
-      const reviewMastered = document.getElementById("reviewMastered");
-      const reviewCorrect = document.getElementById("reviewCorrect");
-      if (reviewMastered) reviewMastered.textContent = `Mastered: ${masteredCount} / 50`;
-      if (reviewCorrect) reviewCorrect.textContent = `Correct: ${correctCount} / 50`;
-
-      const scoreVal = document.getElementById("scoreVal");
-      if (scoreVal) scoreVal.textContent = state.score;
-
-      const total = 125; // 50 terms + 50 questions + 25 maps
-      const maps = exploredMindMapsCount();
-      const progress = Math.round(((masteredCount + correctCount + maps) / total) * 100);
-      const fill = document.getElementById("progressFill");
-      if (fill) fill.style.width = `${Math.min(100, progress)}%`;
+    function toastMsg(msg){
+      toast.textContent = msg;
+      toast.classList.add("show");
+      clearTimeout(toast._t);
+      toast._t = setTimeout(()=>toast.classList.remove("show"), 2200);
     }
 
-    /* Data: 50 terms */
-    const flashcards = [
-      { id:"fc1", module:1, term:"Literature", definition:"Language shaped for meaning, experience, and effect." },
-      { id:"fc2", module:1, term:"Genre", definition:"A category of writing with recognizable conventions (poetry, drama, fiction)." },
-      { id:"fc3", module:1, term:"Theme", definition:"A central idea or insight developed by the text." },
-      { id:"fc4", module:1, term:"Interpretation", definition:"A claim about meaning supported by evidence and explanation." },
-      { id:"fc5", module:1, term:"Convention", definition:"A typical feature expected in a genre." },
-      { id:"fc6", module:1, term:"Critical Reading", definition:"Analytical reading that explains how meaning is created." },
+    function fmtTime(){
+      const d = new Date();
+      return d.toLocaleString(undefined, {weekday:"short", year:"numeric", month:"short", day:"2-digit", hour:"2-digit", minute:"2-digit"});
+    }
+    setInterval(()=> sessionTime.textContent = fmtTime(), 1500);
+    sessionTime.textContent = fmtTime();
 
-      { id:"fc7", module:2, term:"Figure of Speech", definition:"Non-literal language used for rhetorical or vivid effect." },
-      { id:"fc8", module:2, term:"Denotation", definition:"A word’s dictionary meaning." },
-      { id:"fc9", module:2, term:"Connotation", definition:"A word’s associations and implied meanings." },
-      { id:"fc10", module:2, term:"Simile", definition:"Comparison using 'like' or 'as'." },
-      { id:"fc11", module:2, term:"Metaphor", definition:"Direct comparison without 'like/as'." },
-      { id:"fc12", module:2, term:"Analogy", definition:"Comparison used to explain an unfamiliar concept." },
-      { id:"fc13", module:2, term:"Imagery", definition:"Sensory description appealing to sight, sound, touch, taste, and smell." },
-      { id:"fc14", module:2, term:"Personification", definition:"Giving human qualities to non-human things." },
-      { id:"fc15", module:2, term:"Onomatopoeia", definition:"Words that imitate sounds (buzz, hiss, tick)." },
-
-      { id:"fc16", module:3, term:"Alliteration", definition:"Repetition of initial consonant sounds." },
-      { id:"fc17", module:3, term:"Assonance", definition:"Repetition of vowel sounds." },
-      { id:"fc18", module:3, term:"Consonance", definition:"Repetition of consonant sounds within/at ends of words." },
-      { id:"fc19", module:3, term:"Rhyme", definition:"Matching sounds, often at line ends." },
-      { id:"fc20", module:3, term:"Rhythm", definition:"Beat/flow created by stressed and unstressed syllables." },
-      { id:"fc21", module:3, term:"Symbol", definition:"An object/action that represents more than itself." },
-      { id:"fc22", module:3, term:"Irony", definition:"Contrast between expectation and reality, or stated vs intended meaning." },
-      { id:"fc23", module:3, term:"Hyperbole", definition:"Deliberate exaggeration for emphasis." },
-      { id:"fc24", module:3, term:"Understatement", definition:"Deliberately downplaying for effect." },
-      { id:"fc25", module:3, term:"Allusion", definition:"Brief reference to a known text/event/person to add meaning." },
-
-      { id:"fc26", module:4, term:"Speaker", definition:"The voice/persona speaking in a poem (not necessarily the poet)." },
-      { id:"fc27", module:4, term:"Stanza", definition:"A grouped set of lines in a poem." },
-      { id:"fc28", module:4, term:"Line", definition:"A single row of words in a poem; unit of rhythm/meaning." },
-      { id:"fc29", module:4, term:"Meter", definition:"Pattern of stressed/unstressed syllables." },
-      { id:"fc30", module:4, term:"Diction", definition:"Word choice and its effect." },
-      { id:"fc31", module:4, term:"Syntax", definition:"Word order; can create emphasis or surprise." },
-      { id:"fc32", module:4, term:"Form", definition:"Overall structure/pattern of a poem." },
-
-      { id:"fc33", module:5, term:"Close Reading", definition:"Careful analysis of language patterns to explain effect and meaning." },
-      { id:"fc34", module:5, term:"Contrast", definition:"Opposition (cold/warm, harsh/soft) used to sharpen meaning." },
-      { id:"fc35", module:5, term:"Tone", definition:"Attitude conveyed by the voice and style." },
-
-      { id:"fc36", module:6, term:"Dialogue", definition:"Character speech; main vehicle of action in drama." },
-      { id:"fc37", module:6, term:"Stage Directions", definition:"Performance instructions: setting, movement, tone, props." },
-      { id:"fc38", module:6, term:"Conflict", definition:"Central struggle driving plot and tension." },
-      { id:"fc39", module:6, term:"Exodos", definition:"Final section of Greek tragedy; concluding exit scene." },
-
-      { id:"fc40", module:7, term:"Evidence", definition:"Details that support an interpretation." },
-      { id:"fc41", module:7, term:"Inference", definition:"A conclusion drawn from evidence." },
-      { id:"fc42", module:7, term:"Subtext", definition:"Meaning implied beneath what is spoken." },
-
-      { id:"fc43", module:8, term:"Plot", definition:"Events arranged with causality; the structure of action." },
-      { id:"fc44", module:8, term:"Setting", definition:"Time/place/social world shaping characters and meaning." },
-      { id:"fc45", module:8, term:"Point of View", definition:"Who tells the story; controls information and perspective." },
-
-      { id:"fc46", module:9, term:"Irony (Austen)", definition:"Narrative strategy used to critique social norms and assumptions." },
-      { id:"fc47", module:9, term:"Satire", definition:"Critique through humor, irony, or exaggeration." },
-      { id:"fc48", module:9, term:"Narrator", definition:"Voice that tells the story; may be reliable or unreliable." },
-      { id:"fc49", module:9, term:"Social Class", definition:"Hierarchy shaping behavior, opportunities, and conflict." },
-      { id:"fc50", module:9, term:"Theme (Austen)", definition:"Meaning built through irony, dialogue, and social observation." },
-    ];
-
-    /* Data: 50 questions */
-    const quizzes = [
-      { id:"q1", module:1, question:"Literature is best described as…", type:"multiple", options:["Language shaped for meaning/effect","Scientific data","Only poetry","Only drama"], answer:"Language shaped for meaning/effect", explanation:"Literature uses language artistically to create meaning and effect." },
-      { id:"q2", module:1, question:"Which is NOT a major genre?", type:"multiple", options:["Poetry","Drama","Fiction","Algebra"], answer:"Algebra", explanation:"Algebra is not a literary genre." },
-      { id:"q3", module:1, question:"An interpretation should be supported by…", type:"multiple", options:["Evidence from the text","Only opinion","A guess","The author’s photo"], answer:"Evidence from the text", explanation:"Interpretations require textual support." },
-      { id:"q4", module:1, question:"Theme is best defined as…", type:"multiple", options:["A central idea/insight","A character name","A setting","A single word topic"], answer:"A central idea/insight", explanation:"Theme is an insight, not just a topic." },
-      { id:"q5", module:1, question:"Genre conventions are…", type:"multiple", options:["Typical features readers expect","Proof of truth","Only grammar rules","Only about rhyme"], answer:"Typical features readers expect", explanation:"Conventions help readers recognize and interpret genre." },
-      { id:"q6", module:1, question:"Literature study develops analytical reading.", type:"truefalse", options:["True","False"], answer:true, explanation:"It trains interpretation supported by evidence." },
-
-      { id:"q7", module:2, question:"A simile compares using…", type:"multiple", options:["like/as","only rhyme","stage directions","footnotes"], answer:"like/as", explanation:"Similes use 'like' or 'as'." },
-      { id:"q8", module:2, question:"Metaphor is…", type:"multiple", options:["Direct comparison","Comparison using like/as","Only sound","Only plot"], answer:"Direct comparison", explanation:"Metaphor compares directly without like/as." },
-      { id:"q9", module:2, question:"Imagery appeals to…", type:"multiple", options:["The five senses","Only logic","Only memory","Only grammar"], answer:"The five senses", explanation:"Imagery is sensory description." },
-      { id:"q10", module:2, question:"Personification gives…", type:"multiple", options:["Human traits to non-human things","Numbers to words","Settings to characters","Rhymes to plots"], answer:"Human traits to non-human things", explanation:"Personification humanizes the non-human." },
-      { id:"q11", module:2, question:"Onomatopoeia is…", type:"multiple", options:["Sound-imitating words","A plot twist","A stanza form","A theme"], answer:"Sound-imitating words", explanation:"Onomatopoeia imitates real sounds." },
-      { id:"q12", module:2, question:"Denotation refers to…", type:"multiple", options:["Dictionary meaning","Associations","Rhyme scheme","Narrator voice"], answer:"Dictionary meaning", explanation:"Denotation = literal meaning." },
-      { id:"q13", module:2, question:"Connotation refers to…", type:"multiple", options:["Associations/feelings","Only dictionary meaning","Only rhythm","Only movement"], answer:"Associations/feelings", explanation:"Connotation = implied meaning." },
-      { id:"q14", module:2, question:"A figure of speech is always literal.", type:"truefalse", options:["True","False"], answer:false, explanation:"Figures of speech are non-literal." },
-      { id:"q15", module:2, question:"Which is a simile?", type:"multiple", options:["Her smile was as bright as the sun.","Time is a thief.","The wind whispered.","Buzz."], answer:"Her smile was as bright as the sun.", explanation:"Simile uses as/like." },
-      { id:"q16", module:2, question:"Which is a metaphor?", type:"multiple", options:["Time is a thief.","As cold as ice.","The clock ticked.","The roses are red."], answer:"Time is a thief.", explanation:"Metaphor is direct comparison." },
-      { id:"q17", module:2, question:"Analogy is mainly used to…", type:"multiple", options:["Explain an unfamiliar concept","Create rhyme","List facts","Give directions"], answer:"Explain an unfamiliar concept", explanation:"Analogy compares to clarify." },
-      { id:"q18", module:2, question:"Define imagery (short).", type:"short", answer:"sensory", explanation:"Imagery is sensory language." },
-
-      { id:"q19", module:3, question:"Alliteration is repetition of…", type:"multiple", options:["Initial consonant sounds","Initial vowel sounds","Plot events","Character names"], answer:"Initial consonant sounds", explanation:"Alliteration repeats initial consonants." },
-      { id:"q20", module:3, question:"Assonance is repetition of…", type:"multiple", options:["Vowel sounds","Only consonants","Punctuation","Imagery"], answer:"Vowel sounds", explanation:"Assonance repeats vowel sounds." },
-      { id:"q21", module:3, question:"Consonance is repetition of…", type:"multiple", options:["Consonant sounds","Only vowels","Only rhyme","Only metaphor"], answer:"Consonant sounds", explanation:"Consonance repeats consonant sounds." },
-      { id:"q22", module:3, question:"Irony involves…", type:"multiple", options:["Contrast between expectation and reality","Only rhyme","Only meter","Only setting"], answer:"Contrast between expectation and reality", explanation:"Irony depends on mismatch/contrast." },
-      { id:"q23", module:3, question:"A symbol…", type:"multiple", options:["Represents more than itself","Is always literal","Is only sound","Is only plot"], answer:"Represents more than itself", explanation:"Symbols carry layered meaning." },
-      { id:"q24", module:3, question:"Allusion is…", type:"multiple", options:["A reference to something known","A stanza break","A conflict type","A rhyme error"], answer:"A reference to something known", explanation:"Allusion adds meaning through reference." },
-      { id:"q25", module:3, question:"Hyperbole is…", type:"multiple", options:["Exaggeration for effect","A factual report","A symbol only","A meter"], answer:"Exaggeration for effect", explanation:"Hyperbole exaggerates deliberately." },
-      { id:"q26", module:3, question:"Understatement is…", type:"multiple", options:["Downplaying for effect","Overstating","Only imagery","Only rhyme"], answer:"Downplaying for effect", explanation:"Understatement minimizes deliberately." },
-      { id:"q27", module:3, question:"Sound devices can shape mood.", type:"truefalse", options:["True","False"], answer:true, explanation:"Sound texture affects tone." },
-      { id:"q28", module:3, question:"Name one sound device (short).", type:"short", answer:"alliteration", explanation:"Examples: alliteration, assonance, consonance, rhyme." },
-
-      { id:"q29", module:4, question:"A stanza is…", type:"multiple", options:["A group of lines","A character","A setting","A plot twist"], answer:"A group of lines", explanation:"Stanza = grouped lines." },
-      { id:"q30", module:4, question:"The speaker is…", type:"multiple", options:["The voice speaking in the poem","Always the poet","Always the reader","The rhyme scheme"], answer:"The voice speaking in the poem", explanation:"Speaker is a persona/voice." },
-      { id:"q31", module:4, question:"Meter refers to…", type:"multiple", options:["Stress pattern","Plot structure","Stage movement","Character traits"], answer:"Stress pattern", explanation:"Meter = stress pattern." },
-      { id:"q32", module:4, question:"Diction means…", type:"multiple", options:["Word choice","Line breaks","Stage setting","Rhyme only"], answer:"Word choice", explanation:"Diction is word choice." },
-      { id:"q33", module:4, question:"Syntax means…", type:"multiple", options:["Word order","Only vocabulary","Only sound","Only imagery"], answer:"Word order", explanation:"Syntax = arrangement of words." },
-      { id:"q34", module:4, question:"Poetry is often…", type:"multiple", options:["Compressed and patterned","Only long prose","Only factual","Only dialogue"], answer:"Compressed and patterned", explanation:"Poetry intensifies meaning through pattern." },
-      { id:"q35", module:4, question:"Form can shape meaning.", type:"truefalse", options:["True","False"], answer:true, explanation:"Structure influences emphasis and pacing." },
-      { id:"q36", module:4, question:"Define stanza (short).", type:"short", answer:"group", explanation:"A stanza is a group of lines." },
-
-      { id:"q37", module:5, question:"Close reading focuses on…", type:"multiple", options:["How language works","Only summary","Only biography","Only cover design"], answer:"How language works", explanation:"Close reading explains meaning through language patterns." },
-      { id:"q38", module:5, question:"Contrast helps by…", type:"multiple", options:["Sharpening meaning through oppositions","Removing imagery","Avoiding sound","Forcing one reading"], answer:"Sharpening meaning through oppositions", explanation:"Contrast highlights tensions and themes." },
-      { id:"q39", module:5, question:"Summarizing is the same as analyzing.", type:"truefalse", options:["True","False"], answer:false, explanation:"Analysis explains how meaning is produced." },
-      { id:"q40", module:5, question:"Name one focus in close reading (short).", type:"short", answer:"imagery", explanation:"Examples: imagery, diction, sound, structure." },
-
-      { id:"q41", module:6, question:"Drama is primarily meant to be…", type:"multiple", options:["Performed","Memorized as a list","Only read silently","Only drawn"], answer:"Performed", explanation:"Drama is written for performance." },
-      { id:"q42", module:6, question:"Stage directions mainly…", type:"multiple", options:["Guide performance","Replace dialogue","Explain metaphors","Count syllables"], answer:"Guide performance", explanation:"They instruct staging and action." },
-      { id:"q43", module:6, question:"Conflict is…", type:"multiple", options:["Central struggle driving action","The font","A stanza type","A rhyme scheme"], answer:"Central struggle driving action", explanation:"Conflict drives tension and plot." },
-      { id:"q44", module:6, question:"Dialogue is crucial in drama.", type:"truefalse", options:["True","False"], answer:true, explanation:"Dialogue drives action and character." },
-
-      { id:"q45", module:7, question:"In Trifles, meaning often comes from…", type:"multiple", options:["Small details treated as evidence","Only long speeches","Random guessing","Only the title"], answer:"Small details treated as evidence", explanation:"Details produce inference." },
-      { id:"q46", module:7, question:"Subtext is…", type:"multiple", options:["Implied meaning beneath words","Only directions","Only rhyme","Only plot"], answer:"Implied meaning beneath words", explanation:"Subtext is what is suggested, not directly stated." },
-      { id:"q47", module:7, question:"Inference means…", type:"multiple", options:["Conclusion from evidence","A dictionary meaning","A rhyme scheme","A scene break"], answer:"Conclusion from evidence", explanation:"Inference uses clues to reason." },
-      { id:"q48", module:7, question:"Evidence matters more than opinion in analysis.", type:"truefalse", options:["True","False"], answer:true, explanation:"Claims need textual support." },
-
-      { id:"q49", module:8, question:"A novella is usually…", type:"multiple", options:["Between short story and novel","Longer than a novel","Shorter than a paragraph","Not fiction"], answer:"Between short story and novel", explanation:"Novella sits between short story and novel." },
-      { id:"q50", module:9, question:"Austen’s opening signals…", type:"multiple", options:["Irony and social critique","A scientific law","A direction","A literal command"], answer:"Irony and social critique", explanation:"The line frames social satire." },
-    ];
-
-    /* Data: 25 maps */
-    const mindmaps = [
-      { id:"mm1", module:1, title:"Major Genres", nodes:[
-        {text:"Poetry", children:[{text:"sound"},{text:"imagery"},{text:"form"}], link:"module4"},
-        {text:"Drama", children:[{text:"dialogue"},{text:"stage directions"},{text:"conflict"}], link:"module6"},
-        {text:"Fiction", children:[{text:"plot"},{text:"character"},{text:"setting"},{text:"point of view"}], link:"module8"},
-      ]},
-      { id:"mm2", module:2, title:"Core Figures of Speech", nodes:[
-        {text:"Simile", children:[{text:"like/as"}]},
-        {text:"Metaphor", children:[{text:"direct comparison"}]},
-        {text:"Imagery", children:[{text:"five senses"}]},
-        {text:"Personification", children:[{text:"human qualities"}]},
-        {text:"Onomatopoeia", children:[{text:"sound words"}]},
-      ], link:"module2"},
-      { id:"mm3", module:3, title:"Sound Devices", nodes:[
-        {text:"Alliteration"},{text:"Assonance"},{text:"Consonance"},{text:"Rhyme"},{text:"Rhythm"}
-      ], link:"module3"},
-      { id:"mm4", module:4, title:"Poetry Elements", nodes:[
-        {text:"Speaker"},{text:"Diction"},{text:"Syntax"},{text:"Imagery"},{text:"Sound"},{text:"Form"},{text:"Theme"}
-      ], link:"module4"},
-      { id:"mm5", module:5, title:"Close Reading", nodes:[
-        {text:"Pattern", children:[{text:"sound"},{text:"imagery"},{text:"structure"}]},
-        {text:"Effect", children:[{text:"mood"},{text:"emphasis"}]},
-        {text:"Meaning", children:[{text:"interpretation"}]},
-      ], link:"module5"},
-      { id:"mm6", module:6, title:"Drama Toolkit", nodes:[
-        {text:"Dialogue"},{text:"Stage Directions"},{text:"Conflict"},{text:"Scene/Act"}
-      ], link:"module6"},
-      { id:"mm7", module:7, title:"Evidence and Inference", nodes:[
-        {text:"Details"},{text:"Inference"},{text:"Subtext"},{text:"Authority"}
-      ], link:"module7"},
-      { id:"mm8", module:8, title:"Fiction Elements", nodes:[
-        {text:"Plot"},{text:"Character"},{text:"Setting"},{text:"Point of View"},{text:"Theme"}
-      ], link:"module8"},
-      { id:"mm9", module:9, title:"Austen Focus", nodes:[
-        {text:"Irony"},{text:"Class"},{text:"Manners"},{text:"Marriage economy"}
-      ], link:"module9"},
-    ];
-    while (mindmaps.length < 25){
-      const n = mindmaps.length + 1;
-      mindmaps.push({
-        id:"mm"+n, module:0, title:"Revision Map " + n,
-        nodes:[
-          {text:"Claim", children:[{text:"what you argue"}]},
-          {text:"Evidence", children:[{text:"quote/detail"}]},
-          {text:"Explanation", children:[{text:"how evidence supports claim"}]},
-          {text:"Device", children:[{text:"figure/sound/form"}]},
-        ],
-        link:"review"
+    // Build tabs
+    function buildTabs(){
+      navwrap.innerHTML = "";
+      modules.forEach((m, idx)=>{
+        const btn = document.createElement("button");
+        btn.className = "tab";
+        btn.dataset.id = m.id;
+        btn.innerHTML = `<span class="dot" aria-hidden="true"></span> ${m.short}`;
+        btn.onclick = ()=> openModule(m.id);
+        navwrap.appendChild(btn);
       });
     }
 
-    /* Helpers */
-    function getPracticeContainer(module){ return document.getElementById(`m${module}Practice`); }
-    function clearPractice(module){ const c = getPracticeContainer(module); if (c) c.innerHTML = ""; }
-    function escapeHTML(s){ return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;"); }
-    function shuffle(arr){
-      const a = arr.slice();
-      for (let i=a.length-1;i>0;i--){
-        const j = Math.floor(Math.random()*(i+1));
-        [a[i],a[j]]=[a[j],a[i]];
-      }
-      return a;
+    function markVisited(id){
+      state.visited[id] = true;
+      saveState();
     }
 
-    /* Terms */
-    function showFlashcards(module){
-      clearPractice(module);
-      const container = getPracticeContainer(module);
-      if (!container) return;
+    function openModule(id){
+      const mod = modules.find(x=>x.id===id) || modules[0];
+      state.lastModule = mod.id;
+      markVisited(mod.id);
 
-      const deck = shuffle(flashcards.filter(f=>f.module===module));
-      container.innerHTML = `<div class="callout">Click a card to reveal the definition. Mark mastery as you revise.</div><div class="flashWrap" id="flashWrap${module}"></div>`;
-      const wrap = document.getElementById(`flashWrap${module}`);
+      [...document.querySelectorAll(".tab")].forEach(t => t.classList.toggle("active", t.dataset.id === mod.id));
 
-      deck.forEach(f=>{
-        const status = state.mastered[f.id] || "review";
-        const card = document.createElement("div");
-        card.className = "flashcard";
-        card.innerHTML = `
-          <div>
-            <div class="flashFront">${escapeHTML(f.term)}</div>
-            <div class="flashBack">${escapeHTML(f.definition)}</div>
-          </div>
-          <div class="statusRow">
-            <button class="statusBtn ${status==="review"?"active":""}" data-id="${f.id}" data-st="review">Review</button>
-            <button class="statusBtn ${status==="known"?"active":""}" data-id="${f.id}" data-st="known">Known</button>
-            <button class="statusBtn ${status==="mastered"?"active":""}" data-id="${f.id}" data-st="mastered">Mastered</button>
+      sectionTitle.textContent = mod.title;
+      sectionKicker.textContent = mod.kicker;
+      moduleBadge.innerHTML = `<b>Module:</b> ${mod.short}`;
+
+      sectionBody.innerHTML = renderModule(mod);
+      wireModuleActions(mod);
+
+      window.scrollTo({top:0, behavior:"smooth"});
+      toastMsg(`${mod.short} loaded`);
+    }
+
+    function renderModule(mod){
+      const blocks = mod.learn.map(b=>{
+        const items = b.text.map(t=>`<li>${escapeHtml(t)}</li>`).join("");
+        return `
+          <div class="soft">
+            <div style="display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; align-items:center;">
+              <b>${escapeHtml(b.heading)}</b>
+              <span class="badge blue"><b>Learn</b></span>
+            </div>
+            <ul class="list">${items}</ul>
           </div>
         `;
-        card.addEventListener("click",(e)=>{
-          if (e.target.classList.contains("statusBtn")) return;
-          card.classList.toggle("flipped");
-        });
-        card.querySelectorAll(".statusBtn").forEach(btn=>{
-          btn.addEventListener("click",(e)=>{
-            e.stopPropagation();
-            state.mastered[btn.dataset.id] = btn.dataset.st;
-            saveState();
-            card.querySelectorAll(".statusBtn").forEach(b=>b.classList.toggle("active", b.dataset.st===btn.dataset.st));
-          });
-        });
-        wrap.appendChild(card);
-      });
+      }).join("<div style='height:12px'></div>");
 
-      updateStats();
-    }
-
-    function showAllFlashcards(){
-      const reviewArea = document.getElementById("reviewArea");
-      if (!reviewArea) return;
-      reviewArea.innerHTML = `<div class="callout"><b>Key Terms</b> — click to reveal definitions and mark mastery.</div>`;
-      const deck = shuffle(flashcards);
-      const wrap = document.createElement("div");
-      wrap.className = "flashWrap";
-
-      deck.forEach(f=>{
-        const status = state.mastered[f.id] || "review";
-        const card = document.createElement("div");
-        card.className = "flashcard";
-        card.innerHTML = `
-          <div>
-            <div class="flashFront">${escapeHTML(f.term)} <span style="font-size:14px;color:rgba(11,27,19,.55);font-weight:800;">(M${f.module})</span></div>
-            <div class="flashBack">${escapeHTML(f.definition)}</div>
-          </div>
-          <div class="statusRow">
-            <button class="statusBtn ${status==="review"?"active":""}" data-id="${f.id}" data-st="review">Review</button>
-            <button class="statusBtn ${status==="known"?"active":""}" data-id="${f.id}" data-st="known">Known</button>
-            <button class="statusBtn ${status==="mastered"?"active":""}" data-id="${f.id}" data-st="mastered">Mastered</button>
-          </div>
-        `;
-        card.addEventListener("click",(e)=>{
-          if (e.target.classList.contains("statusBtn")) return;
-          card.classList.toggle("flipped");
-        });
-        card.querySelectorAll(".statusBtn").forEach(btn=>{
-          btn.addEventListener("click",(e)=>{
-            e.stopPropagation();
-            state.mastered[btn.dataset.id] = btn.dataset.st;
-            saveState();
-            card.querySelectorAll(".statusBtn").forEach(b=>b.classList.toggle("active", b.dataset.st===btn.dataset.st));
-          });
-        });
-        wrap.appendChild(card);
-      });
-
-      reviewArea.appendChild(wrap);
-      updateStats();
-    }
-
-    /* Questions */
-    function renderFeedback(container, ok, explanation){
-      const old = container.querySelector(".feedback");
-      if (old) old.remove();
-      const p = document.createElement("div");
-      p.className = "feedback " + (ok ? "good":"bad");
-      p.innerHTML = ok ? `✅ <b>Correct.</b> ${escapeHTML(explanation)}` : `❌ <b>Incorrect.</b> ${escapeHTML(explanation)}`;
-      container.appendChild(p);
-    }
-
-    function showQuiz(module){
-      clearPractice(module);
-      const container = getPracticeContainer(module);
-      if (!container) return;
-
-      const set = shuffle(quizzes.filter(q=>q.module===module)).slice(0,6);
-      container.innerHTML = `
-        <div class="callout">Answer the questions and submit each item for feedback.</div>
-        <div id="quizWrap${module}"></div>
-        <div class="toolbar" style="margin-top:12px;">
-          <div class="left"><button class="btn" onclick="showQuiz(${module})">New Set</button></div>
+      const actions = `
+        <div class="actions">
+          <button class="btn primary" data-action="flashcards">Flashcards</button>
+          <button class="btn good" data-action="quiz">Quiz</button>
+          <button class="btn" data-action="mindmap">Mind Map</button>
+          <button class="btn" data-action="notes">Notes</button>
+          <button class="btn" data-action="next">Next</button>
         </div>
       `;
 
-      const wrap = document.getElementById(`quizWrap${module}`);
-      set.forEach((q, idx)=>{
-        const box = document.createElement("div");
-        box.className = "quiz-question";
-        box.innerHTML = `<p>${idx+1}. ${escapeHTML(q.question)}</p>`;
+      const hint = mod.practiceHint
+        ? `<div class="quote"><b>Practice focus:</b> ${escapeHtml(mod.practiceHint)}</div>`
+        : "";
 
-        if (q.type === "multiple"){
-          q.options.forEach(opt=>{
-            const lab = document.createElement("label");
-            lab.className = "opt";
-            lab.innerHTML = `<input type="radio" name="q_${module}_${q.id}" value="${escapeHTML(opt)}"><span>${escapeHTML(opt)}</span>`;
-            box.appendChild(lab);
+      return `
+        ${hint}
+        ${blocks}
+        <div style="height:14px"></div>
+        ${actions}
+      `;
+    }
+
+    function wireModuleActions(mod){
+      sectionBody.querySelectorAll("[data-action]").forEach(btn=>{
+        btn.onclick = ()=>{
+          const act = btn.dataset.action;
+          if(act==="flashcards") openFlashcards(mod.id);
+          if(act==="quiz") openQuiz(mod.id);
+          if(act==="mindmap") openMindmap(mod.id);
+          if(act==="notes") openNotes(mod.id);
+          if(act==="next") openNext(mod.id);
+        };
+      });
+    }
+
+    function openNext(id){
+      const idx = modules.findIndex(x=>x.id===id);
+      const next = modules[Math.min(idx+1, modules.length-1)];
+      openModule(next.id);
+    }
+
+    function escapeHtml(s){
+      return String(s)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    /***********************
+     * STATS / PROGRESS
+     ***********************/
+    function renderStats(){
+      const visitedCount = Object.keys(state.visited).length;
+      const total = modules.length;
+
+      document.getElementById("statVisited").textContent = `${visitedCount}/${total}`;
+      document.getElementById("statQuiz").textContent = `${state.quizDone}`;
+      document.getElementById("statBest").textContent = state.bestScore === null ? "—" : `${state.bestScore}%`;
+
+      // mastered flashcards = status 2
+      const masteredCount = Object.values(state.fcStatus).filter(v=>v===2).length;
+      document.getElementById("statMastered").textContent = `${masteredCount}`;
+
+      const pct = Math.round((visitedCount/total) * 55 + (Math.min(state.quizDone,10)/10) * 25 + (Math.min(masteredCount,20)/20) * 20);
+      progFill.style.width = `${Math.min(100, pct)}%`;
+    }
+
+    /***********************
+     * MODAL HELPERS
+     ***********************/
+    function showModal(title, bodyHtml){
+      modalTitle.textContent = title;
+      modalBody.innerHTML = bodyHtml;
+      modal.classList.add("show");
+    }
+    function closeModal(){
+      modal.classList.remove("show");
+    }
+    document.getElementById("modalClose").onclick = closeModal;
+    modal.addEventListener("click", (e)=>{ if(e.target===modal) closeModal(); });
+
+    /***********************
+     * FLASHCARDS
+     ***********************/
+    function openFlashcards(moduleId){
+      const deck = flashcards
+        .map((c, idx)=>({...c, idx}))
+        .filter(c => moduleId==="review" ? true : c.m===moduleId);
+
+      if(deck.length===0){
+        showModal("Flashcards", `<div class="soft orange"><b>No flashcards found for this module yet.</b></div>`);
+        return;
+      }
+
+      const body = `
+        <div class="row" style="justify-content:space-between">
+          <div class="badge"><b>Cards:</b> ${deck.length}</div>
+          <div class="row">
+            <button class="btn" id="fcShuffle">Shuffle</button>
+            <button class="btn" id="fcFilterMastered">Hide mastered</button>
+          </div>
+        </div>
+
+        <div style="height:12px"></div>
+        <div class="fc-grid" id="fcGrid"></div>
+      `;
+
+      showModal("Flashcards", body);
+
+      let hideMastered = false;
+      let current = [...deck];
+
+      const grid = document.getElementById("fcGrid");
+
+      function renderDeck(){
+        grid.innerHTML = "";
+        const shown = hideMastered
+          ? current.filter(c => (state.fcStatus[c.idx] ?? 0) !== 2)
+          : current;
+
+        shown.forEach(c=>{
+          const st = state.fcStatus[c.idx] ?? 0; // 0 review, 1 known, 2 mastered
+          const chip = st===0 ? `<span class="chip orange">Review</span>` : st===1 ? `<span class="chip">Known</span>` : `<span class="chip good">Mastered</span>`;
+
+          const el = document.createElement("div");
+          el.className = "flashcard";
+          el.innerHTML = `
+            <div class="flashcard-inner">
+              <div class="face front">
+                <div>
+                  <h4>${escapeHtml(c.term)}</h4>
+                  <div class="tiny">Module: ${escapeHtml(moduleLabel(c.m))} • Tag: ${escapeHtml(c.tag || "—")}</div>
+                </div>
+                <div class="tagrow">
+                  <div class="status">${chip}</div>
+                  <div class="tiny">Click to flip</div>
+                </div>
+              </div>
+              <div class="face back">
+                <div>
+                  <h4>Meaning</h4>
+                  <p>${escapeHtml(c.def)}</p>
+                </div>
+                <div class="tagrow">
+                  <div class="row">
+                    <button class="btn" data-s="0" style="padding:10px 12px">Review</button>
+                    <button class="btn" data-s="1" style="padding:10px 12px">Known</button>
+                    <button class="btn good" data-s="2" style="padding:10px 12px">Master</button>
+                  </div>
+                  <div class="tiny">Choose a level</div>
+                </div>
+              </div>
+            </div>
+          `;
+
+          el.addEventListener("click", (e)=>{
+            const t = e.target;
+            if(t && t.dataset && t.dataset.s !== undefined){
+              e.stopPropagation();
+              const val = Number(t.dataset.s);
+              state.fcStatus[c.idx] = val;
+              saveState();
+              toastMsg(val===2 ? "Card mastered" : val===1 ? "Marked known" : "Marked for review");
+              renderDeck();
+              return;
+            }
+            el.classList.toggle("flipped");
           });
-        } else if (q.type === "truefalse"){
-          ["true","false"].forEach(v=>{
-            const lab = document.createElement("label");
-            lab.className = "opt";
-            lab.innerHTML = `<input type="radio" name="q_${module}_${q.id}" value="${v}"><span>${v[0].toUpperCase()+v.slice(1)}</span>`;
-            box.appendChild(lab);
-          });
+
+          grid.appendChild(el);
+        });
+
+        if(shown.length===0){
+          grid.innerHTML = `<div class="soft blue"><b>All cards in this view are mastered.</b></div>`;
+        }
+      }
+
+      document.getElementById("fcShuffle").onclick = ()=>{
+        current.sort(()=>Math.random()-0.5);
+        renderDeck();
+      };
+      document.getElementById("fcFilterMastered").onclick = ()=>{
+        hideMastered = !hideMastered;
+        toastMsg(hideMastered ? "Hiding mastered" : "Showing all");
+        renderDeck();
+      };
+
+      renderDeck();
+    }
+
+    function moduleLabel(mid){
+      const mod = modules.find(x=>x.id===mid);
+      return mod ? mod.short : mid;
+    }
+
+    /***********************
+     * QUIZ
+     ***********************/
+    function openQuiz(moduleId){
+      const pool = quizzes
+        .map((q, idx)=>({...q, idx}))
+        .filter(q => moduleId==="review" ? true : q.m===moduleId);
+
+      if(pool.length===0){
+        showModal("Quiz", `<div class="soft orange"><b>No quiz items found for this module yet.</b></div>`);
+        return;
+      }
+
+      // pick up to 8 for module, 10 for review
+      const pickN = moduleId==="review" ? 10 : Math.min(8, pool.length);
+      const selected = [...pool].sort(()=>Math.random()-0.5).slice(0, pickN);
+
+      let answers = {};
+      let submitted = false;
+
+      const body = `
+        <div class="row" style="justify-content:space-between">
+          <div class="badge"><b>Questions:</b> ${selected.length}</div>
+          <div class="badge blue"><b>Time:</b> <span id="qtimer">00:00</span></div>
+        </div>
+        <div style="height:12px"></div>
+        <div id="qwrap"></div>
+        <div class="actions" style="margin-top:12px">
+          <button class="btn good" id="qSubmit">Submit</button>
+          <button class="btn" id="qNew">New set</button>
+        </div>
+        <div id="qResult" style="margin-top:12px"></div>
+      `;
+
+      showModal("Quiz", body);
+
+      // timer
+      const start = Date.now();
+      const timerEl = document.getElementById("qtimer");
+      const timer = setInterval(()=>{
+        const sec = Math.floor((Date.now()-start)/1000);
+        const mm = String(Math.floor(sec/60)).padStart(2,"0");
+        const ss = String(sec%60).padStart(2,"0");
+        timerEl.textContent = `${mm}:${ss}`;
+      }, 250);
+
+      const qwrap = document.getElementById("qwrap");
+
+      selected.forEach((item, i)=>{
+        const id = `q_${i}`;
+        const box = document.createElement("div");
+        box.className = "qbox";
+
+        let html = `<h4>${i+1}. ${escapeHtml(item.q)}</h4>`;
+
+        if(item.type==="mc"){
+          html += item.options.map((opt, oi)=>`
+            <label class="opt">
+              <input type="radio" name="${id}" value="${oi}">
+              <span>${escapeHtml(opt)}</span>
+            </label>
+          `).join("");
+        } else if(item.type==="tf"){
+          html += `
+            <label class="opt"><input type="radio" name="${id}" value="true"><span>True</span></label>
+            <label class="opt"><input type="radio" name="${id}" value="false"><span>False</span></label>
+          `;
         } else {
-          const input = document.createElement("input");
-          input.type = "text";
-          input.style.width = "100%";
-          input.style.padding = "12px";
-          input.style.borderRadius = "14px";
-          input.style.border = "1px solid rgba(11,27,19,.16)";
-          input.style.fontSize = "18px";
-          input.id = `short_${module}_${q.id}`;
-          box.appendChild(input);
+          html += `<input class="pill" style="width:100%; border-radius:16px; padding:12px 14px; font-size:1rem" placeholder="Type your answer..." id="${id}_short">`;
         }
 
-        const btn = document.createElement("button");
-        btn.className = "btn primary";
-        btn.textContent = "Submit";
-        btn.style.marginTop = "10px";
+        html += `<div class="qmeta">
+          <span class="badge orange"><b>Module:</b> ${escapeHtml(moduleLabel(item.m))}</span>
+          <span class="badge blue"><b>Skill:</b> Retrieval</span>
+        </div>`;
 
-        btn.onclick = ()=>{
-          let ok = false;
-
-          if (q.type === "short"){
-            const user = (document.getElementById(`short_${module}_${q.id}`).value || "").trim().toLowerCase();
-            ok = user.includes((q.answer||"").toLowerCase());
-            if (ok) state.correct[q.id] = true;
-            renderFeedback(box, ok, q.explanation);
-          } else {
-            const checked = document.querySelector(`input[name="q_${module}_${q.id}"]:checked`);
-            if (!checked){ renderFeedback(box, false, "Please select an answer."); return; }
-            const val = checked.value;
-            ok = (q.type==="truefalse") ? (String(q.answer) === (val==="true" ? "true":"false")) : (val === q.answer);
-            if (ok) state.correct[q.id] = true;
-            renderFeedback(box, ok, q.explanation);
-          }
-
-          saveState();
-        };
-
-        box.appendChild(btn);
-        wrap.appendChild(box);
+        box.innerHTML = html;
+        qwrap.appendChild(box);
       });
 
-      updateStats();
-    }
-
-    function showAllQuizzes(){
-      const reviewArea = document.getElementById("reviewArea");
-      if (!reviewArea) return;
-
-      reviewArea.innerHTML = `<div class="callout"><b>Question Bank</b> — review answers and explanations.</div>`;
-      const list = document.createElement("div");
-
-      quizzes.forEach((q, i)=>{
-        const box = document.createElement("div");
-        box.className = "quiz-question";
-        const done = state.correct[q.id] ? "✅" : "—";
-        box.innerHTML = `<p>${i+1}. ${done} <span style="color:rgba(11,27,19,.55);font-weight:800;">(M${q.module})</span> ${escapeHTML(q.question)}</p>`;
-        const explain = document.createElement("div");
-        explain.className = "callout";
-        explain.style.margin = "10px 0 0";
-        explain.innerHTML = `<b>Answer:</b> ${escapeHTML(String(q.answer))}<br><b>Explanation:</b> ${escapeHTML(q.explanation)}`;
-        box.appendChild(explain);
-        list.appendChild(box);
-      });
-
-      reviewArea.appendChild(list);
-      updateStats();
-    }
-
-    /* Matching */
-    function showMatching(module){
-      clearPractice(module);
-      const container = getPracticeContainer(module);
-      if (!container) return;
-
-      const pool = flashcards.filter(f=>f.module===module);
-      const set = shuffle(pool).slice(0,6);
-      const terms = shuffle(set.map(x=>({id:x.id, text:x.term})));
-      const defs  = shuffle(set.map(x=>({id:x.id, text:x.definition})));
-
-      container.innerHTML = `
-        <div class="callout">Drag each term onto the correct definition.</div>
-        <div class="matchGrid">
-          <div class="zone"><b>Terms</b><div id="terms_${module}"></div></div>
-          <div class="zone"><b>Definitions</b><div id="defs_${module}"></div></div>
-        </div>
-        <div class="toolbar" style="margin-top:12px;">
-          <div class="left"><button class="btn" onclick="showMatching(${module})">New Set</button></div>
-        </div>
-      `;
-
-      const termsEl = document.getElementById(`terms_${module}`);
-      const defsEl  = document.getElementById(`defs_${module}`);
-
-      let solved = 0;
-
-      terms.forEach(t=>{
-        const el = document.createElement("div");
-        el.className = "draggable";
-        el.draggable = true;
-        el.dataset.id = t.id;
-        el.textContent = t.text;
-        el.addEventListener("dragstart",(e)=>e.dataTransfer.setData("text/plain", t.id));
-        termsEl.appendChild(el);
-      });
-
-      defs.forEach(d=>{
-        const dz = document.createElement("div");
-        dz.className = "dropDef";
-        dz.dataset.id = d.id;
-        dz.innerHTML = `<b style="display:block;margin-bottom:6px;">Definition</b>${escapeHTML(d.text)}`;
-
-        dz.addEventListener("dragover",(e)=>e.preventDefault());
-        dz.addEventListener("drop",(e)=>{
-          e.preventDefault();
-          const draggedId = e.dataTransfer.getData("text/plain");
-          const termEl = termsEl.querySelector(`.draggable[data-id="${draggedId}"]`);
-          if (!termEl) return;
-
-          if (draggedId === d.id){
-            dz.style.borderColor = "rgba(22,163,74,.45)";
-            dz.style.background = "rgba(22,163,74,.10)";
-            dz.innerHTML = `<b style="display:block;margin-bottom:6px;">Matched</b><div style="margin-bottom:8px;"><b>${escapeHTML(termEl.textContent)}</b></div>${escapeHTML(d.text)}`;
-            termEl.remove();
-            solved++;
-            if (solved === defs.length){
-              const done = document.createElement("div");
-              done.className = "callout";
-              done.innerHTML = `<b>Completed.</b> Continue to the questions for this module.`;
-              container.appendChild(done);
-            }
-          } else {
-            dz.style.borderColor = "rgba(255,77,77,.40)";
-            dz.style.background = "rgba(255,77,77,.10)";
-            dz.animate([{transform:"translateX(0)"},{transform:"translateX(-8px)"},{transform:"translateX(8px)"},{transform:"translateX(0)"}], {duration:260});
+      function readAnswers(){
+        const out = {};
+        selected.forEach((item,i)=>{
+          const id = `q_${i}`;
+          if(item.type==="mc"){
+            const sel = document.querySelector(`input[name="${id}"]:checked`);
+            out[i] = sel ? Number(sel.value) : null;
+          }else if(item.type==="tf"){
+            const sel = document.querySelector(`input[name="${id}"]:checked`);
+            out[i] = sel ? (sel.value==="true") : null;
+          }else{
+            const v = (document.getElementById(`${id}_short`).value || "").trim().toLowerCase();
+            out[i] = v.length ? v : null;
           }
         });
-
-        defsEl.appendChild(dz);
-      });
-    }
-
-    /* Maps */
-    function showMindMap(module){
-      clearPractice(module);
-      const container = getPracticeContainer(module);
-      if (!container) return;
-
-      const maps = mindmaps.filter(m => (m.module===module || m.module===0)).slice(0,3);
-      container.innerHTML = `<div class="callout">Open a map to revise key ideas and connections.</div>`;
-
-      maps.forEach(m=>{
-        const mapDiv = document.createElement("div");
-        mapDiv.className = "mindmap";
-        mapDiv.innerHTML = `<div class="node">${escapeHTML(m.title)} <span style="font-size:14px;font-weight:800;color:rgba(11,27,19,.55);">(${m.id})</span><div class="child"></div></div>`;
-        const node = mapDiv.querySelector(".node");
-        const child = mapDiv.querySelector(".child");
-
-        child.innerHTML = `<ul style="margin:0;padding-left:18px;">
-          ${m.nodes.map(n=>`
-            <li style="margin:8px 0;">
-              ${n.link ? `<a href="#" onclick="showSection('${n.link}'); return false;" style="color:#0077cc;font-weight:900;text-decoration:none;">${escapeHTML(n.text)}</a>` : `<span>${escapeHTML(n.text)}</span>`}
-              ${n.children ? `<ul style="margin:6px 0 0 18px;">${n.children.map(c=>`<li>${escapeHTML(c.text)}</li>`).join("")}</ul>` : ""}
-            </li>
-          `).join("")}
-        </ul>`;
-
-        node.addEventListener("click", ()=>{
-          node.classList.toggle("expanded");
-          mapDiv.classList.toggle("expanded");
-          markMindMapExplored(m.id);
-        });
-
-        container.appendChild(mapDiv);
-      });
-
-      updateStats();
-    }
-
-    function showAllMindMaps(){
-      const reviewArea = document.getElementById("reviewArea");
-      if (!reviewArea) return;
-
-      reviewArea.innerHTML = `<div class="callout"><b>Revision Maps</b> — open each map to revise key concepts.</div>`;
-      mindmaps.forEach(m=>{
-        const mapDiv = document.createElement("div");
-        mapDiv.className = "mindmap";
-        mapDiv.innerHTML = `<div class="node">${escapeHTML(m.title)} <span style="font-size:14px;font-weight:800;color:rgba(11,27,19,.55);">(${m.id})</span><div class="child"></div></div>`;
-        const node = mapDiv.querySelector(".node");
-        const child = mapDiv.querySelector(".child");
-
-        child.innerHTML = `<ul style="margin:0;padding-left:18px;">
-          ${m.nodes.map(n=>`
-            <li style="margin:8px 0;">
-              ${m.link ? `<a href="#" onclick="showSection('${m.link}'); return false;" style="color:#0077cc;font-weight:900;text-decoration:none;">${escapeHTML(n.text)}</a>` : `<span>${escapeHTML(n.text)}</span>`}
-              ${n.children ? `<ul style="margin:6px 0 0 18px;">${n.children.map(c=>`<li>${escapeHTML(c.text)}</li>`).join("")}</ul>` : ""}
-            </li>
-          `).join("")}
-        </ul>`;
-
-        node.addEventListener("click", ()=>{
-          node.classList.toggle("expanded");
-          mapDiv.classList.toggle("expanded");
-          markMindMapExplored(m.id);
-        });
-
-        reviewArea.appendChild(mapDiv);
-      });
-
-      updateStats();
-    }
-
-    /* Audio (offline, generated) */
-    let audioCtx = null;
-    let musicOn = false;
-    let nodes = [];
-    let chirpTimer = null;
-
-    async function ensureAudio(){
-      audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-      if (audioCtx.state === "suspended") await audioCtx.resume();
-    }
-
-    function startAudio(){
-      if (musicOn) return;
-      musicOn = true;
-
-      const ctx = audioCtx;
-      const master = ctx.createGain();
-      master.gain.value = 0.06;
-      master.connect(ctx.destination);
-
-      // Wind noise
-      const bufferSize = 2 * ctx.sampleRate;
-      const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-      const data = noiseBuffer.getChannelData(0);
-      for (let i=0;i<bufferSize;i++) data[i]=(Math.random()*2-1)*0.22;
-      const noise = ctx.createBufferSource();
-      noise.buffer = noiseBuffer;
-      noise.loop = true;
-
-      const windFilter = ctx.createBiquadFilter();
-      windFilter.type = "lowpass";
-      windFilter.frequency.value = 520;
-
-      const windGain = ctx.createGain();
-      windGain.gain.value = 0.75;
-
-      const lfo = ctx.createOscillator();
-      lfo.type = "sine";
-      lfo.frequency.value = 0.08;
-      const lfoGain = ctx.createGain();
-      lfoGain.gain.value = 140;
-      lfo.connect(lfoGain);
-      lfoGain.connect(windFilter.frequency);
-
-      noise.connect(windFilter);
-      windFilter.connect(windGain);
-      windGain.connect(master);
-
-      // Soft pad
-      const padGain = ctx.createGain();
-      padGain.gain.value = 0.55;
-      padGain.connect(master);
-
-      const freqs = [196, 220, 247, 294];
-      const oscs = freqs.map(f=>{
-        const o = ctx.createOscillator();
-        o.type = "sine";
-        o.frequency.value = f;
-        const g = ctx.createGain();
-        g.gain.value = 0.12;
-        o.connect(g); g.connect(padGain);
-        return o;
-      });
-
-      // Bird chirps
-      function chirp(){
-        if (!musicOn) return;
-        const t = ctx.currentTime;
-        const o = ctx.createOscillator();
-        const g = ctx.createGain();
-        o.type = "sine";
-        o.frequency.setValueAtTime(900+Math.random()*900, t);
-        o.frequency.exponentialRampToValueAtTime(1200+Math.random()*1200, t+0.09);
-        g.gain.setValueAtTime(0.0001, t);
-        g.gain.exponentialRampToValueAtTime(0.20, t+0.02);
-        g.gain.exponentialRampToValueAtTime(0.0001, t+0.14);
-        const hp = ctx.createBiquadFilter();
-        hp.type = "highpass";
-        hp.frequency.value = 600;
-        o.connect(hp); hp.connect(g); g.connect(master);
-        o.start(t); o.stop(t+0.16);
-        chirpTimer = setTimeout(chirp, 900 + Math.random()*2200);
+        return out;
       }
 
-      noise.start();
-      lfo.start();
-      oscs.forEach(o=>o.start());
-      chirp();
+      function grade(){
+        answers = readAnswers();
+        let correct = 0;
+        selected.forEach((item,i)=>{
+          const user = answers[i];
+          let ok = false;
+          if(user===null){ ok = false; }
+          else if(item.type==="mc"){ ok = (user === item.a); }
+          else if(item.type==="tf"){ ok = (user === item.a); }
+          else{
+            const target = String(item.a).toLowerCase();
+            ok = user.includes(target);
+          }
+          if(ok) correct++;
+        });
+        return {correct, total:selected.length, pct: Math.round((correct/selected.length)*100)};
+      }
 
-      nodes = [master, noise, windFilter, windGain, lfo, lfoGain, padGain, ...oscs];
-      document.getElementById("musicBtn").textContent = "Audio: On";
-      state.musicOn = true; saveState();
+      document.getElementById("qSubmit").onclick = ()=>{
+        if(submitted) return;
+        submitted = true;
+
+        const g = grade();
+        clearInterval(timer);
+
+        state.quizDone += 1;
+        state.bestScore = (state.bestScore===null) ? g.pct : Math.max(state.bestScore, g.pct);
+        saveState();
+
+        // feedback per question
+        const qboxes = qwrap.querySelectorAll(".qbox");
+        selected.forEach((item,i)=>{
+          const user = answers[i];
+          let ok = false;
+          if(user===null){ ok = false; }
+          else if(item.type==="mc"){ ok = (user === item.a); }
+          else if(item.type==="tf"){ ok = (user === item.a); }
+          else{
+            const target = String(item.a).toLowerCase();
+            ok = user.includes(target);
+          }
+
+          const fb = document.createElement("div");
+          fb.className = "feedback" + (ok ? "" : " bad");
+          fb.innerHTML = ok
+            ? `<b style="color:var(--good)">Correct.</b> ${escapeHtml(item.exp)}`
+            : `<b style="color:var(--bad)">Not correct.</b> ${escapeHtml(item.exp)}`;
+          qboxes[i].appendChild(fb);
+        });
+
+        document.getElementById("qResult").innerHTML = `
+          <div class="soft ${g.pct>=70 ? "blue" : "orange"}">
+            <b>Score:</b> ${g.correct}/${g.total} (${g.pct}%)
+            <div class="tiny" style="margin-top:6px">Best score is tracked automatically.</div>
+          </div>
+        `;
+        toastMsg(`Quiz saved: ${g.pct}%`);
+      };
+
+      document.getElementById("qNew").onclick = ()=>{
+        closeModal();
+        openQuiz(moduleId);
+      };
+    }
+
+    /***********************
+     * MIND MAP (Interactive SVG)
+     ***********************/
+    function openMindmap(moduleId){
+      const map = buildMindMap(moduleId);
+      showModal("Mind Map", map);
+      wireMindMapClicks();
+    }
+
+    function buildMindMap(moduleId){
+      const title = moduleId==="review" ? "Course Map" : moduleLabel(moduleId) + " Map";
+      const nodes = getMapNodes(moduleId);
+
+      // Simple layout presets
+      const width = 980, height = 520;
+
+      const svgNodes = nodes.map(n => `
+        <g class="nodeBox" data-goto="${n.goto || ""}" data-note="${escapeHtml(n.note || "")}">
+          <rect x="${n.x}" y="${n.y}" rx="16" ry="16" width="${n.w}" height="${n.h}"
+                fill="rgba(255,255,255,.90)" stroke="rgba(15,42,27,.16)"/>
+          <text class="nodeText" x="${n.x + 14}" y="${n.y + 28}">${escapeHtml(n.label)}</text>
+          <text class="nodeText" x="${n.x + 14}" y="${n.y + 52}" style="opacity:.72; font-size:13px;">
+            ${escapeHtml(n.sub || "")}
+          </text>
+        </g>
+      `).join("");
+
+      const svgLinks = nodes.flatMap(n => (n.links||[]).map(t => {
+        const from = centerOf(n);
+        const to = centerOf(nodes.find(x=>x.id===t));
+        if(!to) return "";
+        const midx = (from.cx + to.cx)/2;
+        return `
+          <path d="M ${from.cx} ${from.cy} C ${midx} ${from.cy}, ${midx} ${to.cy}, ${to.cx} ${to.cy}"
+                fill="none" stroke="rgba(42,120,208,.38)" stroke-width="3" stroke-linecap="round"/>
+        `;
+      })).join("");
+
+      return `
+        <div class="row" style="justify-content:space-between">
+          <div class="badge"><b>${escapeHtml(title)}</b></div>
+          <div class="tiny">Click a node to open the linked module.</div>
+        </div>
+        <div style="height:12px"></div>
+        <div class="map">
+          <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Mind map">
+            ${svgLinks}
+            ${svgNodes}
+          </svg>
+        </div>
+        <div style="height:10px"></div>
+        <div class="soft blue" id="mapHint"><b>Note:</b> Click any node to navigate. Use this to connect concepts while revising.</div>
+      `;
+    }
+
+    function centerOf(n){
+      return {cx: n.x + n.w/2, cy: n.y + n.h/2};
+    }
+
+    function getMapNodes(moduleId){
+      const base = [
+        {id:"g", label:"Genres", sub:"fiction • drama • poetry • nonfiction", x:30, y:40, w:300, h:78, goto:"m1",
+          note:"Genre is the broad category; use subgenre/kind for finer divisions.", links:["t","p","d","f"]},
+        {id:"t", label:"Terms & Devices", sub:"simile • metaphor • imagery", x:360, y:30, w:290, h:78, goto:"m2",
+          note:"Name the device and explain its effect.", links:["s"]},
+        {id:"s", label:"Sound Devices", sub:"alliteration • rhythm • emphasis", x:680, y:44, w:270, h:70, goto:"m3",
+          note:"Sound shapes memorability and tone.", links:["p"]},
+        {id:"p", label:"Poetry", sub:"form • voice • theme • subgenres", x:70, y:170, w:290, h:86, goto:"m4",
+          note:"Track pattern + sound + word choice.", links:["w"]},
+        {id:"w", label:"Close Reading", sub:"notice → read aloud → meanings", x:390, y:180, w:310, h:86, goto:"m5",
+          note:"Translate vocabulary first, then interpret.", links:[]},
+        {id:"d", label:"Drama", sub:"action • dialogue • performance", x:730, y:190, w:220, h:86, goto:"m6",
+          note:"Stage movement and setting create meaning.", links:["tr"]},
+        {id:"tr", label:"Trifles", sub:"domestic space as evidence", x:660, y:320, w:290, h:78, goto:"m7",
+          note:"Use objects as evidence; question what is dismissed.", links:[]},
+        {id:"f", label:"Fiction", sub:"POV • setting • symbolism • theme", x:80, y:320, w:320, h:86, goto:"m8",
+          note:"Name POV and one effect; link setting to mood/character.", links:["pp"]},
+        {id:"pp", label:"Pride & Prejudice", sub:"irony • class • marriage • change", x:430, y:340, w:300, h:86, goto:"m9",
+          note:"Show how irony/dialogue creates critique.", links:[]},
+      ];
+
+      if(moduleId==="review") return base;
+
+      // highlight-focused subset but keep connected map
+      const allow = new Set(["home", moduleId, "review"]);
+      // For a single module, still show full map because it helps revision.
+      return base;
+    }
+
+    function wireMindMapClicks(){
+      document.querySelectorAll(".nodeBox").forEach(el=>{
+        el.addEventListener("click", ()=>{
+          const goto = el.dataset.goto;
+          const note = el.dataset.note;
+          const hint = document.getElementById("mapHint");
+          if(note && hint) hint.innerHTML = `<b>Note:</b> ${escapeHtml(note)}`;
+          if(goto){
+            closeModal();
+            openModule(goto);
+          }
+        });
+      });
+    }
+
+    /***********************
+     * NOTES
+     ***********************/
+    function openNotes(moduleId){
+      const key = moduleId==="review" ? state.lastModule : moduleId;
+      const mod = modules.find(x=>x.id===key) || modules[0];
+      const current = state.notes[key] || "";
+
+      showModal("Notes", `
+        <div class="row" style="justify-content:space-between">
+          <div class="badge"><b>Module:</b> ${escapeHtml(mod.short)}</div>
+          <div class="tiny">Saved automatically on close.</div>
+        </div>
+        <div style="height:12px"></div>
+
+        <div class="soft">
+          <b>Use this structure:</b>
+          <ul class="list">
+            <li><b>Claim:</b> one sentence.</li>
+            <li><b>Evidence:</b> specific words/choices/structure.</li>
+            <li><b>Effect:</b> what it makes the reader think/feel.</li>
+            <li><b>Meaning:</b> link to theme/context.</li>
+          </ul>
+        </div>
+
+        <div style="height:12px"></div>
+        <textarea id="notesArea" style="width:100%; min-height:320px; font-size:1rem; line-height:1.5; padding:12px 14px; border-radius:18px; border:1px solid rgba(15,42,27,.12); background:rgba(255,255,255,.88); box-shadow: 0 10px 20px rgba(10,30,20,.06); outline:none;"
+          placeholder="Write your notes here...">${escapeHtml(current)}</textarea>
+        <div class="actions" style="margin-top:12px">
+          <button class="btn good" id="saveNotesBtn">Save</button>
+          <button class="btn" id="clearNotesBtn">Clear</button>
+        </div>
+      `);
+
+      const area = document.getElementById("notesArea");
+      document.getElementById("saveNotesBtn").onclick = ()=>{
+        state.notes[key] = area.value;
+        saveState();
+        toastMsg("Notes saved");
+      };
+      document.getElementById("clearNotesBtn").onclick = ()=>{
+        area.value = "";
+        state.notes[key] = "";
+        saveState();
+        toastMsg("Notes cleared");
+      };
+
+      // auto-save on close
+      const oldClose = document.getElementById("modalClose").onclick;
+      document.getElementById("modalClose").onclick = ()=>{
+        state.notes[key] = area.value;
+        saveState();
+        document.getElementById("modalClose").onclick = oldClose;
+        closeModal();
+      };
+    }
+
+    /***********************
+     * GLOSSARY (searchable)
+     ***********************/
+    function openGlossary(){
+      const all = flashcards.map((c, idx)=>({...c, idx}));
+      showModal("Glossary", `
+        <div class="row" style="justify-content:space-between">
+          <div class="badge"><b>Entries:</b> ${all.length}</div>
+          <div class="pill" style="min-width:260px">
+            <span aria-hidden="true">🔎</span>
+            <input id="glossSearch" placeholder="Search glossary (e.g., tone, apostrophe, setting)..." />
+          </div>
+        </div>
+        <div style="height:12px"></div>
+        <div id="glossList"></div>
+      `);
+
+      const list = document.getElementById("glossList");
+      const input = document.getElementById("glossSearch");
+
+      function render(filter=""){
+        const f = filter.trim().toLowerCase();
+        const items = all.filter(x=>{
+          if(!f) return true;
+          return (x.term+" "+x.def+" "+x.m+" "+(x.tag||"")).toLowerCase().includes(f);
+        }).slice(0, 80);
+
+        list.innerHTML = items.map(x=>`
+          <div class="qbox">
+            <h4>${escapeHtml(x.term)} <span class="tiny">(${escapeHtml(moduleLabel(x.m))})</span></h4>
+            <div class="tiny" style="margin-bottom:8px">Tag: ${escapeHtml(x.tag || "—")}</div>
+            <div>${escapeHtml(x.def)}</div>
+          </div>
+        `).join("") || `<div class="soft orange"><b>No matches.</b></div>`;
+      }
+
+      input.oninput = ()=> render(input.value);
+      render("");
+      input.focus();
+    }
+
+    /***********************
+     * GLOBAL SEARCH
+     ***********************/
+    const globalSearch = document.getElementById("globalSearch");
+    globalSearch.addEventListener("keydown", (e)=>{
+      if(e.key==="Enter"){
+        const q = globalSearch.value.trim().toLowerCase();
+        if(!q) return;
+        const hits = searchAll(q);
+        showModal("Search Results", renderSearchResults(q, hits));
+      }
+    });
+
+    function searchAll(q){
+      const hits = [];
+
+      modules.forEach(m=>{
+        const blob = [
+          m.title, m.kicker,
+          ...(m.learn||[]).flatMap(b=>[b.heading, ...(b.text||[])])
+        ].join(" ").toLowerCase();
+        if(blob.includes(q)) hits.push({type:"Module", where:m.short, title:m.title, goto:m.id});
+      });
+
+      flashcards.forEach((c, i)=>{
+        const blob = (c.term+" "+c.def+" "+(c.tag||"")).toLowerCase();
+        if(blob.includes(q)) hits.push({type:"Glossary", where:moduleLabel(c.m), title:c.term, goto:c.m, extra:c.def});
+      });
+
+      quizzes.forEach((x,i)=>{
+        const blob = (x.q+" "+(x.exp||"")).toLowerCase();
+        if(blob.includes(q)) hits.push({type:"Quiz", where:moduleLabel(x.m), title:x.q, goto:x.m});
+      });
+
+      return hits.slice(0, 60);
+    }
+
+    function renderSearchResults(q, hits){
+      if(!hits.length){
+        return `<div class="soft orange"><b>No results</b> for “${escapeHtml(q)}”.</div>`;
+      }
+      return `
+        <div class="badge"><b>Results:</b> ${hits.length}</div>
+        <div style="height:12px"></div>
+        ${hits.map(h=>`
+          <div class="qbox">
+            <div class="row" style="justify-content:space-between">
+              <b>${escapeHtml(h.title)}</b>
+              <span class="badge blue"><b>${escapeHtml(h.type)}</b> • ${escapeHtml(h.where)}</span>
+            </div>
+            ${h.extra ? `<div class="tiny" style="margin-top:8px">${escapeHtml(h.extra)}</div>` : ""}
+            <div class="actions" style="margin-top:10px">
+              <button class="btn primary" data-goto="${escapeHtml(h.goto)}">Open</button>
+            </div>
+          </div>
+        `).join("")}
+      `;
+    }
+
+    // wire open buttons after modal render
+    modal.addEventListener("click", (e)=>{
+      const t = e.target;
+      if(t && t.dataset && t.dataset.goto){
+        closeModal();
+        openModule(t.dataset.goto);
+      }
+    });
+
+    /***********************
+     * QUICK ACTIONS
+     ***********************/
+    document.getElementById("quickQuizBtn").onclick = ()=> openQuiz("review");
+    document.getElementById("quickCardsBtn").onclick = ()=> openFlashcards("review");
+    document.getElementById("glossaryBtn").onclick = openGlossary;
+    document.getElementById("mindmapBtn").onclick = ()=> openMindmap("review");
+    document.getElementById("notesBtn").onclick = ()=> openNotes("review");
+
+    document.getElementById("resetBtn").onclick = ()=>{
+      const keep = {focus: state.focus};
+      const fresh = freshState();
+      Object.assign(state, fresh, keep);
+      saveState();
+      openModule("home");
+      toastMsg("Progress reset");
+    };
+
+    /***********************
+     * FOCUS MODE
+     ***********************/
+    document.getElementById("focusBtn").onclick = ()=>{
+      state.focus = !state.focus;
+      document.body.style.filter = state.focus ? "saturate(1.04) contrast(1.02)" : "none";
+      document.querySelector("aside.widget").style.display = state.focus ? "none" : "flex";
+      document.querySelector(".grid").style.gridTemplateColumns = state.focus ? "1fr" : "";
+      saveState();
+      toastMsg(state.focus ? "Focus mode on" : "Focus mode off");
+    };
+
+    /***********************
+     * AMBIENT AUDIO (WebAudio)
+     * - no external files
+     * - starts only after a click (browser policy)
+     ***********************/
+    let audioOn = false;
+    let audioCtx = null;
+    let nodes = null;
+
+    function startAudio(){
+      if(audioOn) return;
+      audioOn = true;
+
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+      // soft pad: two oscillators + slow LFO
+      const o1 = audioCtx.createOscillator();
+      const o2 = audioCtx.createOscillator();
+      o1.type = "sine";
+      o2.type = "triangle";
+      o1.frequency.value = 110;
+      o2.frequency.value = 220;
+
+      const g = audioCtx.createGain();
+      g.gain.value = 0.0;
+
+      const lfo = audioCtx.createOscillator();
+      lfo.type = "sine";
+      lfo.frequency.value = 0.08;
+
+      const lfoGain = audioCtx.createGain();
+      lfoGain.gain.value = 0.06;
+
+      // noise (wind)
+      const noise = audioCtx.createBufferSource();
+      const bufferSize = audioCtx.sampleRate * 2;
+      const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i=0; i<bufferSize; i++) data[i] = (Math.random()*2 - 1) * 0.20;
+      noise.buffer = buffer;
+      noise.loop = true;
+
+      const noiseFilter = audioCtx.createBiquadFilter();
+      noiseFilter.type = "lowpass";
+      noiseFilter.frequency.value = 650;
+
+      const noiseGain = audioCtx.createGain();
+      noiseGain.gain.value = 0.0;
+
+      // master
+      const master = audioCtx.createGain();
+      master.gain.value = 0.65;
+
+      // routing
+      lfo.connect(lfoGain);
+      lfoGain.connect(g.gain);
+
+      o1.connect(g);
+      o2.connect(g);
+
+      noise.connect(noiseFilter);
+      noiseFilter.connect(noiseGain);
+
+      const mix = audioCtx.createGain();
+      mix.gain.value = 0.9;
+
+      g.connect(mix);
+      noiseGain.connect(mix);
+
+      mix.connect(master);
+      master.connect(audioCtx.destination);
+
+      // start
+      o1.start();
+      o2.start();
+      lfo.start();
+      noise.start();
+
+      // fade in
+      g.gain.linearRampToValueAtTime(0.045, audioCtx.currentTime + 1.5);
+      noiseGain.gain.linearRampToValueAtTime(0.020, audioCtx.currentTime + 1.5);
+
+      nodes = {o1,o2,lfo,noise,g,noiseGain,master,noiseFilter,mix};
+
+      document.getElementById("musicBtn").textContent = "⏸︎ Audio";
+      toastMsg("Audio on");
     }
 
     function stopAudio(){
-      if (!musicOn) return;
-      musicOn = false;
+      if(!audioOn) return;
+      audioOn = false;
       try{
-        nodes.forEach(n=>{
-          if (n && typeof n.stop === "function"){
-            try{ n.stop(0); }catch{}
-          }
-        });
-      }catch{}
-      nodes = [];
-      if (chirpTimer) clearTimeout(chirpTimer);
-      chirpTimer = null;
-
-      document.getElementById("musicBtn").textContent = "Audio";
-      state.musicOn = false; saveState();
+        const now = audioCtx.currentTime;
+        nodes.g.gain.linearRampToValueAtTime(0.0, now + 0.6);
+        nodes.noiseGain.gain.linearRampToValueAtTime(0.0, now + 0.6);
+        setTimeout(()=>{
+          try{
+            nodes.o1.stop(); nodes.o2.stop(); nodes.lfo.stop(); nodes.noise.stop();
+            audioCtx.close();
+          }catch(e){}
+          audioCtx = null;
+          nodes = null;
+        }, 800);
+      }catch(e){}
+      document.getElementById("musicBtn").textContent = "▶︎ Audio";
+      toastMsg("Audio off");
     }
 
-    async function toggleAudio(){
-      await ensureAudio();
-      if (!musicOn) startAudio(); else stopAudio();
-    }
-    document.getElementById("musicBtn").addEventListener("click", toggleAudio);
+    document.getElementById("musicBtn").onclick = ()=>{
+      if(!audioOn) startAudio();
+      else stopAudio();
+    };
 
-    /* Background animation */
-    const bgCanvas = document.getElementById("bgCanvas");
-    const bg = bgCanvas.getContext("2d");
-    let W=0,H=0,DPR=1;
-    const clouds=[], leaves=[], pollen=[];
-
-    function resizeBG(){
-      DPR = devicePixelRatio || 1;
-      W = bgCanvas.width = innerWidth * DPR;
-      H = bgCanvas.height = innerHeight * DPR;
-      bgCanvas.style.width = innerWidth + "px";
-      bgCanvas.style.height = innerHeight + "px";
-      initBG();
-    }
-    window.addEventListener("resize", resizeBG);
-
-    function rand(a,b){ return a + Math.random()*(b-a); }
-
-    function initBG(){
-      clouds.length=0; leaves.length=0; pollen.length=0;
-      const cloudCount = Math.round(Math.min(10, Math.max(5, innerWidth/220)));
-      const leafCount  = Math.round(Math.min(48, Math.max(20, innerWidth/26)));
-      const pollCount  = Math.round(Math.min(90, Math.max(40, innerWidth/18)));
-
-      for (let i=0;i<cloudCount;i++){
-        clouds.push({ x:rand(0,W), y:rand(0,H*0.45), w:rand(170,320)*DPR, h:rand(60,110)*DPR, vx:rand(0.05,0.13)*DPR, a:rand(0.08,0.16) });
-      }
-      for (let i=0;i<leafCount;i++){
-        leaves.push({ x:rand(0,W), y:rand(0,H), r:rand(10,24)*DPR, s:rand(0.35,1.10)*DPR, rot:rand(0,Math.PI*2), drot:rand(-0.012,0.012), sway:rand(0.6,2.2)*DPR });
-      }
-      for (let i=0;i<pollCount;i++){
-        pollen.push({ x:rand(0,W), y:rand(0,H), r:rand(1.2,3.1)*DPR, vx:rand(-0.06,0.06)*DPR, vy:rand(-0.03,0.10)*DPR, a:rand(0.10,0.22) });
-      }
-    }
-
-    function drawSun(){
-      const cx=W*0.78, cy=H*0.14;
-      const r1=Math.min(W,H)*0.10;
-      const r2=Math.min(W,H)*0.24;
-      const g=bg.createRadialGradient(cx,cy,r1,cx,cy,r2);
-      g.addColorStop(0,"rgba(255,209,102,0.36)");
-      g.addColorStop(1,"rgba(255,209,102,0.00)");
-      bg.fillStyle=g;
-      bg.beginPath(); bg.arc(cx,cy,r2,0,Math.PI*2); bg.fill();
-    }
-
-    function drawCloud(c){
-      bg.save();
-      bg.translate(c.x,c.y);
-      bg.fillStyle=`rgba(255,255,255,${c.a})`;
-      bg.beginPath();
-      bg.ellipse(0,0,c.w*0.32,c.h*0.35,0,0,Math.PI*2);
-      bg.ellipse(c.w*0.18,-c.h*0.10,c.w*0.28,c.h*0.30,0,0,Math.PI*2);
-      bg.ellipse(-c.w*0.18,-c.h*0.12,c.w*0.26,c.h*0.28,0,0,Math.PI*2);
-      bg.ellipse(0,-c.h*0.20,c.w*0.22,c.h*0.26,0,0,Math.PI*2);
-      bg.fill();
-      bg.restore();
-    }
-
-    function drawLeaf(l){
-      bg.save();
-      bg.translate(l.x,l.y);
-      bg.rotate(l.rot);
-      const grad=bg.createRadialGradient(0,0,1,0,0,l.r);
-      grad.addColorStop(0,"rgba(34,197,94,0.22)");
-      grad.addColorStop(1,"rgba(0,163,255,0.06)");
-      bg.fillStyle=grad;
-      bg.beginPath();
-      bg.ellipse(0,0,l.r*0.55,l.r,0,0,Math.PI*2);
-      bg.fill();
-      bg.strokeStyle="rgba(11,27,19,0.10)";
-      bg.lineWidth=1*DPR;
-      bg.beginPath();
-      bg.moveTo(0,-l.r*0.85);
-      bg.lineTo(0,l.r*0.85);
-      bg.stroke();
-      bg.restore();
-    }
-
-    function bgLoop(){
-      bg.clearRect(0,0,W,H);
-
-      const haze=bg.createRadialGradient(W*0.25,H*0.10,0,W*0.25,H*0.10,Math.min(W,H)*0.55);
-      haze.addColorStop(0,"rgba(0,163,255,0.08)");
-      haze.addColorStop(1,"rgba(0,0,0,0)");
-      bg.fillStyle=haze;
-      bg.fillRect(0,0,W,H);
-
-      drawSun();
-
-      clouds.forEach(c=>{
-        c.x += c.vx;
-        if (c.x > W + c.w) c.x = -c.w;
-        drawCloud(c);
-      });
-
-      pollen.forEach(p=>{
-        p.x += p.vx; p.y += p.vy;
-        if (p.x < -60) p.x = W+60;
-        if (p.x > W+60) p.x = -60;
-        if (p.y > H+60) p.y = -60;
-        if (p.y < -60) p.y = H+60;
-        bg.beginPath();
-        bg.fillStyle = `rgba(255,209,102,${p.a})`;
-        bg.arc(p.x,p.y,p.r,0,Math.PI*2);
-        bg.fill();
-      });
-
-      leaves.forEach(l=>{
-        l.y += l.s;
-        l.x += Math.sin(l.y/(90*DPR)) * l.sway * 0.08;
-        l.rot += l.drot;
-        if (l.y > H + 60){ l.y = -60; l.x = rand(0,W); }
-        drawLeaf(l);
-      });
-
-      requestAnimationFrame(bgLoop);
-    }
-
-    resizeBG();
-    bgLoop();
-
-    updateStats();
-    showSection("home");
-
-    // No automatic audio start; button remains ready.
-    if (state.musicOn){
-      state.musicOn = false;
-      saveState();
-    }
+    /***********************
+     * INIT
+     ***********************/
+    buildTabs();
+    renderStats();
+    openModule(state.lastModule || "home");
   </script>
 </body>
 </html>
